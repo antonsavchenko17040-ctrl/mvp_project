@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 const publicRoutes = ["/login", "/public", "/"];
 const SESSION_COOKIE = "session_token";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isPublic =
     pathname === "/" ||
