@@ -8,7 +8,7 @@ import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-fiel
 import type { FieldSupplementItem } from "@/components/editor/recommendation-field-supplement-history";
 import { SspFieldSupplementControls } from "@/components/ssp/ssp-field-supplement-controls";
 import { SspSupplementableField } from "@/components/ssp/ssp-supplementable-field";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -259,9 +259,12 @@ export function SspRecommendationEditForm({
         >
           Зберегти в чернетку
         </button>
-        <Button variant="outline" asChild>
-          <Link href="/ssp">Скасувати</Link>
-        </Button>
+        <Link
+  href="/ssp"
+  className={buttonVariants({ variant: "outline" })}
+>
+  Скасувати
+</Link>
       </div>
     </div>
   );
