@@ -190,7 +190,9 @@ export async function parseAuditFolderXlsx(
   options: { fallbackTitle: string },
 ): Promise<ParsedAuditFolderXlsx> {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer);
+  await workbook.xlsx.load(
+  buffer as unknown as Parameters<typeof workbook.xlsx.load>[0],
+);
 
   const sheet = workbook.worksheets[0];
   if (!sheet) {
