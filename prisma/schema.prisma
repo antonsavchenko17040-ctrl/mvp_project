@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -38,7 +38,9 @@ model Profile {
   createdFolders     AuditFolder[] @relation("CreatedBy")
   assignedItems      Recommendation[] @relation("Assignee")
   fieldSupplements   RecommendationFieldSupplement[] @relation("SupplementAuthor")
-  sessions           Session[]
+  sessions                Session[]
+  departmentMemberships   DepartmentMember[]
+  temporaryPassword       TempPassword?
 }
 
 model ProfileRole {
@@ -60,6 +62,34 @@ model Session {
   profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   @@index([profileId])
+}
+
+model Department {
+  id        String             @id @default(cuid())
+  name      String             @unique
+  isActive  Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  members   DepartmentMember[]
+}
+
+model DepartmentMember {
+  id           String     @id @default(cuid())
+  departmentId String
+  profileId    String
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  profile      Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([departmentId, profileId])
+  @@index([departmentId])
+  @@index([profileId])
+}
+
+model TempPassword {
+  profileId String   @id
+  password  String
+  updatedAt DateTime @updatedAt
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
 }
 
 model AuditFolder {
