@@ -8,7 +8,7 @@ import { RecommendationDetailHeaderMeta } from "@/components/recommendation-deta
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
 import { SspRecommendationEditForm } from "@/components/ssp/ssp-recommendation-edit-form";
 import { SspRecommendationReadonlyFields } from "@/components/ssp/ssp-recommendation-readonly-fields";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { requireRole } from "@/lib/auth/session";
@@ -302,9 +302,12 @@ export default async function SspRecommendationDetailPage({
                 actualImplementationDate={recommendation.actualImplementationDate}
                 allowSupplements={!folderArchived}
               />
-              <Button variant="outline" asChild>
-                <Link href="/ssp">Назад до списку</Link>
-              </Button>
+              <Link
+  href="/ssp"
+  className={buttonVariants({ variant: "outline" })}
+>
+  Назад до списку
+</Link>
             </div>
           )}
         </CardContent>
