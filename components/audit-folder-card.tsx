@@ -48,12 +48,14 @@ export function AuditFolderCard(props: AuditFolderCardProps) {
   const total = folder.recommendations.length;
   const isArchived = folder.archivedAt != null && folder.archivedAt !== "";
 
-  const executionCounts =
-    variant === "execution"
-      ? countExecutionStatuses(
-          folder.recommendations.filter((item) => !item.status || item.status === "published"),
-        )
-      : null;
+const executionCounts =
+  props.variant === "execution"
+    ? countExecutionStatuses(
+        props.folder.recommendations.filter(
+          (item) => !item.status || item.status === "published",
+        ),
+      )
+    : null;
 
   const workflowCounts =
     variant === "workflow"
