@@ -1,0 +1,175 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  editor
+  ssp
+  manager
+  analyst
+  admin
+}
+
+enum RecommendationStatus {
+  draft
+  ssp_draft
+  in_progress
+  manager_review
+  on_review
+  revision
+  published
+}
+
+model Profile {
+  id                 String        @id @default(cuid())
+  email              String        @unique
+  passwordHash       String
+  fullName           String?
+  isActive           Boolean       @default(true)
+  mustChangePassword Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  roles              ProfileRole[]
+  createdFolders     AuditFolder[] @relation("CreatedBy")
+  assignedItems      Recommendation[] @relation("Assignee")
+  fieldSupplements   RecommendationFieldSupplement[] @relation("SupplementAuthor")
+  sessions           Session[]
+}
+
+model ProfileRole {
+  id        String   @id @default(cuid())
+  profileId String
+  role      UserRole
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, role])
+  @@index([profileId])
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  tokenHash   String   @unique
+  profileId   String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+model AuditFolder {
+  id              String           @id @default(cuid())
+  title           String
+  year            Int
+  createdAt       DateTime         @default(now())
+  archivedAt      DateTime?
+  createdById     String
+  createdBy       Profile          @relation("CreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  recommendations Recommendation[]
+}
+
+model Recommendation {
+  id                  String               @id @default(cuid())
+  auditFolderId       String
+  sequenceNumber      Int                  @default(0)
+  deficiency          String
+  recommendationText  String
+  executionIndicator  String
+  expectedResult      String
+  vkElement           String               @default("")
+  observationSignificance String           @default("середній")
+  sspUnit             String
+  deadline            DateTime
+  informingDeadline   DateTime?
+  actualImplementationDate DateTime?
+  status              RecommendationStatus @default(draft)
+  assigneeUserId      String?
+  progressReport      String?
+  measuresDescription String?
+  expectedAchievement String?
+  supportingDocuments String?
+  sspNotes            String?
+  managerComment      String?
+  analystComment      String?
+  /** Поточна причина останньої зміни редактором (попередні — у supplements). */
+  changeReason        String?
+  isActive            Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  auditFolder         AuditFolder          @relation(fields: [auditFolderId], references: [id], onDelete: Cascade)
+  assignee            Profile?             @relation("Assignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
+  fieldSupplements    RecommendationFieldSupplement[]
+
+  @@index([status])
+  @@index([deadline])
+  @@index([sspUnit])
+  @@index([auditFolderId])
+  @@index([isActive])
+}
+
+/**
+ * Історія доповнень / змін полів рекомендації редактором.
+ * Для текстових полів — доданий фрагмент (оригінал у Recommendation не змінюється).
+ * Для replace-полів (термін, причина зміни тощо) — заблоковане попереднє значення; актуальне в Recommendation.
+ */
+model RecommendationFieldSupplement {
+  id               String         @id @default(cuid())
+  recommendationId String
+  fieldKey         String
+  /** Нове доповнення або нове значення після зміни. */
+  content          String
+  /** Попереднє значення (для replace-полів); для append — порожнє. */
+  previousContent  String         @default("")
+  changeReason     String
+  /** Дата внесення змін, яку вказує редактор. */
+  changeDate       DateTime       @default(now())
+  createdAt        DateTime       @default(now())
+  createdById      String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  createdBy        Profile        @relation("SupplementAuthor", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([recommendationId])
+  @@index([fieldKey])
+  @@index([createdAt])
+  @@index([changeDate])
+}
+
+/**
+ * Повний журнал змін (Audit Log) для адміна.
+ * Кожна зміна статусу або поля: AgentID, Timestamp, Difference.
+ */
+model AuditLog {
+  id               String   @id @default(cuid())
+  /** Timestamp */
+  createdAt        DateTime @default(now())
+  /** AgentID — хто виконав зміну */
+  agentId          String?
+  actorEmail       String   @default("")
+  actorName        String   @default("")
+  /** Роль, від імені якої виконано дію (якщо відома). */
+  actorRole        String   @default("")
+  /** Машинний ключ дії, напр. recommendation.published */
+  action           String
+  /** recommendation | audit_folder | user | department | system */
+  entityType       String
+  entityId         String   @default("")
+  recommendationId String?
+  auditFolderId    String?
+  /** Короткий опис українською. */
+  summary          String
+  /** Difference: JSON зі змінами { changes: [{ field, before, after }] }. */
+  difference       String   @default("{\"changes\":[]}")
+
+  @@index([createdAt])
+  @@index([action])
+  @@index([entityType])
+  @@index([entityId])
+  @@index([recommendationId])
+  @@index([auditFolderId])
+  @@index([agentId])
+}

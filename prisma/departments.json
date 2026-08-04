@@ -1,0 +1,25 @@
+{
+  "departments": [
+    {
+      "id": "6154f837-957d-4384-939f-954b01b34f98",
+      "name": "Відділ цифрової трансформації та інноваційного розвитку",
+      "isActive": true,
+      "memberIds": [
+        "cmovh3a7x0000jg00an648lxs",
+        "cmovh3aim0002jg00wjsulz5r",
+        "cmovh3adj0001jg00gvnmodml",
+        "cmp2fh4ek0003jg90ee2cxjmr"
+      ]
+    },
+    {
+      "id": "fd7cc67a-7e35-416e-9ee5-197b0f4d1d66",
+      "name": "IT Департамент",
+      "isActive": true,
+      "memberIds": [
+        "cmp3nfa7q000mjgx0xry1zga1",
+        "cmp3ng6tr000njgx0hcuu32bb",
+        "cmowt9ff2000djgyw3ygh2vsa"
+      ]
+    }
+  ]
+}
