@@ -1,8 +1,4 @@
-import crypto from "node:crypto";
-import { promises as fs } from "node:fs";
-import path from "node:path";
-
-const STORE_PATH = path.join(process.cwd(), "prisma", "departments.json");
+import { db } from "@/lib/db";
 
 export interface DepartmentRecord {
   id: string;
@@ -11,70 +7,54 @@ export interface DepartmentRecord {
   memberIds: string[];
 }
 
-interface DepartmentStore {
-  departments: DepartmentRecord[];
-}
+export async function getDepartments(): Promise<DepartmentRecord[]> {
+  const departments = await db.department.findMany({
+    orderBy: { name: "asc" },
+    include: { members: { select: { profileId: true } } },
+  });
 
-async function readStore(): Promise<DepartmentStore> {
-  try {
-    const raw = await fs.readFile(STORE_PATH, "utf-8");
-    const parsed = JSON.parse(raw) as DepartmentStore;
-    return parsed?.departments ? parsed : { departments: [] };
-  } catch {
-    return { departments: [] };
-  }
-}
-
-async function writeStore(data: DepartmentStore) {
-  await fs.writeFile(STORE_PATH, JSON.stringify(data, null, 2), "utf-8");
-}
-
-export async function getDepartments() {
-  const data = await readStore();
-  return data.departments;
+  return departments.map((department) => ({
+    id: department.id,
+    name: department.name,
+    isActive: department.isActive,
+    memberIds: department.members.map((member) => member.profileId),
+  }));
 }
 
 export async function createDepartment(name: string) {
   const trimmedName = name.trim();
   if (!trimmedName) return;
 
-  const data = await readStore();
-  const exists = data.departments.some(
-    (item) => item.name.toLowerCase() === trimmedName.toLowerCase(),
-  );
+  const exists = await db.department.findFirst({
+    where: { name: { equals: trimmedName, mode: "insensitive" } },
+    select: { id: true },
+  });
   if (exists) return;
 
-  data.departments.push({
-    id: crypto.randomUUID(),
-    name: trimmedName,
-    isActive: true,
-    memberIds: [],
-  });
-  await writeStore(data);
+  await db.department.create({ data: { name: trimmedName } });
 }
 
 export async function archiveDepartment(departmentId: string) {
-  const data = await readStore();
-  const department = data.departments.find((item) => item.id === departmentId);
-  if (!department) return;
-  department.isActive = false;
-  await writeStore(data);
+  await db.department.updateMany({
+    where: { id: departmentId },
+    data: { isActive: false },
+  });
 }
 
 export async function assignDepartmentMember(departmentId: string, profileId: string) {
-  const data = await readStore();
-  const department = data.departments.find((item) => item.id === departmentId && item.isActive);
+  const department = await db.department.findFirst({
+    where: { id: departmentId, isActive: true },
+    select: { id: true },
+  });
   if (!department) return;
-  if (!department.memberIds.includes(profileId)) {
-    department.memberIds.push(profileId);
-    await writeStore(data);
-  }
+
+  await db.departmentMember.upsert({
+    where: { departmentId_profileId: { departmentId, profileId } },
+    update: {},
+    create: { departmentId, profileId },
+  });
 }
 
 export async function removeDepartmentMember(departmentId: string, profileId: string) {
-  const data = await readStore();
-  const department = data.departments.find((item) => item.id === departmentId);
-  if (!department) return;
-  department.memberIds = department.memberIds.filter((id) => id !== profileId);
-  await writeStore(data);
+  await db.departmentMember.deleteMany({ where: { departmentId, profileId } });
 }
