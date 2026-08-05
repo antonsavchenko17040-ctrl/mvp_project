@@ -60,7 +60,8 @@ export const getSession = cache(async () => {
     if (session) {
       await db.session.delete({ where: { id: session.id } });
     }
-    cookieStore.delete(SESSION_COOKIE);
+    // Do not cookieStore.delete here: getSession runs in RSC (layouts).
+    // Cookie clears in clearSession / is overwritten on createSession.
     return null;
   }
 
