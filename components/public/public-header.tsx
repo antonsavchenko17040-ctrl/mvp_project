@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { LoginForm } from "@/components/auth/login-form";
 import { uk } from "@/lib/i18n/uk";
+import { PUBLIC_DASHBOARD_HOME } from "@/lib/reports-section";
 
 export function PublicHeader() {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,7 +16,10 @@ export function PublicHeader() {
     <>
       <header className="border-b border-black/20 bg-white">
         <div className="flex h-14 w-full items-center justify-between px-5 xl:px-7">
-          <p className="flex items-center gap-2.5 text-base font-semibold">
+          <Link
+            href={PUBLIC_DASHBOARD_HOME}
+            className="flex items-center gap-2.5 text-base font-semibold hover:opacity-90"
+          >
             <Image
               src="/logo-nazk-source.png"
               alt="Логотип порталу"
@@ -24,7 +28,7 @@ export function PublicHeader() {
               className="h-7 w-auto object-contain"
             />
             {uk.appName}
-          </p>
+          </Link>
           <button
             type="button"
             onClick={() => setIsOpen(true)}
