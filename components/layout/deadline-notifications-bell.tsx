@@ -56,7 +56,7 @@ export function DeadlineNotificationsBell({ items }: DeadlineNotificationsBellPr
         aria-controls={panelId}
         onClick={() => setOpen((value) => !value)}
         className={cn(
-          "relative inline-flex size-9 items-center justify-center rounded-full border border-black/25 bg-white text-foreground transition-colors hover:bg-muted",
+          "relative inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-black/25 bg-white text-foreground transition-colors hover:bg-muted",
           open && "bg-muted",
         )}
       >
