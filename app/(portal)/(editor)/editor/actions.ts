@@ -28,7 +28,12 @@ function formatStoredDate(value: Date | null | undefined): string {
 export async function createAuditFolder(formData: FormData) {
   const profile = await requireRole(["editor"]);
   const title = String(formData.get("title") ?? "");
-  const year = Number(formData.get("year") ?? new Date().getFullYear());
+  const currentYear = new Date().getFullYear();
+  const year = Number(formData.get("year") ?? currentYear);
+
+  if (!Number.isFinite(year) || year < 2000 || year > currentYear) {
+    redirect("/editor?error=invalid_year");
+  }
 
   const folder = await db.auditFolder.create({
     data: {
