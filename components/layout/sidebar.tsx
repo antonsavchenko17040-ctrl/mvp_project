@@ -20,7 +20,11 @@ import {
 } from "lucide-react";
 
 import { uk } from "@/lib/i18n/uk";
-import { isPortalDashboardActive, isPortalReportsLibraryActive } from "@/lib/reports-section";
+import {
+  isPortalDashboardActive,
+  isPortalReportsLibraryActive,
+  PUBLIC_DASHBOARD_HOME,
+} from "@/lib/reports-section";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -139,7 +143,10 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
         title={collapsed ? "Розгорнути меню" : undefined}
       >
         {!collapsed ? (
-          <h2 className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold leading-none">
+          <Link
+            href={PUBLIC_DASHBOARD_HOME}
+            className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold leading-none hover:opacity-90"
+          >
             <Image
               src="/logo-nazk-source.png"
               alt="Логотип порталу"
@@ -148,7 +155,7 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
               className="h-7 w-auto shrink-0"
             />
             <span className="whitespace-nowrap">{uk.appName}</span>
-          </h2>
+          </Link>
         ) : null}
         {!collapsed ? (
           <div
