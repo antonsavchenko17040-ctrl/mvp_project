@@ -6,10 +6,22 @@ import { UserRound, X } from "lucide-react";
 import { useState } from "react";
 
 import { LoginForm } from "@/components/auth/login-form";
+import { signOutFromPublic } from "@/components/public/sign-out-action";
+import { formatRolesList } from "@/lib/auth/roles";
 import { uk } from "@/lib/i18n/uk";
-import { PUBLIC_DASHBOARD_HOME } from "@/lib/reports-section";
+import { PORTAL_DASHBOARD_HOME, PUBLIC_DASHBOARD_HOME } from "@/lib/reports-section";
+import type { UserRole } from "@/lib/types";
 
-export function PublicHeader() {
+type PublicHeaderUser = {
+  fullName: string | null;
+  roles: UserRole[];
+};
+
+type PublicHeaderProps = {
+  user?: PublicHeaderUser | null;
+};
+
+export function PublicHeader({ user = null }: PublicHeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -29,18 +41,52 @@ export function PublicHeader() {
             />
             {uk.appName}
           </Link>
-          <button
-            type="button"
-            onClick={() => setIsOpen(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border border-black/20 bg-[#e8d54f] px-5 text-base font-medium hover:bg-[#dcc842]"
-          >
-            <UserRound className="size-[1.125rem]" />
-            Увійти
-          </button>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <Link
+                href={PORTAL_DASHBOARD_HOME}
+                className="inline-flex h-9 items-center rounded-full border border-black/20 bg-white px-4 text-sm font-medium hover:bg-muted"
+              >
+                Робочий простір
+              </Link>
+              <details className="group relative">
+                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md px-2 py-1 hover:bg-muted">
+                  <span className="inline-flex size-8 items-center justify-center rounded-full border border-black/40 bg-[#e8d773] text-sm font-semibold text-black">
+                    {(user.fullName?.[0] ?? "К").toUpperCase()}
+                  </span>
+                  <div className="min-w-0 max-w-[10rem]">
+                    <p className="truncate text-sm font-medium">{user.fullName ?? "Користувач"}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">
+                      {user.roles.length ? formatRolesList(user.roles) : "невідома роль"}
+                    </p>
+                  </div>
+                </summary>
+                <div className="absolute right-0 top-[calc(100%+6px)] z-20 min-w-44 rounded-md border bg-white p-1.5 shadow-md">
+                  <form action={signOutFromPublic}>
+                    <button
+                      type="submit"
+                      className="w-full rounded-sm px-3 py-2.5 text-left text-sm hover:bg-muted"
+                    >
+                      {uk.auth.signOut}
+                    </button>
+                  </form>
+                </div>
+              </details>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsOpen(true)}
+              className="inline-flex h-9 items-center gap-1.5 rounded-full border border-black/20 bg-[#e8d54f] px-5 text-base font-medium hover:bg-[#dcc842]"
+            >
+              <UserRound className="size-[1.125rem]" />
+              Увійти
+            </button>
+          )}
         </div>
       </header>
 
-      {isOpen ? (
+      {!user && isOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4">
           <div className="relative w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl">
             <button
@@ -69,4 +115,3 @@ export function PublicHeader() {
     </>
   );
 }
-
