@@ -16,6 +16,7 @@ export default async function EditorPage({
   const profile = await requireRole(["editor"]);
   const query = await searchParams;
   const errorRow = query.row ? ` (рядок ${query.row})` : "";
+  const currentYear = new Date().getFullYear();
 
   const folders = await db.auditFolder.findMany({
     where: { createdById: profile.id },
@@ -46,12 +47,25 @@ export default async function EditorPage({
             </div>
             <div>
               <Label htmlFor="year">Рік</Label>
-              <Input id="year" name="year" type="number" defaultValue={new Date().getFullYear()} required />
+              <Input
+                id="year"
+                name="year"
+                type="number"
+                defaultValue={currentYear}
+                min={2000}
+                max={currentYear}
+                required
+              />
             </div>
             <Button type="submit" className="md:col-span-3 w-fit bg-[#e8d773] text-black hover:bg-[#dcca64]">
               Створити папку
             </Button>
           </form>
+          {query.error === "invalid_year" ? (
+            <p className="mt-3 text-sm text-red-600">
+              Рік папки аудиту не може бути більшим за поточний ({currentYear}).
+            </p>
+          ) : null}
         </CardContent>
       </Card>
 
