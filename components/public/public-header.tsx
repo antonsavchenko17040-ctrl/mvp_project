@@ -29,7 +29,7 @@ export function PublicHeader({ user = null }: PublicHeaderProps) {
       <header className="border-b border-black/20 bg-white">
         <div className="flex h-14 w-full items-center justify-between px-5 xl:px-7">
           <Link
-            href={PUBLIC_DASHBOARD_HOME}
+            href={user ? PORTAL_DASHBOARD_HOME : PUBLIC_DASHBOARD_HOME}
             className="flex items-center gap-2.5 text-base font-semibold hover:opacity-90"
           >
             <Image
