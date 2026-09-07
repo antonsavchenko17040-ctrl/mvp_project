@@ -55,6 +55,7 @@ export function DeadlineNotificationsBell({ items }: DeadlineNotificationsBellPr
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen((value) => !value)}
+        style={{ cursor: "pointer" }}
         className={cn(
           "relative inline-flex size-9 cursor-pointer items-center justify-center rounded-full border border-black/25 bg-white text-foreground transition-colors hover:bg-muted",
           open && "bg-muted",
