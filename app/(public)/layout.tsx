@@ -1,10 +1,10 @@
-import { PublicHeader } from "@/components/public/public-header";
+import { PublicHeaderHost } from "@/components/public/public-header-host";
 import { PublicNav } from "@/components/public/public-nav";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="workspace-ui min-h-screen bg-[#f5f5f5]">
-      <PublicHeader />
+      <PublicHeaderHost />
       <div className="flex min-h-[calc(100vh-3.5rem)] w-full">
         <aside className="w-[240px] shrink-0 border-r border-black/20 bg-white">
           <PublicNav />
