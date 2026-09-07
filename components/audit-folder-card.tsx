@@ -111,12 +111,6 @@ const executionCounts =
                     Архівовано
                   </span>
                 ) : null}
-                <span>
-                  UUID:{" "}
-                  <span className="font-mono tracking-tight" title={folder.id}>
-                    {folder.id.slice(0, 8)}
-                  </span>
-                </span>
               </p>
             </div>
           </div>
