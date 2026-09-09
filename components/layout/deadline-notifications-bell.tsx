@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 
 import type { DeadlineReminderItem } from "@/lib/deadline-reminder-ui";
-import { deadlineReminderHighlightHref } from "@/lib/deadline-reminder-ui";
 import { cn } from "@/lib/utils";
 
 type DeadlineNotificationsBellProps = {
@@ -15,7 +14,6 @@ type DeadlineNotificationsBellProps = {
 export function DeadlineNotificationsBell({ items }: DeadlineNotificationsBellProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [armedId, setArmedId] = useState<string | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
   const count = items.length;
@@ -38,13 +36,7 @@ export function DeadlineNotificationsBell({ items }: DeadlineNotificationsBellPr
 
   const onReminderActivate = (item: DeadlineReminderItem) => {
     setOpen(false);
-    if (armedId === item.id) {
-      setArmedId(null);
-      router.push(item.href);
-      return;
-    }
-    setArmedId(item.id);
-    router.push(deadlineReminderHighlightHref(item.href, item.id));
+    router.push(item.href);
   };
 
   return (
@@ -78,48 +70,34 @@ export function DeadlineNotificationsBell({ items }: DeadlineNotificationsBellPr
         >
           <div className="border-b border-black/10 px-3 py-2.5">
             <p className="text-sm font-semibold text-foreground">Нагадування</p>
-            <p className="text-xs text-muted-foreground">
-              1-й клік — підсвітити в таблиці, 2-й — відкрити
-            </p>
           </div>
           {count === 0 ? (
             <p className="px-3 py-4 text-sm text-muted-foreground">Немає нагадувань про терміни.</p>
           ) : (
             <ul className="max-h-[min(22rem,60vh)] overflow-y-auto py-1">
-              {items.map((item) => {
-                const armed = armedId === item.id;
-                return (
-                  <li key={item.id} className="border-b border-black/5 last:border-b-0">
-                    <button
-                      type="button"
-                      onClick={() => onReminderActivate(item)}
+              {items.map((item) => (
+                <li key={item.id} className="border-b border-black/5 last:border-b-0">
+                  <button
+                    type="button"
+                    onClick={() => onReminderActivate(item)}
+                    className="block w-full px-3 py-2.5 text-left text-sm leading-snug text-foreground transition-colors hover:bg-[#f2ecbe]"
+                  >
+                    <span className="block">{item.message}</span>
+                    <span
                       className={cn(
-                        "block w-full px-3 py-2.5 text-left text-sm leading-snug text-foreground transition-colors hover:bg-[#f2ecbe]",
-                        armed && "bg-[#f2ecbe]",
+                        "mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                        item.daysLeft <= 3
+                          ? "bg-red-100 text-red-800"
+                          : item.daysLeft <= 7
+                            ? "bg-amber-100 text-amber-900"
+                            : "bg-sky-100 text-sky-900",
                       )}
                     >
-                      <span className="block">{item.message}</span>
-                      <span
-                        className={cn(
-                          "mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold",
-                          item.daysLeft <= 3
-                            ? "bg-red-100 text-red-800"
-                            : item.daysLeft <= 7
-                              ? "bg-amber-100 text-amber-900"
-                              : "bg-sky-100 text-sky-900",
-                        )}
-                      >
-                        Залишилось {item.daysLeft} дн.
-                      </span>
-                      {armed ? (
-                        <span className="mt-1 block text-[11px] font-medium text-muted-foreground">
-                          Натисніть ще раз, щоб відкрити
-                        </span>
-                      ) : null}
-                    </button>
-                  </li>
-                );
-              })}
+                      Залишилось {item.daysLeft} дн.
+                    </span>
+                  </button>
+                </li>
+              ))}
             </ul>
           )}
         </div>
