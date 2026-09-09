@@ -313,6 +313,24 @@ export default async function EditorFolderPage({
               </p>
             ) : null}
 
+            <div className="rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:p-3.5">
+              <Suspense
+                fallback={
+                  <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
+                    <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-64" />
+                  </div>
+                }
+              >
+                <EditorFolderSearch
+                  fields={[
+                    { value: "deficiency", label: "Виявлені недоліки" },
+                    { value: "recommendationText", label: "Зміст рекомендації" },
+                  ]}
+                />
+              </Suspense>
+            </div>
+
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
               <div className="flex min-w-0 flex-1 flex-wrap gap-2 sm:gap-2.5">
                 {folderRecommendationFilters.map((item) => {
@@ -355,24 +373,6 @@ export default async function EditorFolderPage({
                   </Link>
                 ) : null}
               </div>
-            </div>
-
-            <div className="rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:p-3.5">
-              <Suspense
-                fallback={
-                  <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
-                    <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
-                    <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-64" />
-                  </div>
-                }
-              >
-                <EditorFolderSearch
-                  fields={[
-                    { value: "deficiency", label: "Виявлені недоліки" },
-                    { value: "recommendationText", label: "Зміст рекомендації" },
-                  ]}
-                />
-              </Suspense>
             </div>
 
             <div className={dataTableWrapClassName()}>
