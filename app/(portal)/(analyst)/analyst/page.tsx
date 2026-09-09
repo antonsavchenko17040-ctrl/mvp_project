@@ -12,6 +12,11 @@ import { db } from "@/lib/db";
 import type { RecommendationStatus } from "@/lib/types";
 import { recommendationSequenceOrderBy } from "@/lib/recommendation-sequence";
 import {
+  matchesRoleWorkspaceSearch,
+  parseRoleWorkspaceSearchField,
+  ROLE_WORKSPACE_SEARCH_FIELDS,
+} from "@/lib/role-workspace-search";
+import {
   applySortParams,
   parseTableSort,
   significanceRank,
@@ -59,6 +64,7 @@ export default async function AnalystPage({
   searchParams: Promise<{
     status?: string;
     q?: string;
+    qf?: string;
     sort?: string;
     dir?: string;
     highlight?: string;
@@ -71,6 +77,7 @@ export default async function AnalystPage({
     ? (raw as AnalystListFilterKey)
     : "all";
   const searchQuery = (query.q ?? "").trim().toLowerCase();
+  const searchField = parseRoleWorkspaceSearchField(query.qf);
   const sort = parseTableSort(query, analystSortKeys, analystSortDefaults);
   const highlightId = (query.highlight ?? "").trim();
 
@@ -103,20 +110,7 @@ export default async function AnalystPage({
   });
 
   const searchedData = searchQuery
-    ? data.filter((item) => {
-        const haystack = [
-          item.sequenceNumber,
-          item.auditFolder.title,
-          item.deficiency,
-          item.recommendationText,
-          item.observationSignificance,
-          verificationWorkspaceStatusLabel(item.status),
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return haystack.includes(searchQuery);
-      })
+    ? data.filter((item) => matchesRoleWorkspaceSearch(item, searchQuery, searchField))
     : data;
 
   const filteredData = (() => {
@@ -146,6 +140,7 @@ export default async function AnalystPage({
   const preserveParams = {
     status: activeFilter === "all" ? undefined : activeFilter,
     q: searchQuery || undefined,
+    qf: searchField || undefined,
     highlight: highlightId || undefined,
   };
 
@@ -153,6 +148,7 @@ export default async function AnalystPage({
     const params = new URLSearchParams();
     if (key !== "all") params.set("status", key);
     if (searchQuery) params.set("q", searchQuery);
+    if (searchField) params.set("qf", searchField);
     applySortParams(params, sort);
     const qs = params.toString();
     return qs ? `/analyst?${qs}` : "/analyst";
@@ -166,6 +162,19 @@ export default async function AnalystPage({
 
       <Card className="relative w-full gap-0 overflow-hidden rounded-lg border border-black/20 bg-white py-0 pb-3 shadow-sm ring-0">
         <CardContent className="space-y-3 pt-3 sm:pt-4">
+          <div className="rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:p-3.5">
+            <Suspense
+              fallback={
+                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+                  <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
+                  <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-72" />
+                </div>
+              }
+            >
+              <EditorFolderSearch fields={[...ROLE_WORKSPACE_SEARCH_FIELDS]} />
+            </Suspense>
+          </div>
+
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-2 sm:gap-3">
               {analystListFilters.map((item) => {
@@ -186,13 +195,6 @@ export default async function AnalystPage({
                 );
               })}
             </div>
-            <Suspense
-              fallback={
-                <div className="h-9 min-w-[12rem] flex-1 rounded-3xl border bg-white sm:h-10 sm:max-w-xs" />
-              }
-            >
-              <EditorFolderSearch />
-            </Suspense>
           </div>
 
           <div className={dataTableWrapClassName()}>
