@@ -53,7 +53,7 @@ export function ReportFolderHeaderCard({
             <span className="text-sm text-white/75">Створено {folderCreatedLabel}</span>
             {archivedLabel ? (
               <span className="rounded-full border border-white/50 bg-white/15 px-2.5 py-0.5 text-xs font-semibold text-white">
-                Архівовано {archivedLabel}
+                Завершено {archivedLabel}
               </span>
             ) : null}
           </div>
@@ -95,7 +95,7 @@ export function ReportFolderHeaderCard({
           <span className="text-sm text-muted-foreground">Створено {folderCreatedLabel}</span>
           {archivedLabel ? (
             <span className="rounded-full border border-slate-400/70 bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
-              Архівовано {archivedLabel}
+              Завершено {archivedLabel}
             </span>
           ) : null}
         </div>
