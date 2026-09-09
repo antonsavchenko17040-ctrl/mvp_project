@@ -11,7 +11,6 @@ import {
   ClipboardList,
   History,
   LayoutDashboard,
-  Settings,
   Shield,
   UserCheck,
   UserCog,
@@ -41,10 +40,6 @@ const navItems = [
   { href: "/dashboard", label: "Дашборд", icon: LayoutDashboard },
   { href: "/reports", label: uk.nav.reports, icon: ClipboardList },
   { href: "/statistics", label: uk.nav.statistics, icon: BarChart3 },
-];
-
-const footerItems = [
-  { href: "/settings", label: uk.nav.settings, icon: Settings },
 ];
 
 const isActivePath = (pathname: string, href: string) => {
@@ -214,30 +209,6 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
           title={collapsed ? "Розгорнути меню" : "Згорнути меню"}
           aria-label={collapsed ? "Розгорнути бокове меню" : "Згорнути бокове меню"}
         />
-      </div>
-
-      <div className="mt-auto border-t border-black/20">
-        {footerItems.map((item) => {
-          const Icon = item.icon;
-          return collapsed ? (
-            <Link
-              key={item.href}
-              href={item.href}
-              title={item.label}
-              className="flex justify-center border-b border-black/20 px-2 py-2.5 text-muted-foreground hover:bg-[#f2ecbe] last:border-b-0"
-            >
-              <Icon className="size-[1.125rem]" />
-            </Link>
-          ) : (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="block px-6 py-2.5 text-sm text-muted-foreground hover:bg-[#f2ecbe]"
-            >
-              {item.label}
-            </Link>
-          );
-        })}
       </div>
     </aside>
   );
