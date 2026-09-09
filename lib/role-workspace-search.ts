@@ -1,7 +1,7 @@
 export const ROLE_WORKSPACE_SEARCH_FIELDS = [
   { value: "reportTitle", label: "Назва звіту" },
-  { value: "deficiency", label: "Виявлені недоліки" },
-  { value: "recommendationText", label: "Зміст рекомендації" },
+  { value: "deficiency", label: "Недоліки, проблеми та порушення (точки зростання)" },
+  { value: "recommendationText", label: "Надані аудиторські рекомендації" },
 ] as const;
 
 export type RoleWorkspaceSearchField = (typeof ROLE_WORKSPACE_SEARCH_FIELDS)[number]["value"];

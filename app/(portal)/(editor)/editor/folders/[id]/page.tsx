@@ -318,14 +318,20 @@ export default async function EditorFolderPage({
                 fallback={
                   <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
                     <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
-                    <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-72" />
+                    <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-[28rem]" />
                   </div>
                 }
               >
                 <EditorFolderSearch
                   fields={[
-                    { value: "deficiency", label: "Виявлені недоліки" },
-                    { value: "recommendationText", label: "Зміст рекомендації" },
+                    {
+                      value: "deficiency",
+                      label: "Недоліки, проблеми та порушення (точки зростання)",
+                    },
+                    {
+                      value: "recommendationText",
+                      label: "Надані аудиторські рекомендації",
+                    },
                   ]}
                 />
               </Suspense>
@@ -389,8 +395,10 @@ export default async function EditorFolderPage({
                       className="w-12"
                       align="center"
                     />
-                    <th className={cn(dataTable.th, "min-w-[11rem]")}>Виявлені недоліки</th>
-                    <th className={cn(dataTable.th, "min-w-[11rem]")}>Зміст рекомендації</th>
+                    <th className={cn(dataTable.th, "min-w-[11rem]")}>
+                      Недоліки, проблеми та порушення (точки зростання)
+                    </th>
+                    <th className={cn(dataTable.th, "min-w-[11rem]")}>Надані аудиторські рекомендації</th>
                     <TableSortableTh
                       label="Значущість"
                       column="significance"

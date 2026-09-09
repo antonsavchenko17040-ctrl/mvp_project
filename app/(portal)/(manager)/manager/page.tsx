@@ -252,7 +252,7 @@ export default async function ManagerPage({
               fallback={
                 <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
                   <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
-                  <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-72" />
+                  <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-[28rem]" />
                 </div>
               }
             >
