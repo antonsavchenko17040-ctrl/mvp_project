@@ -159,7 +159,7 @@ export default async function AdminEditRecommendationPage({
               Папка звіту: «{recommendation.auditFolder.title}» ({recommendation.auditFolder.year})
               {recommendation.auditFolder.archivedAt ? (
                 <span className="ml-2 inline-flex rounded-full border border-slate-400/70 bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                  Архівовано
+                  Завершено
                 </span>
               ) : null}
             </span>

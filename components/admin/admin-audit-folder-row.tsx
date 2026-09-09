@@ -63,7 +63,7 @@ export function AdminAuditFolderRow({
       <td className={cn(dataTable.cell, "relative font-medium", isArchived && "pt-7")}>
         {isArchived ? (
           <span className="absolute top-1.5 left-1.5 z-10 rounded-full border border-slate-600 bg-slate-700 px-2 py-0.5 text-[11px] font-semibold leading-none text-white">
-            Архівовано
+            Завершено
           </span>
         ) : null}
         <span>{title}</span>

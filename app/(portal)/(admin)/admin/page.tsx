@@ -195,7 +195,7 @@ export default async function AdminPage({
               </span>
               {selectedFolder.archivedAt ? (
                 <span className="rounded-full border border-slate-400/70 bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
-                  Архівовано
+                  Завершено
                 </span>
               ) : null}
             </CardTitle>

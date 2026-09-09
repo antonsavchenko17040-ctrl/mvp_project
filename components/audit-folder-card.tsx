@@ -108,7 +108,7 @@ const executionCounts =
                 </span>
                 {isArchived ? (
                   <span className="shrink-0 rounded-full border border-slate-600 bg-slate-700 px-2 py-0.5 text-xs font-semibold text-white">
-                    Архівовано
+                    Завершено
                   </span>
                 ) : null}
               </p>
