@@ -3,7 +3,6 @@ export const uk = {
   nav: {
     dashboard: "Дашборд",
     reports: "Бібліотека звітів",
-    statistics: "Статистика",
     editorDesk: "Робочий стіл редактора",
     sspDesk: "Робочий стіл ССП",
     managerDesk: "Робочий стіл керівника",

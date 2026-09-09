@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 const nav = [
   { href: "/public/dashboard", label: "Дашборд" },
   { href: "/public/reports", label: "Бібліотека звітів" },
-  { href: "/public/statistics", label: "Статистика" },
 ];
 
 function isPublicNavActive(pathname: string, href: string) {
