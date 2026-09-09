@@ -7,7 +7,7 @@ import {
 } from "@/components/editor/editor-recommendation-table-cell";
 import { EditorRecommendationTableRow } from "@/components/editor/editor-recommendation-table-row";
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
-import { RoleWorkspaceListFilters } from "@/components/role-workspace-list-filters";
+import { RoleWorkspaceColumnFilterTh } from "@/components/role-workspace-column-filter-th";
 import { TableSortableTh } from "@/components/table-sortable-th";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/session";
@@ -177,17 +177,6 @@ export default async function SspPage({
             </Suspense>
           </div>
 
-          <Suspense
-            fallback={
-              <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
-                <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-52" />
-                <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-52" />
-              </div>
-            }
-          >
-            <RoleWorkspaceListFilters />
-          </Suspense>
-
           <div className={dataTableWrapClassName()}>
             <table className={dataTableClassName("min-w-[1240px]")}>
               <thead className={dataTable.thead}>
@@ -215,15 +204,30 @@ export default async function SspPage({
                     Недоліки, проблеми та порушення (точки зростання)
                   </th>
                   <th className={cn(dataTable.th, "min-w-[11rem]")}>Надані аудиторські рекомендації</th>
-                  <TableSortableTh
-                    label="Термін виконання"
-                    column="deadline"
-                    sort={sort}
-                    defaults={sspSortDefaults}
-                    pathname="/ssp"
-                    preserveParams={preserveParams}
-                    className="w-32"
-                  />
+                  <Suspense
+                    fallback={
+                      <TableSortableTh
+                        label="Термін виконання"
+                        column="deadline"
+                        sort={sort}
+                        defaults={sspSortDefaults}
+                        pathname="/ssp"
+                        preserveParams={preserveParams}
+                        className="w-40 min-w-[10rem]"
+                      />
+                    }
+                  >
+                    <RoleWorkspaceColumnFilterTh
+                      label="Термін виконання"
+                      column="deadline"
+                      filterParam="deadline"
+                      sort={sort}
+                      defaults={sspSortDefaults}
+                      pathname="/ssp"
+                      preserveParams={preserveParams}
+                      className="w-40 min-w-[10rem]"
+                    />
+                  </Suspense>
                   <TableSortableTh
                     label={"Значущість\nспостереження"}
                     column="significance"
@@ -233,16 +237,32 @@ export default async function SspPage({
                     preserveParams={preserveParams}
                     className="w-[8.5rem] min-w-[8.5rem]"
                   />
-                  <TableSortableTh
-                    label="Статус"
-                    column="status"
-                    sort={sort}
-                    defaults={sspSortDefaults}
-                    pathname="/ssp"
-                    preserveParams={preserveParams}
-                    className="w-36"
-                    align="center"
-                  />
+                  <Suspense
+                    fallback={
+                      <TableSortableTh
+                        label="Статус"
+                        column="status"
+                        sort={sort}
+                        defaults={sspSortDefaults}
+                        pathname="/ssp"
+                        preserveParams={preserveParams}
+                        className="w-40 min-w-[10rem]"
+                        align="center"
+                      />
+                    }
+                  >
+                    <RoleWorkspaceColumnFilterTh
+                      label="Статус"
+                      column="status"
+                      filterParam="status"
+                      sort={sort}
+                      defaults={sspSortDefaults}
+                      pathname="/ssp"
+                      preserveParams={preserveParams}
+                      className="w-40 min-w-[10rem]"
+                      align="center"
+                    />
+                  </Suspense>
                 </tr>
               </thead>
               <tbody>
