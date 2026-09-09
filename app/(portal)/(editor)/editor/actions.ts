@@ -484,6 +484,8 @@ export async function supplementRecommendationField(formData: FormData) {
   revalidatePath(`/editor/folders/${recommendation.auditFolderId}/recommendations/${recommendation.id}`);
   revalidatePath(`/dashboard/folders/${recommendation.auditFolderId}`);
   revalidatePath(`/public/folders/${recommendation.auditFolderId}`);
+  revalidatePath(`/reports/folders/${recommendation.auditFolderId}`);
+  revalidatePath(`/public/reports/folders/${recommendation.auditFolderId}`);
   redirect(`/editor/folders/${recommendation.auditFolderId}/recommendations/${recommendation.id}?ok=supplemented`);
 }
 
@@ -587,6 +589,8 @@ export async function archiveAuditFolder(formData: FormData) {
   revalidatePath(`/editor/folders/${folder.id}`);
   revalidatePath(`/dashboard/folders/${folder.id}`);
   revalidatePath(`/public/folders/${folder.id}`);
+  revalidatePath(`/reports/folders/${folder.id}`);
+  revalidatePath(`/public/reports/folders/${folder.id}`);
   revalidatePath("/ssp");
   redirect(`/editor/folders/${folder.id}?ok=archived`);
 }
@@ -703,6 +707,8 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
   revalidatePath("/reports");
   revalidatePath(`/public/folders/${folder.id}`);
   revalidatePath(`/dashboard/folders/${folder.id}`);
+  revalidatePath(`/reports/folders/${folder.id}`);
+  revalidatePath(`/public/reports/folders/${folder.id}`);
 
   redirect(`/editor/folders/${folder.id}?ok=imported`);
 }

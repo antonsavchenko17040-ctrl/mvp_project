@@ -847,6 +847,8 @@ async function revalidateAdminRecommendation(recommendationId: string, auditFold
   revalidatePath("/analyst");
   revalidatePath(`/dashboard/folders/${auditFolderId}`);
   revalidatePath(`/public/folders/${auditFolderId}`);
+  revalidatePath(`/reports/folders/${auditFolderId}`);
+  revalidatePath(`/public/reports/folders/${auditFolderId}`);
 }
 
 async function loadFieldSupplements(
