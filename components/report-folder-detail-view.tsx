@@ -124,7 +124,13 @@ export async function ReportFolderDetailView({
 
     if (!searchQuery) return true;
     if (isLibrary) {
-      return item.recommendationText.toLowerCase().includes(searchQuery);
+      const inRecommendation = item.recommendationText.toLowerCase().includes(searchQuery);
+      // Шукаємо також у «Заходи», але лише якщо колонка публічно видима.
+      const measuresText = isExecutionPubliclyVisible(item.status)
+        ? (item.measuresDescription ?? "")
+        : "";
+      const inMeasures = measuresText.toLowerCase().includes(searchQuery);
+      return inRecommendation || inMeasures;
     }
 
     const executionVisible = isExecutionPubliclyVisible(item.status);
