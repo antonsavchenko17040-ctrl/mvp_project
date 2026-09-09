@@ -57,3 +57,15 @@ export function formatSspStoredDate(value: Date | null | undefined): string {
   const day = String(value.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
+
+/**
+ * Доповнення для відповідального доступні лише після верифікації аналітиком
+ * (`published`) і до архівації / завершення папки звіту.
+ */
+export function canSspSupplementRecommendation(input: {
+  status: string;
+  archivedAt: Date | string | null | undefined;
+}): boolean {
+  if (input.status !== "published") return false;
+  return input.archivedAt == null || input.archivedAt === "";
+}

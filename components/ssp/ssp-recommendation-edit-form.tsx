@@ -6,7 +6,6 @@ import { useState } from "react";
 
 import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-field-display";
 import type { FieldSupplementItem } from "@/components/editor/recommendation-field-supplement-history";
-import { SspFieldSupplementControls } from "@/components/ssp/ssp-field-supplement-controls";
 import { SspSupplementableField } from "@/components/ssp/ssp-supplementable-field";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,6 +67,7 @@ export function SspRecommendationEditForm({
     supplements,
     defaultChangeDate,
     mode: "edit" as const,
+    allowSupplements: false,
   };
 
   return (
@@ -216,13 +216,6 @@ export function SspRecommendationEditForm({
             />
           </div>
         ) : null}
-        <SspFieldSupplementControls
-          recommendationId={recommendationId}
-          redirectPath={redirectPath}
-          fieldKey="supportingDocuments"
-          currentValueHint={supportingDocuments ?? ""}
-          defaultChangeDate={defaultChangeDate}
-        />
       </div>
 
       <SspSupplementableField
