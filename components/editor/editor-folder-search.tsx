@@ -97,7 +97,7 @@ export function EditorFolderSearch({ className, fields }: EditorFolderSearchProp
           aria-label="За чим шукати"
           className={cn(
             "h-9 w-full shrink-0 rounded-3xl border border-input bg-white px-3 text-sm outline-none transition-colors",
-            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:h-10 sm:w-64",
+            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:h-10 sm:w-72",
             isPending && "opacity-80",
           )}
         >
