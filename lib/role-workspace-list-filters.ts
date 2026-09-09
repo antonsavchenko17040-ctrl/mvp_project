@@ -2,7 +2,7 @@ import type { RecommendationStatus } from "@/lib/types";
 
 /** Спільний фільтр статусу для ССП / керівника / аналітика. */
 export const ROLE_WORKSPACE_STATUS_FILTERS = [
-  { key: "all", label: "Усі" },
+  { key: "all", label: "Статус" },
   { key: "in_progress", label: "Виконати" },
   { key: "on_review", label: "На верифікації" },
   { key: "revision", label: "Доопрацювати" },
@@ -14,7 +14,7 @@ export type RoleWorkspaceStatusFilterKey = (typeof ROLE_WORKSPACE_STATUS_FILTERS
 
 /** Спільний фільтр терміну (ті самі `deadline` ключі: blue/yellow/red). */
 export const ROLE_WORKSPACE_DEADLINE_FILTERS = [
-  { key: "all", label: "Усі терміни" },
+  { key: "all", label: "Термін виконання" },
   { key: "blue", label: "8–30 днів" },
   { key: "yellow", label: "4–7 днів" },
   { key: "red", label: "1–3 дні" },
