@@ -38,14 +38,6 @@ export function PublicNav() {
           </Link>
         );
       })}
-      <div className="mt-auto">
-        <Link
-          href="/public/statistics"
-          className="block border-t border-black/20 px-6 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-[#f2ecbe]"
-        >
-          Налаштування
-        </Link>
-      </div>
     </nav>
   );
 }
