@@ -7,6 +7,7 @@ import { DashboardExecutionFilterChips } from "@/components/portal/dashboard-exe
 import { DashboardFolderRecommendationsTable } from "@/components/portal/dashboard-folder-recommendations-table";
 import { ReportFolderBackLink } from "@/components/report-folder-back-link";
 import { ReportFolderHeaderCard } from "@/components/report-folder-header-card";
+import { ReportsFolderFilters } from "@/components/reports-folder-filters";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   EXECUTION_STATUS_LABELS,
@@ -26,6 +27,11 @@ import {
   recommendationMatchesExecutionListFilter,
 } from "@/lib/dashboard/execution-list-filters";
 import {
+  parseReportsFolderStatusFilter,
+  recommendationMatchesReportsFolderStatus,
+  uniqueSspUnits,
+} from "@/lib/reports-folder-filters";
+import {
   isExecutionPubliclyVisible,
   publicExecutionStatusFields,
 } from "@/lib/public-recommendation-visibility";
@@ -40,7 +46,16 @@ type ReportFolderDetailViewProps = {
   folderHref: string;
   backHref: string;
   backLabel?: string;
-  searchParams?: Promise<{ execution?: string; q?: string; sort?: string; dir?: string }>;
+  /** У бібліотеці звітів — панель пошуку + ССП + Стан замість чіпів дашборду. */
+  filtersMode?: "dashboard" | "library";
+  searchParams?: Promise<{
+    execution?: string;
+    q?: string;
+    ssp?: string;
+    status?: string;
+    sort?: string;
+    dir?: string;
+  }>;
 };
 
 /** Деталі папки звіту — усі рекомендації; динаміка виконання лише після верифікації. */
@@ -49,10 +64,14 @@ export async function ReportFolderDetailView({
   folderHref,
   backHref,
   backLabel = "Повернутися до дашборду",
+  filtersMode = "dashboard",
   searchParams,
 }: ReportFolderDetailViewProps) {
   const query = searchParams ? await searchParams : {};
+  const isLibrary = filtersMode === "library";
   const executionFilter = parseDashboardExecutionListFilter(query.execution);
+  const statusFilter = isLibrary ? parseReportsFolderStatusFilter(query.status) : null;
+  const sspFilter = isLibrary ? (query.ssp ?? "").trim() : "";
   const searchQuery = (query.q ?? "").trim().toLowerCase();
   const sort = parseTableSort(query, dashboardFolderSortKeys, dashboardFolderSortDefaults);
   const folder = await db.auditFolder.findFirst({
@@ -89,34 +108,47 @@ export async function ReportFolderDetailView({
 
   const recs = folder.recommendations;
   const verifiedRecs = recs.filter((item) => isExecutionPubliclyVisible(item.status));
-  const filteredByExecution = recs.filter((item) =>
-    recommendationMatchesExecutionListFilter(item, executionFilter),
-  );
-  const searchedRecs = searchQuery
-    ? filteredByExecution.filter((item) => {
-        const executionVisible = isExecutionPubliclyVisible(item.status);
-        const executionFields = publicExecutionStatusFields(item);
-        const executionLabel = executionVisible
-          ? resolveExecutionStatusLabel(
-              executionStatusSourceText(executionFields.progressReport, executionFields.executionIndicator),
-            )
-          : "";
-        const haystack = [
-          item.sequenceNumber,
-          item.recommendationText,
-          item.sspUnit,
-          executionVisible ? item.measuresDescription : "",
-          executionLabel,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return haystack.includes(searchQuery);
-      })
-    : filteredByExecution;
+  const sspUnits = uniqueSspUnits(recs.map((item) => item.sspUnit));
+  const selectedSsp = sspUnits.includes(sspFilter) ? sspFilter : "";
+
+  const filteredByFilters = recs.filter((item) => {
+    if (isLibrary) {
+      if (selectedSsp) {
+        const unit = item.sspUnit.replace(/\s+/g, " ").trim();
+        if (unit !== selectedSsp) return false;
+      }
+      if (!recommendationMatchesReportsFolderStatus(item, statusFilter)) return false;
+    } else if (!recommendationMatchesExecutionListFilter(item, executionFilter)) {
+      return false;
+    }
+
+    if (!searchQuery) return true;
+    if (isLibrary) {
+      return item.recommendationText.toLowerCase().includes(searchQuery);
+    }
+
+    const executionVisible = isExecutionPubliclyVisible(item.status);
+    const executionFields = publicExecutionStatusFields(item);
+    const executionLabel = executionVisible
+      ? resolveExecutionStatusLabel(
+          executionStatusSourceText(executionFields.progressReport, executionFields.executionIndicator),
+        )
+      : "";
+    const haystack = [
+      item.sequenceNumber,
+      item.recommendationText,
+      item.sspUnit,
+      executionVisible ? item.measuresDescription : "",
+      executionLabel,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(searchQuery);
+  });
 
   const filteredRecs = (() => {
-    const withPublicFields = searchedRecs.map((item) => {
+    const withPublicFields = filteredByFilters.map((item) => {
       const executionVisible = isExecutionPubliclyVisible(item.status);
       const executionFields = publicExecutionStatusFields(item);
       return {
@@ -165,6 +197,8 @@ export async function ReportFolderDetailView({
     { key: "deadline", value: deadlineNotReachedByIndicator, label: "термін не настав" },
   ] as const;
 
+  const hasActiveLibraryFilters = Boolean(searchQuery || selectedSsp || statusFilter != null);
+
   return (
     <section className="space-y-5">
       <ReportFolderBackLink href={backHref} label={backLabel} />
@@ -193,33 +227,53 @@ export async function ReportFolderDetailView({
               <p className="text-base text-muted-foreground">У цій папці немає рекомендацій.</p>
             ) : (
               <div className="space-y-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-                  <DashboardExecutionFilterChips
-                    folderHref={folderHref}
-                    activeFilter={executionFilter}
-                    searchQuery={searchQuery}
-                    sort={sort}
-                  />
+                {isLibrary ? (
                   <Suspense
                     fallback={
-                      <div className="h-9 min-w-[12rem] flex-1 rounded-3xl border bg-white sm:h-10 sm:max-w-xs" />
+                      <div className="flex w-full flex-col gap-2 rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 lg:flex-row lg:items-center lg:p-3.5">
+                        <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
+                        <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:min-w-[12rem] lg:w-52" />
+                        <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:min-w-[14rem] lg:w-56" />
+                      </div>
                     }
                   >
-                    <EditorFolderSearch />
+                    <ReportsFolderFilters sspUnits={sspUnits} />
                   </Suspense>
-                </div>
+                ) : (
+                  <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+                    <DashboardExecutionFilterChips
+                      folderHref={folderHref}
+                      activeFilter={executionFilter}
+                      searchQuery={searchQuery}
+                      sort={sort}
+                    />
+                    <Suspense
+                      fallback={
+                        <div className="h-9 min-w-[12rem] flex-1 rounded-3xl border bg-white sm:h-10 sm:max-w-xs" />
+                      }
+                    >
+                      <EditorFolderSearch />
+                    </Suspense>
+                  </div>
+                )}
                 {filteredRecs.length === 0 ? (
                   <p className="text-base text-muted-foreground">
-                    {searchQuery
-                      ? "За вашим запитом рекомендацій не знайдено."
-                      : "Немає рекомендацій із обраним станом виконання."}
+                    {isLibrary
+                      ? hasActiveLibraryFilters
+                        ? "За обраними фільтрами рекомендацій не знайдено."
+                        : "У цій папці немає рекомендацій."
+                      : searchQuery
+                        ? "За вашим запитом рекомендацій не знайдено."
+                        : "Немає рекомендацій із обраним станом виконання."}
                   </p>
                 ) : (
                   <DashboardFolderRecommendationsTable
                     recommendationHrefPrefix={`${folderHref}/recommendations`}
                     folderHref={folderHref}
-                    executionQuery={executionFilter}
+                    executionQuery={isLibrary ? "all" : executionFilter}
                     searchQuery={searchQuery}
+                    sspQuery={isLibrary ? selectedSsp : ""}
+                    statusQuery={isLibrary ? statusFilter ?? "" : ""}
                     sort={sort}
                     recommendations={filteredRecs.map((item) => ({
                       id: item.id,
