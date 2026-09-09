@@ -1,4 +1,7 @@
+import { Suspense } from "react";
+
 import { EditorAuditFolderCard } from "@/components/editor/editor-audit-folder-card";
+import { ReportsLibraryFilters } from "@/components/reports-library-filters";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,12 +14,15 @@ import { createAuditFolder, importAuditFolderFromXlsx } from "./actions";
 export default async function EditorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; row?: string }>;
+  searchParams: Promise<{ error?: string; row?: string; q?: string; year?: string }>;
 }) {
   const profile = await requireRole(["editor"]);
   const query = await searchParams;
   const errorRow = query.row ? ` (рядок ${query.row})` : "";
   const currentYear = new Date().getFullYear();
+  const titleQuery = (query.q ?? "").trim();
+  const yearRaw = Number(query.year);
+  const yearFilter = Number.isFinite(yearRaw) ? yearRaw : null;
 
   const folders = await db.auditFolder.findMany({
     where: { createdById: profile.id },
@@ -27,6 +33,14 @@ export default async function EditorPage({
       },
     },
     orderBy: { createdAt: "desc" },
+  });
+
+  const availableYears = Array.from(new Set(folders.map((folder) => folder.year))).sort((a, b) => b - a);
+  const normalizedTitleQuery = titleQuery.toLowerCase();
+  const filteredFolders = folders.filter((folder) => {
+    if (yearFilter != null && folder.year !== yearFilter) return false;
+    if (!normalizedTitleQuery) return true;
+    return folder.title.toLowerCase().includes(normalizedTitleQuery);
   });
 
   return (
@@ -115,10 +129,30 @@ export default async function EditorPage({
         <CardHeader>
           <CardTitle>Мої папки аудиту</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {folders?.map((folder) => (
-            <EditorAuditFolderCard key={folder.id} folder={folder} />
-          ))}
+        <CardContent className="space-y-3">
+          <Suspense
+            fallback={
+              <div className="flex w-full flex-col gap-2 rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:flex-row sm:items-center sm:p-3.5">
+                <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
+                <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-40" />
+              </div>
+            }
+          >
+            <ReportsLibraryFilters years={availableYears} />
+          </Suspense>
+          {filteredFolders.length === 0 ? (
+            <p className="text-base text-muted-foreground">
+              {normalizedTitleQuery || yearFilter != null
+                ? "За обраними фільтрами папок не знайдено."
+                : "Папок аудиту ще немає."}
+            </p>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {filteredFolders.map((folder) => (
+                <EditorAuditFolderCard key={folder.id} folder={folder} />
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </section>
