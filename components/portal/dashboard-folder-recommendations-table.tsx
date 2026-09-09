@@ -33,6 +33,8 @@ type DashboardFolderRecommendationsTableProps = {
   folderHref: string;
   executionQuery?: string;
   searchQuery?: string;
+  sspQuery?: string;
+  statusQuery?: string;
   sort: TableSortState<DashboardFolderSortKey>;
   recommendations: DashboardFolderRecommendationRow[];
 };
@@ -42,18 +44,24 @@ export function DashboardFolderRecommendationsTable({
   folderHref,
   executionQuery,
   searchQuery = "",
+  sspQuery = "",
+  statusQuery = "",
   sort,
   recommendations,
 }: DashboardFolderRecommendationsTableProps) {
   const preserveParams = {
     execution: executionQuery && executionQuery !== "all" ? executionQuery : undefined,
     q: searchQuery || undefined,
+    ssp: sspQuery || undefined,
+    status: statusQuery || undefined,
   };
 
   const detailQuery = () => {
     const params = new URLSearchParams();
     if (preserveParams.execution) params.set("execution", preserveParams.execution);
     if (preserveParams.q) params.set("q", preserveParams.q);
+    if (preserveParams.ssp) params.set("ssp", preserveParams.ssp);
+    if (preserveParams.status) params.set("status", preserveParams.status);
     applySortParams(params, sort);
     const qs = params.toString();
     return qs ? `?${qs}` : "";

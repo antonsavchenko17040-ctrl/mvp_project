@@ -9,7 +9,13 @@ export default async function ReportsLibraryFolderPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ execution?: string; q?: string; sort?: string; dir?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    ssp?: string;
+    status?: string;
+    sort?: string;
+    dir?: string;
+  }>;
 }) {
   const { id } = await params;
   return (
@@ -18,6 +24,7 @@ export default async function ReportsLibraryFolderPage({
       folderHref={`${PORTAL_REPORTS_LIBRARY_FOLDERS_PREFIX}/${id}`}
       backHref={PORTAL_REPORTS_LIBRARY_HOME}
       backLabel="Повернутися до бібліотеки звітів"
+      filtersMode="library"
       searchParams={searchParams}
     />
   );
