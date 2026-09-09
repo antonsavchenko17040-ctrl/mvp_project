@@ -17,6 +17,7 @@ import {
 } from "@/lib/ssp/recommendation-form-validation";
 import {
   SSP_SUPPLEMENT_FIELD_LABELS,
+  canSspSupplementRecommendation,
   formatSspStoredDate,
   isSspAppendFieldKey,
   isSspReplaceFieldKey,
@@ -214,8 +215,9 @@ export async function submitForReview(formData: FormData) {
 }
 
 /**
- * Доповнення ССП-поля на будь-якому етапі, де рекомендація видима відповідальному.
- * Доступні лише поля, що належать робочій зоні ССП.
+ * Доповнення ССП-поля після верифікації аналітиком (`published`),
+ * доки папка звіту не архівована / не завершена.
+ * Доступні лише поля робочої зони ССП.
  */
 export async function supplementSspRecommendationField(formData: FormData) {
   const profile = await requireRole(["ssp"]);
@@ -236,8 +238,14 @@ export async function supplementSspRecommendationField(formData: FormData) {
     redirect(`${redirectPath}?error=recommendation_not_found`);
   }
 
-  if (isFolderArchived(recommendation.auditFolder.archivedAt)) {
-    redirect(`${redirectPath}?error=folder_archived`);
+  if (!canSspSupplementRecommendation({
+    status: recommendation.status,
+    archivedAt: recommendation.auditFolder.archivedAt,
+  })) {
+    if (isFolderArchived(recommendation.auditFolder.archivedAt)) {
+      redirect(`${redirectPath}?error=folder_archived`);
+    }
+    redirect(`${redirectPath}?error=cannot_supplement_until_verified`);
   }
 
   if (!isSspSupplementFieldKey(fieldKeyRaw)) {

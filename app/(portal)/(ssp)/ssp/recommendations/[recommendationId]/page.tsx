@@ -14,7 +14,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { sspRecommendationByIdWhere } from "@/lib/ssp/recommendation-access";
-import { formatSspStoredDate } from "@/lib/ssp/recommendation-supplements";
+import {
+  canSspSupplementRecommendation,
+  formatSspStoredDate,
+} from "@/lib/ssp/recommendation-supplements";
 import { sspWorkspaceStatusLabel } from "@/lib/ssp/ssp-status-label";
 
 import { saveSspDraft, submitForReview } from "../../actions";
@@ -75,6 +78,8 @@ const errorMessages: Record<string, string> = {
   invalid_progress_report: "Оберіть дійсний стан впровадження.",
   invalid_implementation_date: "Некоректна фактична дата впровадження.",
   folder_archived: "Папку архівовано. Зміни недоступні.",
+  cannot_supplement_until_verified:
+    "Доповнення доступні лише після верифікації рекомендації аналітиком.",
 };
 
 export default async function SspRecommendationDetailPage({
@@ -118,6 +123,10 @@ export default async function SspRecommendationDetailPage({
   const analystText = recommendation.analystComment?.trim() ?? "";
   const managerText = recommendation.managerComment?.trim() ?? "";
   const folderArchived = Boolean(recommendation.auditFolder.archivedAt);
+  const allowSspSupplements = canSspSupplementRecommendation({
+    status: recommendation.status,
+    archivedAt: recommendation.auditFolder.archivedAt,
+  });
   const sspCanFillForm =
     !folderArchived &&
     (recommendation.status === "in_progress" ||
@@ -277,16 +286,16 @@ export default async function SspRecommendationDetailPage({
               ) : recommendation.status === "manager_review" || recommendation.status === "on_review" ? (
                 <p className="rounded-md border border-orange-200/90 bg-orange-50/95 p-3 text-base leading-relaxed text-orange-950/85">
                   {recommendation.status === "manager_review"
-                    ? "Рекомендацію передано на верифікацію керівнику. Основне редагування недоступне — можна лише доповнювати поля відповідального."
-                    : "Рекомендацію передано на верифікацію аналітику. Основне редагування недоступне — можна лише доповнювати поля відповідального."}
+                    ? "Рекомендацію передано на верифікацію керівнику. Основне редагування та доповнення недоступні — доступний лише перегляд."
+                    : "Рекомендацію передано на верифікацію аналітику. Основне редагування та доповнення недоступні — доступний лише перегляд."}
                 </p>
-              ) : recommendation.status === "published" ? (
+              ) : allowSspSupplements ? (
                 <p className="rounded-md border border-emerald-200/90 bg-emerald-50/95 p-3 text-base leading-relaxed text-emerald-950/85">
                   Рекомендацію виконано. За потреби можна доповнити поля відповідального.
                 </p>
               ) : (
                 <p className="rounded-md border border-border bg-muted/25 p-3 text-base text-muted-foreground">
-                  У цьому статусі доступні лише доповнення до полів відповідального.
+                  У цьому статусі доступний лише перегляд полів відповідального.
                 </p>
               )}
               <SspRecommendationReadonlyFields
@@ -300,7 +309,7 @@ export default async function SspRecommendationDetailPage({
                 measuresDescription={recommendation.measuresDescription}
                 sspNotes={recommendation.sspNotes}
                 actualImplementationDate={recommendation.actualImplementationDate}
-                allowSupplements={!folderArchived}
+                allowSupplements={allowSspSupplements}
               />
               <Link
   href="/ssp"
