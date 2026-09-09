@@ -15,6 +15,7 @@ import { db } from "@/lib/db";
 import {
   daysUntilDeadline,
   deadlineUrgencyBand,
+  deadlineUrgencyCellClass,
   type DeadlineUrgencyBand,
 } from "@/lib/deadline-reminder-ui";
 import {
@@ -286,7 +287,9 @@ export default async function AnalystPage({
                       <EditorRecommendationTableCell className="min-w-[11rem]">
                         {item.recommendationText}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className="w-40 min-w-[10rem]">
+                      <EditorRecommendationTableCell
+                        className={cn("w-40 min-w-[10rem]", deadlineUrgencyCellClass(item.urgency))}
+                      >
                         {formatRecommendationDate(item.deadline)}
                       </EditorRecommendationTableCell>
                       <EditorRecommendationTableCell className="w-28">

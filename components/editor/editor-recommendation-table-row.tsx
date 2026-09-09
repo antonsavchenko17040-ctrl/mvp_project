@@ -33,6 +33,7 @@ export function EditorRecommendationTableRow({
       ref={rowRef}
       data-highlighted={highlighted ? "true" : undefined}
       className={cn(
+        "group",
         dataTable.bodyRow,
         dataTable.rowHover,
         "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",

@@ -15,7 +15,7 @@ import { db } from "@/lib/db";
 import {
   daysUntilDeadline,
   deadlineUrgencyBand,
-  deadlineUrgencyRowClass,
+  deadlineUrgencyCellClass,
   type DeadlineUrgencyBand,
 } from "@/lib/deadline-reminder-ui";
 import {
@@ -280,7 +280,6 @@ export default async function SspPage({
                       key={item.id}
                       href={`/ssp/recommendations/${item.id}`}
                       highlighted={highlightId === item.id}
-                      className={deadlineUrgencyRowClass(item.urgency)}
                     >
                       <EditorRecommendationTableCell className="w-12 text-center" align="center">
                         {item.sequenceNumber}
@@ -294,7 +293,9 @@ export default async function SspPage({
                       <EditorRecommendationTableCell className="min-w-[11rem]">
                         {item.recommendationText}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className="w-32">
+                      <EditorRecommendationTableCell
+                        className={cn("w-32", deadlineUrgencyCellClass(item.urgency))}
+                      >
                         {formatRecommendationDate(item.deadline)}
                       </EditorRecommendationTableCell>
                       <EditorRecommendationTableCell className="w-[8.5rem] min-w-[8.5rem]">

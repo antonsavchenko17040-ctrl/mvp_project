@@ -35,11 +35,26 @@ export function deadlineUrgencyBand(daysLeft: number): DeadlineUrgencyBand | nul
   return null;
 }
 
-export function deadlineUrgencyRowClass(band: DeadlineUrgencyBand | null): string | undefined {
-  if (band === "red") return "bg-red-100 hover:bg-red-200/90 focus-visible:bg-red-200/90";
-  if (band === "yellow") return "bg-amber-100 hover:bg-amber-200/90 focus-visible:bg-amber-200/90";
-  if (band === "blue") return "bg-sky-100 hover:bg-sky-200/90 focus-visible:bg-sky-200/90";
+/**
+ * Підсвітка лише комірки «Термін виконання».
+ * На hover/focus/highlight рядка колір скидається, щоб працювала жовта підсвітка всього рядка.
+ */
+export function deadlineUrgencyCellClass(band: DeadlineUrgencyBand | null): string | undefined {
+  if (band === "red") {
+    return "bg-red-100 group-hover:bg-transparent group-focus-visible:bg-transparent group-data-[highlighted=true]:bg-transparent";
+  }
+  if (band === "yellow") {
+    return "bg-amber-100 group-hover:bg-transparent group-focus-visible:bg-transparent group-data-[highlighted=true]:bg-transparent";
+  }
+  if (band === "blue") {
+    return "bg-sky-100 group-hover:bg-transparent group-focus-visible:bg-transparent group-data-[highlighted=true]:bg-transparent";
+  }
   return undefined;
+}
+
+/** @deprecated Використовуйте `deadlineUrgencyCellClass` — підсвітка більше не на рядку. */
+export function deadlineUrgencyRowClass(band: DeadlineUrgencyBand | null): string | undefined {
+  return deadlineUrgencyCellClass(band);
 }
 
 /** Список простору з підсвіткою рядка (перший клік зі сповіщення). */

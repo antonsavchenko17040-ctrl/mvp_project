@@ -11,6 +11,7 @@ export {
   daysUntilDeadline,
   deadlineReminderHighlightHref,
   deadlineUrgencyBand,
+  deadlineUrgencyCellClass,
   deadlineUrgencyRowClass,
 } from "@/lib/deadline-reminder-ui";
 
