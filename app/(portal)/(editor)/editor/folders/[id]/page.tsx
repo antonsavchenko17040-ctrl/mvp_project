@@ -46,6 +46,7 @@ export default async function EditorFolderPage({
     mode?: string;
     recommendationId?: string;
     q?: string;
+    qf?: string;
     sort?: string;
     dir?: string;
     ok?: string;
@@ -80,6 +81,11 @@ export default async function EditorFolderPage({
     ? (query.status as RecommendationStatus)
     : "all";
   const searchQuery = (query.q ?? "").trim().toLowerCase();
+  const searchFieldRaw = (query.qf ?? "").trim();
+  const searchField =
+    searchFieldRaw === "deficiency" || searchFieldRaw === "recommendationText"
+      ? searchFieldRaw
+      : "";
   const sort = parseTableSort(query, editorSortKeys, editorSortDefaults);
   const folderPath = `/editor/folders/${folder.id}`;
 
@@ -114,18 +120,13 @@ export default async function EditorFolderPage({
 
   const searchedRecommendations = searchQuery
     ? recommendations.filter((item) => {
-        const haystack = [
-          item.sequenceNumber,
-          item.deficiency,
-          item.recommendationText,
-          item.observationSignificance,
-          item.sspUnit,
-          editorWorkspaceStatusLabel(item.status),
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase();
-        return haystack.includes(searchQuery);
+        const deficiency = (item.deficiency ?? "").toLowerCase();
+        const recommendationText = (item.recommendationText ?? "").toLowerCase();
+        if (searchField === "deficiency") return deficiency.includes(searchQuery);
+        if (searchField === "recommendationText") {
+          return recommendationText.includes(searchQuery);
+        }
+        return deficiency.includes(searchQuery) || recommendationText.includes(searchQuery);
       })
     : recommendations;
 
@@ -161,6 +162,7 @@ export default async function EditorFolderPage({
   const preserveParams = {
     status: activeStatus,
     q: searchQuery || undefined,
+    qf: searchField || undefined,
   };
 
   const allRecommendations = await db.recommendation.findMany({
@@ -233,6 +235,7 @@ export default async function EditorFolderPage({
     const params = new URLSearchParams();
     params.set("status", statusKey);
     if (searchQuery) params.set("q", searchQuery);
+    if (searchField) params.set("qf", searchField);
     applySortParams(params, sort);
     return `${folderPath}?${params.toString()}`;
   };
@@ -331,9 +334,6 @@ export default async function EditorFolderPage({
                 })}
               </div>
               <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                <Suspense fallback={<div className="h-9 min-w-[12rem] flex-1 rounded-3xl border bg-white sm:h-10 sm:max-w-xs" />}>
-                  <EditorFolderSearch />
-                </Suspense>
                 {canArchive ? (
                   <form action={archiveAuditFolder}>
                     <input type="hidden" name="audit_folder_id" value={folder.id} />
@@ -355,6 +355,24 @@ export default async function EditorFolderPage({
                   </Link>
                 ) : null}
               </div>
+            </div>
+
+            <div className="rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:p-3.5">
+              <Suspense
+                fallback={
+                  <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
+                    <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-64" />
+                  </div>
+                }
+              >
+                <EditorFolderSearch
+                  fields={[
+                    { value: "deficiency", label: "Виявлені недоліки" },
+                    { value: "recommendationText", label: "Зміст рекомендації" },
+                  ]}
+                />
+              </Suspense>
             </div>
 
             <div className={dataTableWrapClassName()}>
