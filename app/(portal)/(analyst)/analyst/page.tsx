@@ -1,15 +1,24 @@
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { EditorFolderSearch } from "@/components/editor/editor-folder-search";
 import { EditorRecommendationTableCell } from "@/components/editor/editor-recommendation-table-cell";
 import { EditorRecommendationTableRow } from "@/components/editor/editor-recommendation-table-row";
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
+import { RoleWorkspaceListFilters } from "@/components/role-workspace-list-filters";
 import { TableSortableTh } from "@/components/table-sortable-th";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import type { RecommendationStatus } from "@/lib/types";
+import {
+  daysUntilDeadline,
+  deadlineUrgencyBand,
+  type DeadlineUrgencyBand,
+} from "@/lib/deadline-reminder-ui";
+import {
+  analystStatusFilterWhere,
+  parseRoleWorkspaceDeadlineFilter,
+  parseRoleWorkspaceStatusFilter,
+} from "@/lib/role-workspace-list-filters";
 import { recommendationSequenceOrderBy } from "@/lib/recommendation-sequence";
 import {
   matchesRoleWorkspaceSearch,
@@ -17,7 +26,6 @@ import {
   ROLE_WORKSPACE_SEARCH_FIELDS,
 } from "@/lib/role-workspace-search";
 import {
-  applySortParams,
   parseTableSort,
   significanceRank,
   sortByAccessor,
@@ -28,32 +36,6 @@ import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/
 import { cn } from "@/lib/utils";
 import { verificationWorkspaceStatusLabel } from "@/lib/verification-workspace-status-label";
 
-const analystListFilters = [
-  {
-    key: "all" as const,
-    label: "Усі",
-    chip: "border-neutral-900 text-neutral-900 hover:bg-neutral-50",
-    dot: "bg-neutral-900",
-    active: "bg-neutral-100",
-  },
-  {
-    key: "on_review" as const,
-    label: "На верифікації",
-    chip: "border-amber-500 text-amber-800 hover:bg-amber-50/70",
-    dot: "bg-amber-500",
-    active: "bg-amber-50",
-  },
-  {
-    key: "revision" as const,
-    label: "На доопрацюванні",
-    chip: "border-orange-500 text-orange-900 hover:bg-orange-50/70",
-    dot: "bg-orange-500",
-    active: "bg-orange-50",
-  },
-] as const;
-
-type AnalystListFilterKey = (typeof analystListFilters)[number]["key"];
-
 const analystSortKeys = ["number", "folder", "significance", "status"] as const;
 type AnalystSortKey = (typeof analystSortKeys)[number];
 const analystSortDefaults: TableSortState<AnalystSortKey> = { key: "number", dir: "asc", explicit: false };
@@ -63,6 +45,7 @@ export default async function AnalystPage({
 }: {
   searchParams: Promise<{
     status?: string;
+    deadline?: string;
     q?: string;
     qf?: string;
     sort?: string;
@@ -72,19 +55,14 @@ export default async function AnalystPage({
 }) {
   await requireRole(["analyst"]);
   const query = await searchParams;
-  const raw = query.status ?? "";
-  const activeFilter: AnalystListFilterKey = analystListFilters.some((f) => f.key === raw)
-    ? (raw as AnalystListFilterKey)
-    : "all";
+  const activeFilter = parseRoleWorkspaceStatusFilter(query.status);
+  const activeDeadlineFilter = parseRoleWorkspaceDeadlineFilter(query.deadline);
   const searchQuery = (query.q ?? "").trim().toLowerCase();
   const searchField = parseRoleWorkspaceSearchField(query.qf);
   const sort = parseTableSort(query, analystSortKeys, analystSortDefaults);
   const highlightId = (query.highlight ?? "").trim();
 
-  const statusWhere: { status: RecommendationStatus | { in: RecommendationStatus[] } } =
-    activeFilter === "all"
-      ? { status: { in: ["on_review", "revision"] } }
-      : { status: activeFilter as RecommendationStatus };
+  const statusWhere = analystStatusFilterWhere(activeFilter);
 
   const data = await db.recommendation.findMany({
     where: { ...statusWhere, isActive: true },
@@ -109,49 +87,56 @@ export default async function AnalystPage({
     orderBy: recommendationSequenceOrderBy,
   });
 
+  const withDeadlineMeta = data.map((item) => {
+    const daysLeft = daysUntilDeadline(item.deadline);
+    const urgency = deadlineUrgencyBand(daysLeft);
+    return { ...item, daysLeft, urgency };
+  });
+
   const searchedData = searchQuery
-    ? data.filter((item) => matchesRoleWorkspaceSearch(item, searchQuery, searchField))
-    : data;
+    ? withDeadlineMeta.filter((item) => matchesRoleWorkspaceSearch(item, searchQuery, searchField))
+    : withDeadlineMeta;
+
+  const deadlineFilteredData =
+    activeDeadlineFilter === "all"
+      ? searchedData
+      : searchedData.filter((item) => item.urgency === (activeDeadlineFilter as DeadlineUrgencyBand));
 
   const filteredData = (() => {
     switch (sort.key) {
       case "folder":
         return sortByAccessor(
-          searchedData,
+          deadlineFilteredData,
           sort.dir,
           (r) => r.auditFolder.title,
           (r) => r.sequenceNumber,
         );
       case "significance":
         return sortByAccessor(
-          searchedData,
+          deadlineFilteredData,
           sort.dir,
           (r) => significanceRank(r.observationSignificance),
           (r) => r.sequenceNumber,
         );
       case "status":
-        return sortByAccessor(searchedData, sort.dir, (r) => statusRank(r.status), (r) => r.sequenceNumber);
+        return sortByAccessor(
+          deadlineFilteredData,
+          sort.dir,
+          (r) => statusRank(r.status),
+          (r) => r.sequenceNumber,
+        );
       case "number":
       default:
-        return sortByAccessor(searchedData, sort.dir, (r) => r.sequenceNumber);
+        return sortByAccessor(deadlineFilteredData, sort.dir, (r) => r.sequenceNumber);
     }
   })();
 
   const preserveParams = {
     status: activeFilter === "all" ? undefined : activeFilter,
+    deadline: activeDeadlineFilter === "all" ? undefined : activeDeadlineFilter,
     q: searchQuery || undefined,
     qf: searchField || undefined,
     highlight: highlightId || undefined,
-  };
-
-  const statusHref = (key: AnalystListFilterKey) => {
-    const params = new URLSearchParams();
-    if (key !== "all") params.set("status", key);
-    if (searchQuery) params.set("q", searchQuery);
-    if (searchField) params.set("qf", searchField);
-    applySortParams(params, sort);
-    const qs = params.toString();
-    return qs ? `/analyst?${qs}` : "/analyst";
   };
 
   return (
@@ -175,27 +160,16 @@ export default async function AnalystPage({
             </Suspense>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              {analystListFilters.map((item) => {
-                const selected = activeFilter === item.key;
-                return (
-                  <Link
-                    key={item.key}
-                    href={statusHref(item.key)}
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-full border bg-white px-4 py-1.5 text-sm font-bold transition-colors sm:text-base",
-                      item.chip,
-                      selected && item.active,
-                    )}
-                  >
-                    <span className={cn("size-2 shrink-0 rounded-full", item.dot)} aria-hidden />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+          <Suspense
+            fallback={
+              <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-52" />
+                <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-52" />
+              </div>
+            }
+          >
+            <RoleWorkspaceListFilters />
+          </Suspense>
 
           <div className={dataTableWrapClassName()}>
             <table className={dataTableClassName("min-w-[1100px]")}>
