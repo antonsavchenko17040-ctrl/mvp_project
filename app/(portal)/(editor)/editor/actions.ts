@@ -13,7 +13,6 @@ import {
   AuditFolderXlsxImportError,
   auditFolderTitleFromFilename,
   parseAuditFolderXlsx,
-  shouldArchiveImportedFolder,
 } from "@/lib/import/audit-folder-xlsx";
 import { nextRecommendationSequenceNumber } from "@/lib/recommendation-sequence";
 
@@ -630,16 +629,12 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
     }
   }
 
-  const archiveFolder = shouldArchiveImportedFolder(parsed.recommendations);
-  const archivedAt = archiveFolder ? new Date() : null;
-
   const folder = await db.$transaction(async (tx) => {
     const createdFolder = await tx.auditFolder.create({
       data: {
         title: parsed.title,
         year,
         createdById: profile.id,
-        archivedAt,
       },
     });
 
@@ -697,7 +692,6 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
       title: parsed.title,
       year,
       recommendationsCount: parsed.recommendations.length,
-      archived: archiveFolder,
     },
   });
 

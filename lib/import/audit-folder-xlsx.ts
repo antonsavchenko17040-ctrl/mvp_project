@@ -276,7 +276,3 @@ export async function parseAuditFolderXlsx(
 export function auditFolderTitleFromFilename(filename: string): string {
   return titleFromFilename(filename);
 }
-
-export function shouldArchiveImportedFolder(recommendations: ParsedImportRecommendation[]): boolean {
-  return recommendations.length > 0 && recommendations.every((item) => item.status === "published");
-}
