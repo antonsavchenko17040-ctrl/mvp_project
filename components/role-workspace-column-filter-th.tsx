@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 
 type RoleWorkspaceColumnFilterThProps<TKey extends string> = {
+  /** Для aria/title сортування (напр. «Статус», «Термін виконання»). */
   label: string;
   column: TKey;
   filterParam: "status" | "deadline";
@@ -33,6 +34,7 @@ type RoleWorkspaceColumnFilterThProps<TKey extends string> = {
   align?: "left" | "center";
 };
 
+/** Заголовок колонки = dropdown фільтра; поруч іконка сортування. */
 export function RoleWorkspaceColumnFilterTh<TKey extends string>({
   label,
   column,
@@ -80,32 +82,27 @@ export function RoleWorkspaceColumnFilterTh<TKey extends string>({
 
   const baseTh = align === "center" ? dataTable.thCenter : dataTable.th;
   const ariaSort = active ? (sort.dir === "asc" ? "ascending" : "descending") : "none";
+  const sortTitle = willReset ? "Скинути сортування" : `Сортувати за: ${label}`;
 
   return (
     <th className={cn(baseTh, className)} aria-sort={ariaSort}>
-      <div className={cn("flex flex-col gap-1.5", align === "center" && "items-center")}>
-        <Link
-          href={sortHref}
-          className={cn(
-            "inline-flex max-w-full items-start gap-1 rounded-sm text-inherit transition-colors hover:text-foreground",
-            align === "center" && "justify-center",
-            active ? "text-foreground" : "text-foreground/80",
-          )}
-          title={willReset ? "Скинути сортування" : `Сортувати за: ${label.replace(/\n/g, " ")}`}
-        >
-          <span className="min-w-0 text-left leading-tight whitespace-pre-line">{label}</span>
-          <SortIcon active={active} dir={sort.dir} />
-        </Link>
+      <div
+        className={cn(
+          "inline-flex max-w-full items-center gap-1",
+          align === "center" && "w-full justify-center",
+        )}
+      >
         <select
           value={selectedValue}
           onChange={(e) => onFilterChange(e.target.value)}
-          aria-label={label.replace(/\n/g, " ")}
+          aria-label={label}
           className={cn(
-            "h-8 w-full min-w-0 rounded-lg border border-input bg-white px-2 text-xs font-normal text-foreground outline-none transition-colors",
-            "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+            "min-w-0 max-w-full flex-1 cursor-pointer appearance-auto border-0 bg-transparent p-0",
+            "text-left text-xs font-semibold leading-tight text-inherit outline-none",
+            "focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring/50",
+            active ? "text-foreground" : "text-foreground/80",
             isPending && "opacity-80",
           )}
-          onClick={(e) => e.stopPropagation()}
         >
           {options.map((item) => (
             <option key={item.key} value={item.key}>
@@ -113,6 +110,17 @@ export function RoleWorkspaceColumnFilterTh<TKey extends string>({
             </option>
           ))}
         </select>
+        <Link
+          href={sortHref}
+          className={cn(
+            "inline-flex shrink-0 items-center rounded-sm text-inherit transition-colors hover:text-foreground",
+            active ? "text-foreground" : "text-foreground/80",
+          )}
+          title={sortTitle}
+          aria-label={sortTitle}
+        >
+          <SortIcon active={active} dir={sort.dir} />
+        </Link>
       </div>
     </th>
   );
