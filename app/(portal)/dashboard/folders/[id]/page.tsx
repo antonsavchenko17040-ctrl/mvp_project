@@ -6,7 +6,13 @@ export default async function DashboardFolderPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ execution?: string; q?: string; sort?: string; dir?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    ssp?: string;
+    status?: string;
+    sort?: string;
+    dir?: string;
+  }>;
 }) {
   const { id } = await params;
   return (
@@ -14,6 +20,7 @@ export default async function DashboardFolderPage({
       folderId={id}
       folderHref={`/dashboard/folders/${id}`}
       backHref={PORTAL_REPORTS_HOME}
+      filtersMode="library"
       searchParams={searchParams}
     />
   );
