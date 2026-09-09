@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import {
-  BarChart3,
   Building2,
   ChevronDown,
   ClipboardList,
@@ -39,7 +38,6 @@ const roleWorkspaceMap: Record<UserRole, { href: string; label: string; icon: Co
 const navItems = [
   { href: "/dashboard", label: "Дашборд", icon: LayoutDashboard },
   { href: "/reports", label: uk.nav.reports, icon: ClipboardList },
-  { href: "/statistics", label: uk.nav.statistics, icon: BarChart3 },
 ];
 
 const isActivePath = (pathname: string, href: string) => {
