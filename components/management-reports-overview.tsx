@@ -6,7 +6,7 @@ import { ReportsLibraryFilters } from "@/components/reports-library-filters";
 import { getDashboardStats, getVerifiedRecentFolders } from "@/lib/repositories/dashboard-repository";
 
 type ManagementReportsOverviewProps = {
-  /** Префікс посилання на папку, напр. `/dashboard/folders` або `/public/folders`. */
+  /** Префікс посилання на папку, напр. `/dashboard/folders` або `/reports/folders`. */
   folderHrefPrefix: string;
   /** Блок «Управління звітами» і чотири картки статистики (лише дашборд). */
   showDashboardSummary?: boolean;

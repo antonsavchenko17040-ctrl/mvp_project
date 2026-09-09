@@ -1,4 +1,5 @@
 import { ManagementReportsOverview } from "@/components/management-reports-overview";
+import { PUBLIC_REPORTS_LIBRARY_FOLDERS_PREFIX } from "@/lib/reports-section";
 
 export default async function PublicReportsPage({
   searchParams,
@@ -12,7 +13,7 @@ export default async function PublicReportsPage({
 
   return (
     <ManagementReportsOverview
-      folderHrefPrefix="/public/folders"
+      folderHrefPrefix={PUBLIC_REPORTS_LIBRARY_FOLDERS_PREFIX}
       verifiedFolderLimit="all"
       enableFolderFilters
       titleQuery={titleQuery}
