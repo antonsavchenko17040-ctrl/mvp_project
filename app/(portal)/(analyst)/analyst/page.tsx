@@ -1,10 +1,13 @@
 import { Suspense } from "react";
 
 import { EditorFolderSearch } from "@/components/editor/editor-folder-search";
-import { EditorRecommendationTableCell } from "@/components/editor/editor-recommendation-table-cell";
+import {
+  EditorRecommendationTableCell,
+  formatRecommendationDate,
+} from "@/components/editor/editor-recommendation-table-cell";
 import { EditorRecommendationTableRow } from "@/components/editor/editor-recommendation-table-row";
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
-import { RoleWorkspaceListFilters } from "@/components/role-workspace-list-filters";
+import { RoleWorkspaceColumnFilterTh } from "@/components/role-workspace-column-filter-th";
 import { TableSortableTh } from "@/components/table-sortable-th";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/session";
@@ -36,7 +39,7 @@ import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/
 import { cn } from "@/lib/utils";
 import { verificationWorkspaceStatusLabel } from "@/lib/verification-workspace-status-label";
 
-const analystSortKeys = ["number", "folder", "significance", "status"] as const;
+const analystSortKeys = ["number", "folder", "deadline", "significance", "status"] as const;
 type AnalystSortKey = (typeof analystSortKeys)[number];
 const analystSortDefaults: TableSortState<AnalystSortKey> = { key: "number", dir: "asc", explicit: false };
 
@@ -111,6 +114,13 @@ export default async function AnalystPage({
           (r) => r.auditFolder.title,
           (r) => r.sequenceNumber,
         );
+      case "deadline":
+        return sortByAccessor(
+          deadlineFilteredData,
+          sort.dir,
+          (r) => r.deadline.getTime(),
+          (r) => r.sequenceNumber,
+        );
       case "significance":
         return sortByAccessor(
           deadlineFilteredData,
@@ -160,19 +170,8 @@ export default async function AnalystPage({
             </Suspense>
           </div>
 
-          <Suspense
-            fallback={
-              <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
-                <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-52" />
-                <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-52" />
-              </div>
-            }
-          >
-            <RoleWorkspaceListFilters />
-          </Suspense>
-
           <div className={dataTableWrapClassName()}>
-            <table className={dataTableClassName("min-w-[1100px]")}>
+            <table className={dataTableClassName("min-w-[1240px]")}>
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <TableSortableTh
@@ -198,6 +197,30 @@ export default async function AnalystPage({
                     Недоліки, проблеми та порушення (точки зростання)
                   </th>
                   <th className={cn(dataTable.th, "min-w-[11rem]")}>Надані аудиторські рекомендації</th>
+                  <Suspense
+                    fallback={
+                      <TableSortableTh
+                        label="Термін виконання"
+                        column="deadline"
+                        sort={sort}
+                        defaults={analystSortDefaults}
+                        pathname="/analyst"
+                        preserveParams={preserveParams}
+                        className="w-40 min-w-[10rem]"
+                      />
+                    }
+                  >
+                    <RoleWorkspaceColumnFilterTh
+                      label="Термін виконання"
+                      column="deadline"
+                      filterParam="deadline"
+                      sort={sort}
+                      defaults={analystSortDefaults}
+                      pathname="/analyst"
+                      preserveParams={preserveParams}
+                      className="w-40 min-w-[10rem]"
+                    />
+                  </Suspense>
                   <TableSortableTh
                     label="Значущість спостереження"
                     column="significance"
@@ -207,22 +230,38 @@ export default async function AnalystPage({
                     preserveParams={preserveParams}
                     className="w-28"
                   />
-                  <TableSortableTh
-                    label="Статус"
-                    column="status"
-                    sort={sort}
-                    defaults={analystSortDefaults}
-                    pathname="/analyst"
-                    preserveParams={preserveParams}
-                    className="w-36"
-                    align="center"
-                  />
+                  <Suspense
+                    fallback={
+                      <TableSortableTh
+                        label="Статус"
+                        column="status"
+                        sort={sort}
+                        defaults={analystSortDefaults}
+                        pathname="/analyst"
+                        preserveParams={preserveParams}
+                        className="w-40 min-w-[10rem]"
+                        align="center"
+                      />
+                    }
+                  >
+                    <RoleWorkspaceColumnFilterTh
+                      label="Статус"
+                      column="status"
+                      filterParam="status"
+                      sort={sort}
+                      defaults={analystSortDefaults}
+                      pathname="/analyst"
+                      preserveParams={preserveParams}
+                      className="w-40 min-w-[10rem]"
+                      align="center"
+                    />
+                  </Suspense>
                 </tr>
               </thead>
               <tbody>
                 {filteredData.length === 0 ? (
                   <tr className={dataTable.bodyRow}>
-                    <td colSpan={6} className={dataTable.emptyCell}>
+                    <td colSpan={7} className={dataTable.emptyCell}>
                       {searchQuery
                         ? "За вашим запитом рекомендацій не знайдено."
                         : "Рекомендацій за обраним фільтром немає."}
@@ -247,10 +286,13 @@ export default async function AnalystPage({
                       <EditorRecommendationTableCell className="min-w-[11rem]">
                         {item.recommendationText}
                       </EditorRecommendationTableCell>
+                      <EditorRecommendationTableCell className="w-40 min-w-[10rem]">
+                        {formatRecommendationDate(item.deadline)}
+                      </EditorRecommendationTableCell>
                       <EditorRecommendationTableCell className="w-28">
                         {item.observationSignificance}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className="w-36" align="center">
+                      <EditorRecommendationTableCell className="w-40 min-w-[10rem]" align="center">
                         <div className="flex justify-center">
                           <RecommendationStatusBadge
                             status={item.status}
