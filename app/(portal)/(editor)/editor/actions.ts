@@ -25,6 +25,30 @@ function formatStoredDate(value: Date | null | undefined): string {
   return `${y}-${m}-${day}`;
 }
 
+/** Дата з поля `type="date"` (YYYY-MM-DD) у локальному календарі. */
+function parseDateOnlyInput(raw: string): Date | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+  return date;
+}
+
+function startOfLocalToday(now = new Date()): Date {
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
 export async function createAuditFolder(formData: FormData) {
   const profile = await requireRole(["editor"]);
   const title = String(formData.get("title") ?? "");
@@ -63,8 +87,8 @@ export async function createRecommendation(formData: FormData) {
   const sspUnit = String(formData.get("ssp_unit") ?? "");
   const observationSignificance = String(formData.get("observation_significance") ?? "середній");
   const redirectPath = String(formData.get("redirect_path") ?? "/editor");
-  const informingDeadlineRaw = String(formData.get("informing_deadline") ?? "").trim();
-  const informingDeadline = informingDeadlineRaw === "" ? null : new Date(informingDeadlineRaw);
+  const deadline = parseDateOnlyInput(String(formData.get("deadline") ?? ""));
+  const informingDeadline = parseDateOnlyInput(String(formData.get("informing_deadline") ?? ""));
 
   const folder = await db.auditFolder.findFirst({
     where: { id: auditFolderId, createdById: profile.id },
@@ -75,6 +99,19 @@ export async function createRecommendation(formData: FormData) {
   }
   if (isFolderArchived(folder.archivedAt)) {
     redirect(`/editor/folders/${auditFolderId}?error=folder_archived`);
+  }
+
+  if (!deadline) {
+    redirect(`${redirectPath}?error=invalid_deadline`);
+  }
+  if (!informingDeadline) {
+    redirect(`${redirectPath}?error=invalid_informing_deadline`);
+  }
+  if (deadline.getTime() < startOfLocalToday().getTime()) {
+    redirect(`${redirectPath}?error=deadline_before_today`);
+  }
+  if (informingDeadline.getTime() < deadline.getTime()) {
+    redirect(`${redirectPath}?error=informing_before_deadline`);
   }
 
   if (assigneeUserId) {
@@ -112,7 +149,7 @@ export async function createRecommendation(formData: FormData) {
       vkElement: String(formData.get("vk_element") ?? ""),
       observationSignificance,
       sspUnit,
-      deadline: new Date(String(formData.get("deadline") ?? "")),
+      deadline,
       informingDeadline,
       status,
       assigneeUserId,
