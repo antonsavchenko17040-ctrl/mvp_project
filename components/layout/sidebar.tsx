@@ -95,17 +95,14 @@ const Item = ({
   );
 };
 
-const workspaceOrder: Array<Exclude<UserRole, "admin">> = ["editor", "ssp", "manager", "analyst"];
+const roleOrder: Array<Exclude<UserRole, "admin">> = ["editor", "ssp", "manager", "analyst"];
 
 export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
   const pathname = usePathname();
   const hasAdmin = userRoles.includes("admin");
-  const workspaceItems = useMemo(() => {
-    return workspaceOrder
-      .filter((role) => userRoles.includes(role))
-      .map((role) => roleWorkspaceMap[role]);
+  const roleItems = useMemo(() => {
+    return roleOrder.filter((role) => userRoles.includes(role)).map((role) => roleWorkspaceMap[role]);
   }, [userRoles]);
-  const [workspaceOpen, setWorkspaceOpen] = useState(true);
   const [adminOpen, setAdminOpen] = useState(true);
 
   useEffect(() => {
@@ -132,41 +129,29 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
 
       <div className="flex flex-1 flex-col border-r border-black/20">
         <div>
-          <button
-            type="button"
-            onClick={() => setWorkspaceOpen((value) => !value)}
-            className="flex w-full items-center justify-between border-b border-black/20 px-6 py-2.5 text-sm font-semibold uppercase text-muted-foreground hover:bg-muted/40"
-          >
-            Робочий простір
-            <ChevronDown className={cn("size-[1.125rem] transition-transform", workspaceOpen && "rotate-180")} />
-          </button>
-          {workspaceOpen ? (
-            <>
-              {hasAdmin ? (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setAdminOpen((value) => !value)}
-                    className="flex w-full items-center gap-2.5 border-b border-black/20 px-6 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]"
-                  >
-                    <Shield className="size-[1.125rem] shrink-0" />
-                    <span className="min-w-0 flex-1 truncate text-left">Адміністратор</span>
-                    <ChevronDown
-                      className={cn("size-[1.125rem] shrink-0 transition-transform", adminOpen && "rotate-180")}
-                    />
-                  </button>
-                  {adminOpen
-                    ? adminNavItems.map((item) => (
-                        <Item key={item.href} {...item} pathname={pathname} compact />
-                      ))
-                    : null}
-                </div>
-              ) : null}
-              {workspaceItems.map((item) => (
-                <Item key={item.href} {...item} pathname={pathname} />
-              ))}
-            </>
+          {hasAdmin ? (
+            <div>
+              <button
+                type="button"
+                onClick={() => setAdminOpen((value) => !value)}
+                className="flex w-full items-center gap-2.5 border-b border-black/20 px-6 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]"
+              >
+                <Shield className="size-[1.125rem] shrink-0" />
+                <span className="min-w-0 flex-1 truncate text-left">Адміністратор</span>
+                <ChevronDown
+                  className={cn("size-[1.125rem] shrink-0 transition-transform", adminOpen && "rotate-180")}
+                />
+              </button>
+              {adminOpen
+                ? adminNavItems.map((item) => (
+                    <Item key={item.href} {...item} pathname={pathname} compact />
+                  ))
+                : null}
+            </div>
           ) : null}
+          {roleItems.map((item) => (
+            <Item key={item.href} {...item} pathname={pathname} />
+          ))}
         </div>
 
         <div>
