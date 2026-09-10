@@ -1,17 +1,16 @@
+import { GenerateUserPasswordButton } from "@/components/admin/generate-user-password-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
-import { getTempPasswords } from "@/lib/auth/temp-password-store";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import type { UserRole } from "@/lib/types";
 import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
-import { assignRole, createUserAccount, deleteUserAccount, generateUserPassword } from "../actions";
+import { assignRole, createUserAccount, deleteUserAccount } from "../actions";
 
 export default async function AdminUsersPage() {
   const roleOptions: Array<{ value: UserRole; label: string }> = [
@@ -32,7 +31,6 @@ export default async function AdminUsersPage() {
     },
     orderBy: { fullName: "asc" },
   });
-  const tempPasswords = await getTempPasswords();
 
   return (
     <section className="space-y-5">
@@ -110,19 +108,7 @@ export default async function AdminUsersPage() {
                         {!user.isActive ? <p className="text-xs text-destructive">Деактивований</p> : null}
                       </td>
                       <td className={dataTable.cell}>
-                        <DismissibleDetails className="relative inline-block">
-                          <summary className="cursor-pointer list-none rounded-md border bg-muted/40 px-3 py-2 font-mono text-sm hover:bg-muted">
-                            {user.email}
-                          </summary>
-                          <div className="absolute left-0 top-[calc(100%+8px)] z-20 min-w-56 rounded-xl border bg-white p-3 shadow-lg">
-                            <p className="text-xs uppercase text-muted-foreground">Логін</p>
-                            <p className="mt-1 rounded-md bg-muted px-3 py-2 font-mono text-sm">{user.email}</p>
-                            <p className="text-xs uppercase text-muted-foreground">Тимчасовий пароль</p>
-                            <p className="mt-1 rounded-md bg-muted px-3 py-2 font-mono text-sm">
-                              {tempPasswords[user.id] ?? "Користувач уже змінив пароль"}
-                            </p>
-                          </div>
-                        </DismissibleDetails>
+                        <p className="font-mono text-sm">{user.email}</p>
                       </td>
                       <td className={cn(dataTable.cell, "align-top")}>
                         <form action={assignRole} className="space-y-2">
@@ -150,12 +136,7 @@ export default async function AdminUsersPage() {
                       </td>
                       <td className={cn(dataTable.cell, "text-center")}>
                         <div className="inline-flex items-center justify-center gap-2">
-                          <form action={generateUserPassword}>
-                            <input type="hidden" name="user_id" value={user.id} />
-                            <Button type="submit" size="sm" variant="outline">
-                              Згенерувати новий пароль
-                            </Button>
-                          </form>
+                          <GenerateUserPasswordButton userId={user.id} />
                           <form action={deleteUserAccount} className="inline-flex">
                             <input type="hidden" name="user_id" value={user.id} />
                             <input type="hidden" name="current_admin_id" value={currentAdmin.id} />

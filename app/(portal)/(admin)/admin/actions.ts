@@ -142,13 +142,22 @@ export async function deleteUserAccount(formData: FormData) {
   revalidatePath("/admin/users");
 }
 
-export async function generateUserPassword(formData: FormData) {
+export type GenerateUserPasswordState = {
+  userId?: string;
+  password?: string;
+  error?: string;
+};
+
+export async function generateUserPassword(
+  _prevState: GenerateUserPasswordState,
+  formData: FormData,
+): Promise<GenerateUserPasswordState> {
   const actor = await requireRole(["admin"]);
   const userId = String(formData.get("user_id") ?? "");
-  if (!userId) return;
+  if (!userId) return { error: "missing_user" };
 
   const user = await db.profile.findUnique({ where: { id: userId }, select: { id: true, email: true } });
-  if (!user) return;
+  if (!user) return { error: "user_not_found" };
 
   const newPassword = generateTempPassword();
   await db.profile.update({
@@ -171,6 +180,7 @@ export async function generateUserPassword(formData: FormData) {
 
   revalidatePath("/admin");
   revalidatePath("/admin/users");
+  return { userId, password: newPassword };
 }
 
 const allowedRecommendationStatuses: RecommendationStatus[] = [
