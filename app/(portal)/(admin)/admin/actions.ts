@@ -23,6 +23,7 @@ import {
   createDepartment,
   getDepartments,
   removeDepartmentMember,
+  renameDepartment,
 } from "@/lib/admin/departments-store";
 import { canArchiveFolderByRecommendations, isFolderArchived } from "@/lib/audit-folder-archive";
 import { buildObjectDifference, buildUpdateSummary, statusLabelUk, writeAuditLog } from "@/lib/audit-log";
@@ -968,6 +969,54 @@ export async function createDepartmentAction(formData: FormData) {
     difference: { name },
   });
   revalidatePath("/admin/departments");
+}
+
+export async function renameDepartmentAction(formData: FormData) {
+  const actor = await requireRole(["admin"]);
+  const departmentId = String(formData.get("department_id") ?? "");
+  const name = String(formData.get("name") ?? "");
+  if (!departmentId) {
+    redirect("/admin/departments?error=department_not_found");
+  }
+
+  const previous = await db.department.findFirst({
+    where: { id: departmentId },
+    select: { name: true },
+  });
+  const result = await renameDepartment(departmentId, name);
+
+  if (result === "empty") {
+    redirect("/admin/departments?error=department_name_required");
+  }
+  if (result === "not_found") {
+    redirect("/admin/departments?error=department_not_found");
+  }
+  if (result === "duplicate") {
+    redirect("/admin/departments?error=department_duplicate");
+  }
+  if (result === "unchanged") {
+    revalidatePath("/admin/departments");
+    return;
+  }
+
+  await writeAuditLog({
+    actor,
+    actorRole: "admin",
+    action: "department.renamed",
+    entityType: "department",
+    entityId: departmentId,
+    summary: `Перейменовано підрозділ «${previous?.name ?? ""}» → «${name.trim()}»`,
+    difference: { before: previous?.name ?? null, after: name.trim() },
+  });
+  revalidatePath("/admin/departments");
+  revalidatePath("/admin");
+  revalidatePath("/editor");
+  revalidatePath("/ssp");
+  revalidatePath("/manager");
+  revalidatePath("/analyst");
+  revalidatePath("/dashboard");
+  revalidatePath("/reports");
+  redirect("/admin/departments?ok=department_renamed");
 }
 
 export async function archiveDepartmentAction(formData: FormData) {

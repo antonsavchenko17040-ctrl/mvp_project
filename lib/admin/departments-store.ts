@@ -34,6 +34,44 @@ export async function createDepartment(name: string) {
   await db.department.create({ data: { name: trimmedName } });
 }
 
+export async function renameDepartment(
+  departmentId: string,
+  name: string,
+): Promise<"ok" | "empty" | "not_found" | "duplicate" | "unchanged"> {
+  const trimmedName = name.trim();
+  if (!trimmedName) return "empty";
+
+  const department = await db.department.findFirst({
+    where: { id: departmentId },
+    select: { id: true, name: true },
+  });
+  if (!department) return "not_found";
+  if (department.name === trimmedName) return "unchanged";
+
+  const exists = await db.department.findFirst({
+    where: {
+      name: { equals: trimmedName, mode: "insensitive" },
+      NOT: { id: departmentId },
+    },
+    select: { id: true },
+  });
+  if (exists) return "duplicate";
+
+  const previousName = department.name;
+  await db.$transaction([
+    db.department.update({
+      where: { id: departmentId },
+      data: { name: trimmedName },
+    }),
+    db.recommendation.updateMany({
+      where: { sspUnit: previousName },
+      data: { sspUnit: trimmedName },
+    }),
+  ]);
+
+  return "ok";
+}
+
 export async function archiveDepartment(departmentId: string) {
   await db.department.updateMany({
     where: { id: departmentId },
