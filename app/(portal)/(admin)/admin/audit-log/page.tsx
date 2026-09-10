@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { AUDIT_ACTION_LABELS, auditActionLabel, formatAuditDescription, formatDifferenceText } from "@/lib/audit-log";
+import { AUDIT_ACTION_LABELS, auditActionLabel, formatAuditDescription } from "@/lib/audit-log";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -177,8 +177,8 @@ export default async function AdminAuditLogPage({
         <div>
           <h1 className="text-3xl font-semibold">Audit Log — історія змін</h1>
           <p className="mt-1 text-base text-muted-foreground">
-            Кожна зміна статусу або поля фіксується з AgentID, Timestamp та Difference. Показано{" "}
-            {entries.length} з {total}.
+            Кожна зміна статусу або поля фіксується з AgentID та Timestamp. Показано {entries.length} з{" "}
+            {total}.
           </p>
         </div>
         <Link href="/admin" className="text-base font-medium text-sky-800 hover:underline">
@@ -252,7 +252,6 @@ export default async function AdminAuditLogPage({
             <tr className={dataTable.headRow}>
               <th className={dataTable.th}>AgentID</th>
               <th className={dataTable.th}>Timestamp</th>
-              <th className={dataTable.th}>Difference</th>
               <th className={dataTable.th}>Дія</th>
               <th className={dataTable.th}>Сутність</th>
               <th className={dataTable.th}>Опис</th>
@@ -261,7 +260,7 @@ export default async function AdminAuditLogPage({
           <tbody>
             {entries.length === 0 ? (
               <tr className={dataTable.bodyRow}>
-                <td colSpan={6} className={dataTable.emptyCell}>
+                <td colSpan={5} className={dataTable.emptyCell}>
                   Записів за обраними фільтрами немає.
                 </td>
               </tr>
@@ -271,8 +270,7 @@ export default async function AdminAuditLogPage({
                 return (
                 <tr key={entry.id} className={cn(dataTable.bodyRow, dataTable.rowHover, "align-top")}>
                   <td className={cn(dataTable.cell, "max-w-[14rem]")}>
-                    <div className="font-mono text-xs break-all">{entry.agentId ?? "—"}</div>
-                    <div className="mt-1 text-sm font-medium">
+                    <div className="text-sm font-medium">
                       {entry.actorName || entry.actorEmail || "—"}
                     </div>
                     {entry.actorRole ? (
@@ -283,9 +281,6 @@ export default async function AdminAuditLogPage({
                   </td>
                   <td className={cn(dataTable.cell, "whitespace-nowrap tabular-nums")}>
                     {entry.createdAt.toLocaleString("uk-UA")}
-                  </td>
-                  <td className={cn(dataTable.cell, "max-w-md break-words text-sm")}>
-                    {formatDifferenceText(entry.difference)}
                   </td>
                   <td className={dataTable.cell}>
                     <span className="font-medium">{auditActionLabel(entry.action)}</span>
