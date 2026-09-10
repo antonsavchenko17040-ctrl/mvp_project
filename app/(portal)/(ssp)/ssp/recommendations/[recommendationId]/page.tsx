@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
+import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-field-display";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
 import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
 import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
@@ -13,6 +14,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
+import type { SupplementFieldKey } from "@/lib/editor/recommendation-supplements";
 import { sspRecommendationByIdWhere } from "@/lib/ssp/recommendation-access";
 import {
   canSspSupplementRecommendation,
@@ -22,28 +24,8 @@ import { sspWorkspaceStatusLabel } from "@/lib/ssp/ssp-status-label";
 
 import { saveSspDraft, submitForReview } from "../../actions";
 
-function InactiveReadBox({ id, text }: { id: string; text: string }) {
-  return (
-    <Textarea
-      id={id}
-      readOnly
-      defaultValue={text}
-      tabIndex={-1}
-      className="min-h-[120px] cursor-default resize-none border border-input bg-neutral-200/80 text-base leading-relaxed text-neutral-950 selection:bg-muted"
-    />
-  );
-}
-
-function InactiveReadLine({ id, value }: { id: string; value: string }) {
-  return (
-    <div
-      id={id}
-      className="flex min-h-11 cursor-default items-center rounded-md border border-input bg-neutral-200/80 px-3 text-base text-neutral-950"
-    >
-      {value || "—"}
-    </div>
-  );
-}
+const inactiveDisplayClassName =
+  "border-input bg-neutral-200/80 text-neutral-950 selection:bg-muted";
 
 function CommentReadBox({ id, text }: { id: string; text: string }) {
   return (
@@ -65,6 +47,47 @@ function CommentReadLine({ id, value }: { id: string; value: string }) {
     >
       {value || "—"}
     </div>
+  );
+}
+
+function formatDate(value: Date | null | undefined): string {
+  if (!value) return "—";
+  return value.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+type SupplementRow = {
+  id: string;
+  fieldKey: string;
+  content: string;
+  previousContent: string | null;
+  changeReason: string;
+  changeDate: Date;
+  createdAt: Date;
+};
+
+function EditorFieldWithSupplements({
+  fieldKey,
+  supplements,
+  label,
+  htmlFor,
+  currentValue,
+}: {
+  fieldKey: SupplementFieldKey;
+  supplements: SupplementRow[];
+  label: string;
+  htmlFor: string;
+  currentValue: string;
+}) {
+  return (
+    <RecommendationFieldBlock label={label} htmlFor={htmlFor}>
+      <EditorAppendFieldDisplay
+        id={htmlFor}
+        fieldKey={fieldKey}
+        currentValue={currentValue}
+        supplements={supplements}
+        className={inactiveDisplayClassName}
+      />
+    </RecommendationFieldBlock>
   );
 }
 
@@ -113,11 +136,7 @@ export default async function SspRecommendationDetailPage({
   });
   if (!recommendation) notFound();
 
-  const deadlineLabel = recommendation.deadline.toLocaleDateString("uk-UA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const deadlineLabel = formatDate(recommendation.deadline);
 
   const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}`;
   const analystText = recommendation.analystComment?.trim() ?? "";
@@ -212,54 +231,90 @@ export default async function SspRecommendationDetailPage({
             </>
           ) : null}
 
-          <RecommendationFieldBlock label="Елемент ВК" htmlFor="vk_element">
-            <InactiveReadLine id="vk_element" value={recommendation.vkElement} />
-          </RecommendationFieldBlock>
+          <EditorFieldWithSupplements
+            fieldKey="vkElement"
+            supplements={supplements}
+            label="Елемент ВК"
+            htmlFor="vk_element"
+            currentValue={recommendation.vkElement}
+          />
 
-          <RecommendationFieldBlock label="Значущість спостереження" htmlFor="observation_significance">
-            <InactiveReadLine id="observation_significance" value={recommendation.observationSignificance} />
-          </RecommendationFieldBlock>
+          <EditorFieldWithSupplements
+            fieldKey="observationSignificance"
+            supplements={supplements}
+            label="Значущість спостереження"
+            htmlFor="observation_significance"
+            currentValue={recommendation.observationSignificance}
+          />
 
-          <RecommendationFieldBlock label="Недоліки, проблеми та порушення (точки зростання)" htmlFor="deficiency">
-            <InactiveReadBox id="deficiency" text={recommendation.deficiency} />
-          </RecommendationFieldBlock>
+          <EditorFieldWithSupplements
+            fieldKey="deficiency"
+            supplements={supplements}
+            label="Недоліки, проблеми та порушення (точки зростання)"
+            htmlFor="deficiency"
+            currentValue={recommendation.deficiency}
+          />
 
-          <RecommendationFieldBlock label="Надані аудиторські рекомендації" htmlFor="recommendation_text">
-            <InactiveReadBox id="recommendation_text" text={recommendation.recommendationText} />
-          </RecommendationFieldBlock>
+          <EditorFieldWithSupplements
+            fieldKey="recommendationText"
+            supplements={supplements}
+            label="Надані аудиторські рекомендації"
+            htmlFor="recommendation_text"
+            currentValue={recommendation.recommendationText}
+          />
 
-          <RecommendationFieldBlock label="Індикатор виконання рекомендацій (захід / документ)" htmlFor="execution_indicator">
-            <InactiveReadBox id="execution_indicator" text={recommendation.executionIndicator} />
-          </RecommendationFieldBlock>
+          <EditorFieldWithSupplements
+            fieldKey="executionIndicator"
+            supplements={supplements}
+            label="Індикатор виконання рекомендацій (захід / документ)"
+            htmlFor="execution_indicator"
+            currentValue={recommendation.executionIndicator}
+          />
 
-          <RecommendationFieldBlock label="Очікуваний результат від впровадження рекомендацій" htmlFor="expected_result">
-            <InactiveReadBox id="expected_result" text={recommendation.expectedResult} />
-          </RecommendationFieldBlock>
+          <EditorFieldWithSupplements
+            fieldKey="expectedResult"
+            supplements={supplements}
+            label="Очікуваний результат від впровадження рекомендацій"
+            htmlFor="expected_result"
+            currentValue={recommendation.expectedResult}
+          />
 
           <div className="grid gap-6 md:grid-cols-3">
-            <RecommendationFieldBlock label="Відповідальний підрозділ" htmlFor="ssp_unit">
-              <InactiveReadLine id="ssp_unit" value={recommendation.sspUnit} />
-            </RecommendationFieldBlock>
+            <EditorFieldWithSupplements
+              fieldKey="sspUnit"
+              supplements={supplements}
+              label="Відповідальний підрозділ"
+              htmlFor="ssp_unit"
+              currentValue={recommendation.sspUnit}
+            />
 
-            <RecommendationFieldBlock label="Термін виконання" htmlFor="deadline">
-              <InactiveReadLine id="deadline" value={deadlineLabel} />
-            </RecommendationFieldBlock>
+            <EditorFieldWithSupplements
+              fieldKey="deadline"
+              supplements={supplements}
+              label="Термін виконання"
+              htmlFor="deadline"
+              currentValue={deadlineLabel}
+            />
 
-            <RecommendationFieldBlock label="Строк інформування" htmlFor="informing_deadline">
-              <InactiveReadLine
-                id="informing_deadline"
-                value={
-                  recommendation.informingDeadline
-                    ? recommendation.informingDeadline.toLocaleDateString("uk-UA", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })
-                    : "—"
-                }
-              />
-            </RecommendationFieldBlock>
+            <EditorFieldWithSupplements
+              fieldKey="informingDeadline"
+              supplements={supplements}
+              label="Строк інформування"
+              htmlFor="informing_deadline"
+              currentValue={formatDate(recommendation.informingDeadline)}
+            />
           </div>
+
+          {supplements.some((item) => item.fieldKey === "changeReason") ||
+          (recommendation.changeReason ?? "").trim() ? (
+            <EditorFieldWithSupplements
+              fieldKey="changeReason"
+              supplements={supplements}
+              label="Причина зміни"
+              htmlFor="change_reason"
+              currentValue={recommendation.changeReason ?? ""}
+            />
+          ) : null}
 
           {sspCanFillForm ? (
             <SspRecommendationEditForm
