@@ -12,10 +12,9 @@ export const ROLE_WORKSPACE_STATUS_FILTERS = [
 
 export type RoleWorkspaceStatusFilterKey = (typeof ROLE_WORKSPACE_STATUS_FILTERS)[number]["key"];
 
-/** Спільний фільтр терміну (ті самі `deadline` ключі: blue/yellow/red). */
+/** Спільний фільтр терміну для ССП / керівника / аналітика (без діапазону 8–30 днів). */
 export const ROLE_WORKSPACE_DEADLINE_FILTERS = [
   { key: "all", label: "Термін виконання" },
-  { key: "blue", label: "8–30 днів" },
   { key: "yellow", label: "4–7 днів" },
   { key: "red", label: "1–3 дні" },
 ] as const;
