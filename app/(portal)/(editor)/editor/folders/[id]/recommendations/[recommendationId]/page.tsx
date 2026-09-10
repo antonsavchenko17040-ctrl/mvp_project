@@ -328,34 +328,61 @@ export default async function EditorRecommendationDetailPage({
           {recommendation.status !== "draft" ? (
             <>
               <RecommendationFieldBlock label="Стан впровадження рекомендацій" htmlFor="progress_report">
-                <ReadBox id="progress_report" text={recommendation.progressReport ?? ""} />
+                <EditorAppendFieldDisplay
+                  id="progress_report"
+                  fieldKey="progressReport"
+                  currentValue={recommendation.progressReport ?? ""}
+                  supplements={supplements}
+                />
               </RecommendationFieldBlock>
 
               <RecommendationFieldBlock label="Фактична дата впровадження" htmlFor="actual_implementation_date">
-                <ReadLine
+                <EditorAppendFieldDisplay
                   id="actual_implementation_date"
-                  value={
+                  fieldKey="actualImplementationDate"
+                  currentValue={
                     recommendation.actualImplementationDate
                       ? formatDay(recommendation.actualImplementationDate)
                       : "—"
                   }
+                  supplements={supplements}
                 />
               </RecommendationFieldBlock>
 
               <RecommendationFieldBlock label="Заходи з впровадження рекомендацій" htmlFor="measures">
-                <ReadBox id="measures" text={recommendation.measuresDescription ?? ""} />
+                <EditorAppendFieldDisplay
+                  id="measures"
+                  fieldKey="measuresDescription"
+                  currentValue={recommendation.measuresDescription ?? ""}
+                  supplements={supplements}
+                />
               </RecommendationFieldBlock>
 
               <RecommendationFieldBlock label="Досягнення очікуваного" htmlFor="expected_achievement">
-                <ReadBox id="expected_achievement" text={recommendation.expectedAchievement ?? ""} />
+                <EditorAppendFieldDisplay
+                  id="expected_achievement"
+                  fieldKey="expectedAchievement"
+                  currentValue={recommendation.expectedAchievement ?? ""}
+                  supplements={supplements}
+                />
               </RecommendationFieldBlock>
 
               <RecommendationFieldBlock label="Підтверджуючі документи" htmlFor="supporting_documents">
-                <ReadBox id="supporting_documents" text={recommendation.supportingDocuments ?? ""} />
+                <EditorAppendFieldDisplay
+                  id="supporting_documents"
+                  fieldKey="supportingDocuments"
+                  currentValue={recommendation.supportingDocuments ?? ""}
+                  supplements={supplements}
+                />
               </RecommendationFieldBlock>
 
               <RecommendationFieldBlock label="Примітки" htmlFor="ssp_notes">
-                <ReadBox id="ssp_notes" text={recommendation.sspNotes ?? ""} />
+                <EditorAppendFieldDisplay
+                  id="ssp_notes"
+                  fieldKey="sspNotes"
+                  currentValue={recommendation.sspNotes ?? ""}
+                  supplements={supplements}
+                />
               </RecommendationFieldBlock>
             </>
           ) : null}

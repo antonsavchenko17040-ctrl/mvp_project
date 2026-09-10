@@ -1,40 +1,26 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import type { ReactNode } from "react";
 
+import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-field-display";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
-import { RecommendationFieldSupplementHistory } from "@/components/editor/recommendation-field-supplement-history";
 import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
 import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
 import { RecommendationExecutionStatusBadge } from "@/components/recommendation-execution-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { db } from "@/lib/db";
 import {
   parseDashboardExecutionListFilter,
   type DashboardExecutionListFilterKey,
 } from "@/lib/dashboard/execution-list-filters";
 import type { SupplementFieldKey } from "@/lib/editor/recommendation-supplements";
+import type { SspSupplementFieldKey } from "@/lib/ssp/recommendation-supplements";
 import {
   executionStatusSourceText,
   resolveExecutionStatusLabel,
 } from "@/lib/recommendation-execution-status";
 import { isExecutionPubliclyVisible } from "@/lib/public-recommendation-visibility";
-
-function ReadBox({ id, text }: { id: string; text: string }) {
-  const value = text.trim() ? text : "—";
-  return (
-    <Textarea
-      id={id}
-      readOnly
-      defaultValue={value}
-      tabIndex={-1}
-      className="min-h-[120px] cursor-default resize-none border-input bg-muted/20 text-base leading-relaxed text-foreground"
-    />
-  );
-}
 
 function ReadLine({ id, value }: { id: string; value: string }) {
   return (
@@ -52,34 +38,38 @@ function formatDate(value: Date | null | undefined): string {
   return value.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+type SupplementRow = {
+  id: string;
+  fieldKey: string;
+  content: string;
+  previousContent: string | null;
+  changeReason: string;
+  changeDate: Date;
+  createdAt: Date;
+};
+
 function FieldWithSupplements({
   fieldKey,
   supplements,
   label,
   htmlFor,
-  children,
+  currentValue,
 }: {
-  fieldKey: SupplementFieldKey;
-  supplements: {
-    id: string;
-    fieldKey: string;
-    content: string;
-    previousContent: string | null;
-    changeReason: string;
-    changeDate: Date;
-    createdAt: Date;
-  }[];
+  fieldKey: SupplementFieldKey | SspSupplementFieldKey;
+  supplements: SupplementRow[];
   label: string;
   htmlFor: string;
-  children: ReactNode;
+  currentValue: string;
 }) {
   return (
-    <div className="space-y-0">
-      <RecommendationFieldBlock label={label} htmlFor={htmlFor}>
-        {children}
-      </RecommendationFieldBlock>
-      <RecommendationFieldSupplementHistory fieldKey={fieldKey} items={supplements} />
-    </div>
+    <RecommendationFieldBlock label={label} htmlFor={htmlFor}>
+      <EditorAppendFieldDisplay
+        id={htmlFor}
+        fieldKey={fieldKey}
+        currentValue={currentValue}
+        supplements={supplements}
+      />
+    </RecommendationFieldBlock>
   );
 }
 
@@ -187,54 +177,48 @@ export async function ReportRecommendationDetailView({
             supplements={supplements}
             label="Елемент ВК"
             htmlFor="vk_element"
-          >
-            <ReadLine id="vk_element" value={recommendation.vkElement} />
-          </FieldWithSupplements>
+            currentValue={recommendation.vkElement}
+          />
 
           <FieldWithSupplements
             fieldKey="deficiency"
             supplements={supplements}
             label="Недоліки, проблеми та порушення (точки зростання)"
             htmlFor="deficiency"
-          >
-            <ReadBox id="deficiency" text={recommendation.deficiency} />
-          </FieldWithSupplements>
+            currentValue={recommendation.deficiency}
+          />
 
           <FieldWithSupplements
             fieldKey="observationSignificance"
             supplements={supplements}
             label="Значущість спостереження"
             htmlFor="observation_significance"
-          >
-            <ReadLine id="observation_significance" value={recommendation.observationSignificance} />
-          </FieldWithSupplements>
+            currentValue={recommendation.observationSignificance}
+          />
 
           <FieldWithSupplements
             fieldKey="recommendationText"
             supplements={supplements}
             label="Надані аудиторські рекомендації"
             htmlFor="recommendation_text"
-          >
-            <ReadBox id="recommendation_text" text={recommendation.recommendationText} />
-          </FieldWithSupplements>
+            currentValue={recommendation.recommendationText}
+          />
 
           <FieldWithSupplements
             fieldKey="executionIndicator"
             supplements={supplements}
             label="Індикатор виконання рекомендацій (захід / документ)"
             htmlFor="execution_indicator"
-          >
-            <ReadBox id="execution_indicator" text={recommendation.executionIndicator} />
-          </FieldWithSupplements>
+            currentValue={recommendation.executionIndicator}
+          />
 
           <FieldWithSupplements
             fieldKey="expectedResult"
             supplements={supplements}
             label="Очікуваний результат від впровадження рекомендацій"
             htmlFor="expected_result"
-          >
-            <ReadBox id="expected_result" text={recommendation.expectedResult} />
-          </FieldWithSupplements>
+            currentValue={recommendation.expectedResult}
+          />
 
           <div className="grid gap-6 md:grid-cols-3">
             <FieldWithSupplements
@@ -242,38 +226,35 @@ export async function ReportRecommendationDetailView({
               supplements={supplements}
               label="Відповідальний підрозділ"
               htmlFor="ssp_unit"
-            >
-              <ReadLine id="ssp_unit" value={recommendation.sspUnit} />
-            </FieldWithSupplements>
+              currentValue={recommendation.sspUnit}
+            />
 
             <FieldWithSupplements
               fieldKey="deadline"
               supplements={supplements}
               label="Термін виконання"
               htmlFor="deadline"
-            >
-              <ReadLine id="deadline" value={formatDate(recommendation.deadline)} />
-            </FieldWithSupplements>
+              currentValue={formatDate(recommendation.deadline)}
+            />
 
             <FieldWithSupplements
               fieldKey="informingDeadline"
               supplements={supplements}
               label="Строк інформування"
               htmlFor="informing_deadline"
-            >
-              <ReadLine id="informing_deadline" value={formatDate(recommendation.informingDeadline)} />
-            </FieldWithSupplements>
+              currentValue={formatDate(recommendation.informingDeadline)}
+            />
           </div>
 
-          {supplements.some((item) => item.fieldKey === "changeReason") ? (
+          {supplements.some((item) => item.fieldKey === "changeReason") ||
+          (recommendation.changeReason ?? "").trim() ? (
             <FieldWithSupplements
               fieldKey="changeReason"
               supplements={supplements}
               label="Причина зміни"
               htmlFor="change_reason"
-            >
-              <ReadBox id="change_reason" text={recommendation.changeReason ?? ""} />
-            </FieldWithSupplements>
+              currentValue={recommendation.changeReason ?? ""}
+            />
           ) : null}
 
           <RecommendationFieldBlock label="Стан виконання" htmlFor="execution_status">
@@ -282,33 +263,53 @@ export async function ReportRecommendationDetailView({
 
           {executionVisible ? (
             <>
-              {recommendation.progressReport ? (
-                <RecommendationFieldBlock label="Стан впровадження рекомендацій" htmlFor="progress_report">
-                  <ReadBox id="progress_report" text={recommendation.progressReport} />
-                </RecommendationFieldBlock>
-              ) : null}
+              <FieldWithSupplements
+                fieldKey="progressReport"
+                supplements={supplements}
+                label="Стан впровадження рекомендацій"
+                htmlFor="progress_report"
+                currentValue={recommendation.progressReport ?? ""}
+              />
 
-              <RecommendationFieldBlock label="Досягнення очікуваного" htmlFor="expected_achievement">
-                <ReadBox id="expected_achievement" text={recommendation.expectedAchievement ?? ""} />
-              </RecommendationFieldBlock>
+              <FieldWithSupplements
+                fieldKey="expectedAchievement"
+                supplements={supplements}
+                label="Досягнення очікуваного"
+                htmlFor="expected_achievement"
+                currentValue={recommendation.expectedAchievement ?? ""}
+              />
 
-              <RecommendationFieldBlock label="Підтверджуючі документи" htmlFor="supporting_documents">
-                <ReadBox id="supporting_documents" text={recommendation.supportingDocuments ?? ""} />
-              </RecommendationFieldBlock>
+              <FieldWithSupplements
+                fieldKey="supportingDocuments"
+                supplements={supplements}
+                label="Підтверджуючі документи"
+                htmlFor="supporting_documents"
+                currentValue={recommendation.supportingDocuments ?? ""}
+              />
 
-              {recommendation.measuresDescription ? (
-                <RecommendationFieldBlock label="Заходи з впровадження рекомендацій" htmlFor="measures">
-                  <ReadBox id="measures" text={recommendation.measuresDescription} />
-                </RecommendationFieldBlock>
-              ) : null}
+              <FieldWithSupplements
+                fieldKey="measuresDescription"
+                supplements={supplements}
+                label="Заходи з впровадження рекомендацій"
+                htmlFor="measures"
+                currentValue={recommendation.measuresDescription ?? ""}
+              />
 
-              <RecommendationFieldBlock label="Примітки" htmlFor="ssp_notes">
-                <ReadBox id="ssp_notes" text={recommendation.sspNotes ?? ""} />
-              </RecommendationFieldBlock>
+              <FieldWithSupplements
+                fieldKey="sspNotes"
+                supplements={supplements}
+                label="Примітки"
+                htmlFor="ssp_notes"
+                currentValue={recommendation.sspNotes ?? ""}
+              />
 
-              <RecommendationFieldBlock label="Фактична дата впровадження" htmlFor="actual_date">
-                <ReadLine id="actual_date" value={formatDate(recommendation.actualImplementationDate)} />
-              </RecommendationFieldBlock>
+              <FieldWithSupplements
+                fieldKey="actualImplementationDate"
+                supplements={supplements}
+                label="Фактична дата впровадження"
+                htmlFor="actual_date"
+                currentValue={formatDate(recommendation.actualImplementationDate)}
+              />
             </>
           ) : null}
         </CardContent>
