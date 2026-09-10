@@ -148,10 +148,6 @@ export default async function AdminPage({
           <CardTitle>Імпорт повністю заповненого звіту з XLSX</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Завантажуйте лише повністю заповнені звіти. Після імпорту статус «Завершено» не
-            виставляється автоматично — завершіть папку вручну нижче.
-          </p>
           <form
             action={adminImportAuditFolderFromXlsx}
             className="grid gap-3 md:grid-cols-3"
