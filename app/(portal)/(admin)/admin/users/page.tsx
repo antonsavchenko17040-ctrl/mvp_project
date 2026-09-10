@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
@@ -109,7 +110,7 @@ export default async function AdminUsersPage() {
                         {!user.isActive ? <p className="text-xs text-destructive">Деактивований</p> : null}
                       </td>
                       <td className={dataTable.cell}>
-                        <details className="relative inline-block">
+                        <DismissibleDetails className="relative inline-block">
                           <summary className="cursor-pointer list-none rounded-md border bg-muted/40 px-3 py-2 font-mono text-sm hover:bg-muted">
                             {user.email}
                           </summary>
@@ -121,7 +122,7 @@ export default async function AdminUsersPage() {
                               {tempPasswords[user.id] ?? "Користувач уже змінив пароль"}
                             </p>
                           </div>
-                        </details>
+                        </DismissibleDetails>
                       </td>
                       <td className={cn(dataTable.cell, "align-top")}>
                         <form action={assignRole} className="space-y-2">

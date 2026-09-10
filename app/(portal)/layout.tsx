@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { DeadlineNotificationsBellHost } from "@/components/layout/deadline-notifications-bell-host";
 import { Sidebar } from "@/components/layout/sidebar";
+import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { formatRolesList } from "@/lib/auth/roles";
 import { clearSession, getCurrentProfile, requireAuth } from "@/lib/auth/session";
 import { getDeadlineRemindersForProfile } from "@/lib/deadline-reminders";
@@ -35,7 +36,7 @@ export default async function PortalLayout({ children }: { children: React.React
       <div className="flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden">
         <header className="flex h-16 shrink-0 items-center justify-end gap-2 border-b border-black/20 bg-white px-5 xl:px-7">
           <DeadlineNotificationsBellHost items={deadlineReminders} />
-          <details className="group relative">
+          <DismissibleDetails className="group relative">
             <summary className="flex cursor-pointer list-none items-center gap-2.5 rounded-md px-2 py-1 hover:bg-muted">
               <span className="inline-flex size-9 items-center justify-center rounded-full border border-black/40 bg-[#e8d773] text-sm font-semibold text-black">
                 {(profile?.fullName?.[0] ?? "К").toUpperCase()}
@@ -57,7 +58,7 @@ export default async function PortalLayout({ children }: { children: React.React
                 </button>
               </form>
             </div>
-          </details>
+          </DismissibleDetails>
         </header>
         <main className="min-w-0 flex-1 overflow-x-auto p-5 xl:p-7 2xl:px-10 2xl:py-9">
           <div className="mx-auto w-full min-w-0 max-w-full">{children}</div>
