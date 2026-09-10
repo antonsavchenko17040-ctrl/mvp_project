@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { UserRound, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { LoginForm } from "@/components/auth/login-form";
 import { signOutFromPublic } from "@/components/public/sign-out-action";
+import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { formatRolesList } from "@/lib/auth/roles";
 import { uk } from "@/lib/i18n/uk";
 import { PORTAL_DASHBOARD_HOME, PUBLIC_DASHBOARD_HOME } from "@/lib/reports-section";
@@ -23,6 +24,15 @@ type PublicHeaderProps = {
 
 export function PublicHeader({ user = null }: PublicHeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [isOpen]);
 
   return (
     <>
@@ -49,7 +59,7 @@ export function PublicHeader({ user = null }: PublicHeaderProps) {
               >
                 Робочий простір
               </Link>
-              <details className="group relative">
+              <DismissibleDetails className="group relative">
                 <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md px-2 py-1 hover:bg-muted">
                   <span className="inline-flex size-8 items-center justify-center rounded-full border border-black/40 bg-[#e8d773] text-sm font-semibold text-black">
                     {(user.fullName?.[0] ?? "К").toUpperCase()}
@@ -71,7 +81,7 @@ export function PublicHeader({ user = null }: PublicHeaderProps) {
                     </button>
                   </form>
                 </div>
-              </details>
+              </DismissibleDetails>
             </div>
           ) : (
             <button
@@ -87,8 +97,18 @@ export function PublicHeader({ user = null }: PublicHeaderProps) {
       </header>
 
       {!user && isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4">
-          <div className="relative w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setIsOpen(false);
+          }}
+        >
+          <div
+            className="relative w-full max-w-lg rounded-2xl bg-white p-8 shadow-2xl"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Вхід"
+          >
             <button
               type="button"
               onClick={() => setIsOpen(false)}
