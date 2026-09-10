@@ -5,9 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import {
+  Archive,
   Building2,
   ChevronDown,
   ClipboardList,
+  FolderOpen,
   Folders,
   History,
   LayoutDashboard,
@@ -21,8 +23,12 @@ import {
 import { uk } from "@/lib/i18n/uk";
 import {
   isPortalDashboardActive,
+  isPortalReportsActiveListActive,
+  isPortalReportsCompletedListActive,
   isPortalReportsLibraryActive,
   PORTAL_DASHBOARD_HOME,
+  PORTAL_REPORTS_ACTIVE_HOME,
+  PORTAL_REPORTS_COMPLETED_HOME,
 } from "@/lib/reports-section";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -48,14 +54,23 @@ const adminNavItems = [
   { href: "/admin/audit-log", label: "Журнал змін", icon: History as ComponentType<{ className?: string }> },
 ] as const;
 
-const navItems = [
-  { href: "/dashboard", label: uk.nav.dashboard, icon: LayoutDashboard },
-  { href: "/reports", label: uk.nav.reports, icon: ClipboardList },
-];
+const reportsNavItems = [
+  {
+    href: PORTAL_REPORTS_ACTIVE_HOME,
+    label: "Активні звіти",
+    icon: FolderOpen as ComponentType<{ className?: string }>,
+  },
+  {
+    href: PORTAL_REPORTS_COMPLETED_HOME,
+    label: "Завершені звіти",
+    icon: Archive as ComponentType<{ className?: string }>,
+  },
+] as const;
 
 const isActivePath = (pathname: string, href: string) => {
   if (href === "/dashboard") return isPortalDashboardActive(pathname);
-  if (href === "/reports") return isPortalReportsLibraryActive(pathname);
+  if (href === PORTAL_REPORTS_ACTIVE_HOME) return isPortalReportsActiveListActive(pathname);
+  if (href === PORTAL_REPORTS_COMPLETED_HOME) return isPortalReportsCompletedListActive(pathname);
   if (href === "/admin") {
     return (
       pathname === "/admin" ||
@@ -104,9 +119,14 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
     return roleOrder.filter((role) => userRoles.includes(role)).map((role) => roleWorkspaceMap[role]);
   }, [userRoles]);
   const [adminOpen, setAdminOpen] = useState(true);
+  const [reportsOpen, setReportsOpen] = useState(true);
 
   useEffect(() => {
     if (pathname.startsWith("/admin")) setAdminOpen(true);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (isPortalReportsLibraryActive(pathname)) setReportsOpen(true);
   }, [pathname]);
 
   return (
@@ -129,9 +149,25 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
 
       <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain border-r border-black/20">
         <div>
-          {navItems.map((item) => (
-            <Item key={item.href} {...item} pathname={pathname} />
-          ))}
+          <Item href="/dashboard" label={uk.nav.dashboard} icon={LayoutDashboard} pathname={pathname} />
+          <div>
+            <button
+              type="button"
+              onClick={() => setReportsOpen((value) => !value)}
+              className="flex w-full items-center gap-2.5 border-b border-black/20 px-6 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]"
+            >
+              <ClipboardList className="size-[1.125rem] shrink-0" />
+              <span className="min-w-0 flex-1 truncate text-left">{uk.nav.reports}</span>
+              <ChevronDown
+                className={cn("size-[1.125rem] shrink-0 transition-transform", reportsOpen && "rotate-180")}
+              />
+            </button>
+            {reportsOpen
+              ? reportsNavItems.map((item) => (
+                  <Item key={item.href} {...item} pathname={pathname} compact />
+                ))
+              : null}
+          </div>
         </div>
 
         <div>

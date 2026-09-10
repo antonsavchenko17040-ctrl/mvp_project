@@ -17,6 +17,8 @@ type ManagementReportsOverviewProps = {
   enableFolderFilters?: boolean;
   titleQuery?: string;
   yearFilter?: number | null;
+  /** Фільтр архіву папок: активні / завершені / усі. */
+  archiveFilter?: "active" | "archived" | "all";
 };
 
 export async function ManagementReportsOverview({
@@ -27,14 +29,24 @@ export async function ManagementReportsOverview({
   enableFolderFilters = false,
   titleQuery = "",
   yearFilter = null,
+  archiveFilter = "all",
 }: ManagementReportsOverviewProps) {
   const folderFetchLimit = verifiedFolderLimit === "all" ? undefined : verifiedFolderLimit;
   const folders = await getVerifiedRecentFolders(folderFetchLimit);
   const stats = showDashboardSummary ? await getDashboardStats() : null;
 
-  const availableYears = Array.from(new Set(folders.map((folder) => folder.year))).sort((a, b) => b - a);
+  const archiveScopedFolders = folders.filter((folder) => {
+    const isArchived = folder.archivedAt != null;
+    if (archiveFilter === "active") return !isArchived;
+    if (archiveFilter === "archived") return isArchived;
+    return true;
+  });
+
+  const availableYears = Array.from(new Set(archiveScopedFolders.map((folder) => folder.year))).sort(
+    (a, b) => b - a,
+  );
   const normalizedTitleQuery = titleQuery.trim().toLowerCase();
-  const filteredFolders = folders.filter((folder) => {
+  const filteredFolders = archiveScopedFolders.filter((folder) => {
     if (yearFilter != null && folder.year !== yearFilter) return false;
     if (!normalizedTitleQuery) return true;
     return folder.title.toLowerCase().includes(normalizedTitleQuery);
@@ -87,7 +99,11 @@ export async function ManagementReportsOverview({
           <p className="text-base text-muted-foreground">
             {enableFolderFilters && (normalizedTitleQuery || yearFilter != null)
               ? "За обраними фільтрами папок не знайдено."
-              : "Папок звітів ще немає."}
+              : archiveFilter === "active"
+                ? "Активних звітів ще немає."
+                : archiveFilter === "archived"
+                  ? "Завершених звітів ще немає."
+                  : "Папок звітів ще немає."}
           </p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

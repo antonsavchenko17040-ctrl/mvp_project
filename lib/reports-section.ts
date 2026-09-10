@@ -1,5 +1,7 @@
 export const PORTAL_DASHBOARD_HOME = "/dashboard";
 export const PORTAL_REPORTS_LIBRARY_HOME = "/reports";
+export const PORTAL_REPORTS_ACTIVE_HOME = "/reports/active";
+export const PORTAL_REPORTS_COMPLETED_HOME = "/reports/completed";
 export const PUBLIC_DASHBOARD_HOME = "/public/dashboard";
 export const PUBLIC_REPORTS_LIBRARY_HOME = "/public/reports";
 
@@ -20,8 +22,18 @@ export function isPortalDashboardActive(pathname: string): boolean {
 export function isPortalReportsLibraryActive(pathname: string): boolean {
   return (
     pathname === PORTAL_REPORTS_LIBRARY_HOME ||
+    pathname === PORTAL_REPORTS_ACTIVE_HOME ||
+    pathname === PORTAL_REPORTS_COMPLETED_HOME ||
     pathname.startsWith(`${PORTAL_REPORTS_LIBRARY_FOLDERS_PREFIX}/`)
   );
+}
+
+export function isPortalReportsActiveListActive(pathname: string): boolean {
+  return pathname === PORTAL_REPORTS_ACTIVE_HOME;
+}
+
+export function isPortalReportsCompletedListActive(pathname: string): boolean {
+  return pathname === PORTAL_REPORTS_COMPLETED_HOME;
 }
 
 export function isPublicDashboardActive(pathname: string): boolean {
