@@ -31,9 +31,9 @@ export default async function PortalLayout({ children }: { children: React.React
     : [];
 
   return (
-    <div className="workspace-ui flex min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-[#f5f5f5]">
+    <div className="workspace-ui flex h-dvh w-full max-w-[100vw] overflow-hidden bg-[#f5f5f5]">
       <Sidebar userRoles={roles} />
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col overflow-x-hidden">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex h-16 shrink-0 items-center justify-end gap-2 border-b border-black/20 bg-white px-5 xl:px-7">
           <DeadlineNotificationsBellHost items={deadlineReminders} />
           <DismissibleDetails className="group relative">
@@ -60,7 +60,7 @@ export default async function PortalLayout({ children }: { children: React.React
             </div>
           </DismissibleDetails>
         </header>
-        <main className="min-w-0 flex-1 overflow-x-auto p-5 xl:p-7 2xl:px-10 2xl:py-9">
+        <main className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-auto p-5 xl:p-7 2xl:px-10 2xl:py-9">
           <div className="mx-auto w-full min-w-0 max-w-full">{children}</div>
         </main>
       </div>
