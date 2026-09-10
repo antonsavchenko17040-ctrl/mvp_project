@@ -1,7 +1,7 @@
 export const uk = {
   appName: "Портал моніторингу звітності",
   nav: {
-    dashboard: "Дашборд",
+    dashboard: "Головна сторінка",
     reports: "Бібліотека звітів",
     editorDesk: "Робочий стіл редактора",
     sspDesk: "Робочий стіл ССП",
