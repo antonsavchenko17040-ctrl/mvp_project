@@ -38,7 +38,7 @@ export function AdminRecommendationRow({
       className={cn(
         dataTable.bodyRow,
         dataTable.rowHover,
-        "cursor-pointer align-top focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+        "cursor-pointer align-middle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         !isActive && "bg-muted/40 text-muted-foreground",
       )}
       onClick={() => router.push(`/admin/recommendations/${id}`)}

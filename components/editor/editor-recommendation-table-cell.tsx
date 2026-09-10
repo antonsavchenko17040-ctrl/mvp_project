@@ -10,7 +10,7 @@ export function EditorRecommendationTableCell({
   align?: "left" | "center";
 }) {
   return (
-    <td className={cn("p-3 align-top", align === "center" && "text-center", className)}>
+    <td className={cn("p-3 align-middle", align === "center" && "text-center", className)}>
       {typeof children === "string" ? (
         <p
           className={cn(
