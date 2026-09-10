@@ -12,6 +12,7 @@ import { type SupplementFieldKey, SUPPLEMENT_FIELD_LABELS, isAppendFieldKey, isR
 import {
   AuditFolderXlsxImportError,
   auditFolderTitleFromFilename,
+  isFullyFilledImportedFolder,
   parseAuditFolderXlsx,
 } from "@/lib/import/audit-folder-xlsx";
 import { nextRecommendationSequenceNumber } from "@/lib/recommendation-sequence";
@@ -633,6 +634,10 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
     }
   }
 
+  if (isFullyFilledImportedFolder(parsed.recommendations)) {
+    redirect("/editor?error=import_admin_only");
+  }
+
   const folder = await db.$transaction(async (tx) => {
     const createdFolder = await tx.auditFolder.create({
       data: {
@@ -662,7 +667,8 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
           expectedAchievement: row.expectedAchievement,
           supportingDocuments: row.supportingDocuments,
           sspNotes: row.sspNotes,
-          status: row.status,
+          // Неповні звіти редактора завжди як чернетки для подальшого розподілу.
+          status: "draft",
         },
       });
 

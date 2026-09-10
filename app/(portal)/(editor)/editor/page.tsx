@@ -88,6 +88,10 @@ export default async function EditorPage({
           <CardTitle>Імпорт звіту з XLSX</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Завантажуйте лише неповністю заповнені звіти (є незаповнені комірки). Після імпорту звіт
+            потрапляє в статус «Чернетка». Повністю заповнені звіти завантажує адміністратор.
+          </p>
           <form action={importAuditFolderFromXlsx} className="grid gap-3 md:grid-cols-3" encType="multipart/form-data">
             <div className="md:col-span-2">
               <Label htmlFor="import-file">Файл таблиці (.xlsx)</Label>
@@ -121,6 +125,11 @@ export default async function EditorPage({
           ) : null}
           {query.error === "import_invalid_deadline" ? (
             <p className="text-sm text-red-600">Некоректний термін виконання{errorRow}.</p>
+          ) : null}
+          {query.error === "import_admin_only" ? (
+            <p className="text-sm text-red-600">
+              Повністю заповнені звіти може завантажувати лише адміністратор.
+            </p>
           ) : null}
         </CardContent>
       </Card>

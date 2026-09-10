@@ -24,12 +24,19 @@ import {
   getDepartments,
   removeDepartmentMember,
 } from "@/lib/admin/departments-store";
+import { canArchiveFolderByRecommendations, isFolderArchived } from "@/lib/audit-folder-archive";
 import { buildObjectDifference, buildUpdateSummary, statusLabelUk, writeAuditLog } from "@/lib/audit-log";
 import { clearTempPassword, setTempPassword } from "@/lib/auth/temp-password-store";
 import { actingRoleForAnalyst, actingRoleForManager } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { canTransition } from "@/lib/domain/recommendation-state-machine";
+import {
+  AuditFolderXlsxImportError,
+  auditFolderTitleFromFilename,
+  isFullyFilledImportedFolder,
+  parseAuditFolderXlsx,
+} from "@/lib/import/audit-folder-xlsx";
 import { nextRecommendationSequenceNumber } from "@/lib/recommendation-sequence";
 import type { RecommendationStatus, UserRole } from "@/lib/types";
 
@@ -443,6 +450,187 @@ export async function adminCreateAuditFolder(formData: FormData) {
   revalidatePath("/public/dashboard");
   revalidatePath("/public/reports");
   redirect("/admin?ok=folder_created");
+}
+
+export async function adminImportAuditFolderFromXlsx(formData: FormData) {
+  const profile = await requireRole(["admin"]);
+  const file = formData.get("file");
+  const year = Number(formData.get("year") ?? new Date().getFullYear());
+
+  if (!(file instanceof File) || file.size === 0) {
+    redirect("/admin?error=import_no_file");
+  }
+
+  if (!Number.isFinite(year) || year < 2000 || year > 2100) {
+    redirect("/admin?error=import_invalid_year");
+  }
+
+  const filename = file.name;
+  if (!filename.toLowerCase().endsWith(".xlsx")) {
+    redirect("/admin?error=import_invalid_format");
+  }
+
+  let parsed;
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    parsed = await parseAuditFolderXlsx(buffer, {
+      fallbackTitle: auditFolderTitleFromFilename(filename),
+    });
+  } catch (error) {
+    if (error instanceof AuditFolderXlsxImportError) {
+      const rowSuffix = error.row ? `&row=${error.row}` : "";
+      redirect(`/admin?error=${error.code}${rowSuffix}`);
+    }
+    redirect("/admin?error=import_parse_failed");
+  }
+
+  for (const row of parsed.recommendations) {
+    if (!row.deadline || Number.isNaN(row.deadline.getTime())) {
+      redirect(`/admin?error=import_invalid_deadline&row=${row.excelRow}`);
+    }
+  }
+
+  if (!isFullyFilledImportedFolder(parsed.recommendations)) {
+    redirect("/admin?error=import_editor_only");
+  }
+
+  const folder = await db.$transaction(async (tx) => {
+    const createdFolder = await tx.auditFolder.create({
+      data: {
+        title: parsed.title,
+        year,
+        createdById: profile.id,
+      },
+    });
+
+    for (const row of parsed.recommendations) {
+      const recommendation = await tx.recommendation.create({
+        data: {
+          auditFolderId: createdFolder.id,
+          sequenceNumber: row.sequenceNumber ?? 0,
+          vkElement: row.vkElement,
+          deficiency: row.deficiency,
+          recommendationText: row.recommendationText,
+          executionIndicator: row.executionIndicator,
+          expectedResult: row.expectedResult,
+          observationSignificance: row.observationSignificance,
+          sspUnit: row.sspUnit,
+          deadline: row.deadline!,
+          informingDeadline: row.informingDeadline,
+          progressReport: row.progressReport,
+          actualImplementationDate: row.actualImplementationDate,
+          measuresDescription: row.measuresDescription,
+          expectedAchievement: row.expectedAchievement,
+          supportingDocuments: row.supportingDocuments,
+          sspNotes: row.sspNotes,
+          status: row.status,
+        },
+      });
+
+      if (row.supplements.length > 0) {
+        await tx.recommendationFieldSupplement.createMany({
+          data: row.supplements.map((supplement) => ({
+            recommendationId: recommendation.id,
+            fieldKey: supplement.fieldKey,
+            content: supplement.content,
+            previousContent: supplement.previousContent,
+            changeReason: supplement.changeReason,
+            changeDate: supplement.changeDate,
+            createdById: profile.id,
+          })),
+        });
+      }
+    }
+
+    return createdFolder;
+  });
+
+  await writeAuditLog({
+    actor: profile,
+    actorRole: "admin",
+    action: "audit_folder.imported",
+    entityType: "audit_folder",
+    entityId: folder.id,
+    auditFolderId: folder.id,
+    summary: `Імпортовано повністю заповнену папку аудиту «${parsed.title}» (${parsed.recommendations.length} рекомендацій)`,
+    difference: {
+      title: parsed.title,
+      year,
+      recommendationsCount: parsed.recommendations.length,
+      fullyFilled: true,
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin?folder=${folder.id}`);
+  revalidatePath("/editor");
+  revalidatePath("/public/dashboard");
+  revalidatePath("/public/reports");
+  revalidatePath("/dashboard");
+  revalidatePath("/reports");
+  revalidatePath(`/public/folders/${folder.id}`);
+  revalidatePath(`/dashboard/folders/${folder.id}`);
+  revalidatePath(`/reports/folders/${folder.id}`);
+  revalidatePath(`/public/reports/folders/${folder.id}`);
+
+  redirect(`/admin?folder=${folder.id}&ok=imported`);
+}
+
+/** Ручне завершення папки адміністратором (без автозавершення під час імпорту). */
+export async function adminArchiveAuditFolder(formData: FormData) {
+  const profile = await requireRole(["admin"]);
+  const auditFolderId = String(formData.get("audit_folder_id") ?? "");
+
+  const folder = await db.auditFolder.findFirst({
+    where: { id: auditFolderId },
+    select: {
+      id: true,
+      title: true,
+      archivedAt: true,
+      recommendations: {
+        where: { isActive: true },
+        select: { status: true, isActive: true },
+      },
+    },
+  });
+
+  if (!folder) {
+    redirect("/admin?error=folder_not_found");
+  }
+
+  if (isFolderArchived(folder.archivedAt)) {
+    redirect(`/admin?folder=${folder.id}&error=already_archived`);
+  }
+
+  if (!canArchiveFolderByRecommendations(folder.recommendations)) {
+    redirect(`/admin?folder=${folder.id}&error=cannot_archive_incomplete`);
+  }
+
+  const archivedAt = new Date();
+  await db.auditFolder.update({
+    where: { id: folder.id },
+    data: { archivedAt },
+  });
+
+  await writeAuditLog({
+    actor: profile,
+    actorRole: "admin",
+    action: "audit_folder.archived",
+    entityType: "audit_folder",
+    entityId: folder.id,
+    auditFolderId: folder.id,
+    summary: `Завершено папку аудиту «${folder.title}»`,
+    difference: { archivedAt: archivedAt.toISOString() },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath(`/editor/folders/${folder.id}`);
+  revalidatePath(`/dashboard/folders/${folder.id}`);
+  revalidatePath(`/public/folders/${folder.id}`);
+  revalidatePath(`/reports/folders/${folder.id}`);
+  revalidatePath(`/public/reports/folders/${folder.id}`);
+  revalidatePath("/ssp");
+  redirect(`/admin?folder=${folder.id}&ok=archived`);
 }
 
 export async function adminCreateRecommendation(formData: FormData) {

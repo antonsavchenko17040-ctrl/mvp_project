@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { canArchiveFolderByRecommendations } from "@/lib/audit-folder-archive";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { recommendationSequenceOrderBy } from "@/lib/recommendation-sequence";
@@ -11,7 +12,9 @@ import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/
 import Link from "next/link";
 
 import {
+  adminArchiveAuditFolder,
   adminCreateAuditFolder,
+  adminImportAuditFolderFromXlsx,
   hardDeleteAuditFolder,
   hardDeleteRecommendation,
 } from "./actions";
@@ -20,6 +23,17 @@ const adminListErrors: Record<string, string> = {
   missing_recommendation: "Не вказано рекомендацію.",
   recommendation_not_found: "Рекомендацію не знайдено.",
   invalid_folder: "Вкажіть коректну назву та рік папки.",
+  folder_not_found: "Папку аудиту не знайдено.",
+  import_no_file: "Оберіть файл XLSX для імпорту.",
+  import_invalid_format: "Підтримується лише формат .xlsx.",
+  import_invalid_year: "Вкажіть коректний рік звіту.",
+  import_parse_failed: "Не вдалося прочитати файл. Перевірте формат таблиці.",
+  import_no_rows: "У файлі не знайдено рядків з рекомендаціями.",
+  import_empty_workbook: "Файл не містить аркушів.",
+  import_invalid_deadline: "Некоректний термін виконання у файлі.",
+  import_editor_only: "Неповністю заповнені звіти завантажує редактор.",
+  already_archived: "Папку вже завершено.",
+  cannot_archive_incomplete: "Завершити можна лише папку, де всі активні рекомендації виконані.",
 };
 
 const adminListOk: Record<string, string> = {
@@ -27,6 +41,8 @@ const adminListOk: Record<string, string> = {
   recommendation_created: "Рекомендацію створено.",
   published: "Рекомендацію верифіковано.",
   deactivated: "Рекомендацію деактивовано.",
+  imported: "Повністю заповнений звіт імпортовано. Завершіть його вручну, коли будете готові.",
+  archived: "Папку аудиту завершено.",
 };
 
 export default async function AdminPage({
@@ -48,6 +64,10 @@ export default async function AdminPage({
       archivedAt: true,
       _count: { select: { recommendations: true } },
       createdBy: { select: { email: true, fullName: true } },
+      recommendations: {
+        where: { isActive: true },
+        select: { status: true, isActive: true },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: 50,
@@ -124,6 +144,47 @@ export default async function AdminPage({
 
       <Card>
         <CardHeader>
+          <CardTitle>Імпорт повністю заповненого звіту з XLSX</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Завантажуйте лише повністю заповнені звіти. Після імпорту статус «Завершено» не
+            виставляється автоматично — завершіть папку вручну нижче.
+          </p>
+          <form
+            action={adminImportAuditFolderFromXlsx}
+            className="grid gap-3 md:grid-cols-3"
+            encType="multipart/form-data"
+          >
+            <div className="md:col-span-2">
+              <Label htmlFor="admin-import-file">Файл таблиці (.xlsx)</Label>
+              <Input
+                id="admin-import-file"
+                name="file"
+                type="file"
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="admin-import-year">Рік</Label>
+              <Input
+                id="admin-import-year"
+                name="year"
+                type="number"
+                defaultValue={new Date().getFullYear()}
+                required
+              />
+            </div>
+            <Button type="submit" className="md:col-span-3 w-fit">
+              Завантажити звіт
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Папки аудиту</CardTitle>
         </CardHeader>
         <CardContent>
@@ -150,7 +211,10 @@ export default async function AdminPage({
                     </td>
                   </tr>
                 ) : (
-                  auditFolders.map((folder) => (
+                  auditFolders.map((folder) => {
+                    const canComplete =
+                      !folder.archivedAt && canArchiveFolderByRecommendations(folder.recommendations);
+                    return (
                     <AdminAuditFolderRow
                       key={folder.id}
                       id={folder.id}
@@ -169,6 +233,14 @@ export default async function AdminPage({
                           >
                             Додати рекомендацію
                           </Link>
+                          {canComplete ? (
+                            <form action={adminArchiveAuditFolder}>
+                              <input type="hidden" name="audit_folder_id" value={folder.id} />
+                              <Button type="submit" variant="outline">
+                                Завершити
+                              </Button>
+                            </form>
+                          ) : null}
                           <form action={hardDeleteAuditFolder}>
                             <input type="hidden" name="audit_folder_id" value={folder.id} />
                             <Button type="submit" variant="destructive">
@@ -178,7 +250,8 @@ export default async function AdminPage({
                         </div>
                       }
                     />
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>
