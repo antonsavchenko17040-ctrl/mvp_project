@@ -102,15 +102,6 @@ export default async function AdminPage({
     <section className="space-y-5">
       <h1 className="text-3xl font-semibold">Робочий стіл адміністратора</h1>
 
-      <p>
-        <Link
-          href="/admin/audit-log"
-          className="text-base font-semibold text-sky-800 hover:underline"
-        >
-          Перегляд повного Audit Log (історії змін) →
-        </Link>
-      </p>
-
       {listError ? (
         <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
           {listError}
