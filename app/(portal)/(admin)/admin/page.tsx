@@ -233,7 +233,7 @@ export default async function AdminPage({
                             <form action={adminArchiveAuditFolder}>
                               <input type="hidden" name="audit_folder_id" value={folder.id} />
                               <Button type="submit" variant="outline">
-                                Завершити
+                                Архівувати
                               </Button>
                             </form>
                           ) : null}
