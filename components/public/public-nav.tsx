@@ -7,7 +7,7 @@ import { isPublicDashboardActive, isPublicReportsLibraryActive } from "@/lib/rep
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { href: "/public/dashboard", label: "Дашборд" },
+  { href: "/public/dashboard", label: "Головна сторінка" },
   { href: "/public/reports", label: "Бібліотека звітів" },
 ];
 

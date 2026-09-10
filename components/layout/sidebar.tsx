@@ -49,7 +49,7 @@ const adminNavItems = [
 ] as const;
 
 const navItems = [
-  { href: "/dashboard", label: "Дашборд", icon: LayoutDashboard },
+  { href: "/dashboard", label: uk.nav.dashboard, icon: LayoutDashboard },
   { href: "/reports", label: uk.nav.reports, icon: ClipboardList },
 ];
 
