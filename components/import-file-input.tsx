@@ -12,7 +12,7 @@ type ImportFileInputProps = {
   className?: string;
 };
 
-/** File input without the browser «Вибрати файл» button label. */
+/** File input: shows «Вибрати файл» until a file is chosen, then only the filename. */
 export function ImportFileInput({
   id,
   name,
@@ -42,7 +42,7 @@ export function ImportFileInput({
         )}
         aria-hidden
       >
-        <span className="truncate">{fileName || "\u00A0"}</span>
+        <span className="truncate">{fileName || "Вибрати файл"}</span>
       </div>
     </div>
   );
