@@ -270,6 +270,7 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "recommendation.reactivated": "Повторно активовано",
   "recommendation.deleted": "Видалено рекомендацію",
   "audit_folder.created": "Створено папку аудиту",
+  "audit_folder.imported": "Імпортовано папку аудиту",
   "audit_folder.archived": "Архівовано папку аудиту",
   "audit_folder.deleted": "Видалено папку аудиту",
   "user.created": "Створено користувача",
