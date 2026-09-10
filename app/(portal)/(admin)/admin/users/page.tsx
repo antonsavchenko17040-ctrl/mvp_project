@@ -120,12 +120,6 @@ export default async function AdminUsersPage() {
                             <p className="mt-1 rounded-md bg-muted px-3 py-2 font-mono text-sm">
                               {tempPasswords[user.id] ?? "Користувач уже змінив пароль"}
                             </p>
-                            <form action={generateUserPassword} className="mt-2">
-                              <input type="hidden" name="user_id" value={user.id} />
-                              <Button type="submit" size="sm" variant="outline" className="w-full">
-                                Згенерувати новий пароль
-                              </Button>
-                            </form>
                           </div>
                         </details>
                       </td>
@@ -154,24 +148,32 @@ export default async function AdminUsersPage() {
                         </form>
                       </td>
                       <td className={cn(dataTable.cell, "text-center")}>
-                        <form action={deleteUserAccount} className="inline-flex">
-                          <input type="hidden" name="user_id" value={user.id} />
-                          <input type="hidden" name="current_admin_id" value={currentAdmin.id} />
-                          <Button
-                            type="submit"
-                            variant="ghost"
-                            size="icon"
-                            disabled={user.id === currentAdmin.id}
-                            title={
-                              user.id === currentAdmin.id
-                                ? "Неможливо видалити власний обліковий запис"
-                                : "Видалити користувача"
-                            }
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </form>
+                        <div className="inline-flex flex-col items-center gap-2">
+                          <form action={generateUserPassword}>
+                            <input type="hidden" name="user_id" value={user.id} />
+                            <Button type="submit" size="sm" variant="outline">
+                              Згенерувати новий пароль
+                            </Button>
+                          </form>
+                          <form action={deleteUserAccount} className="inline-flex">
+                            <input type="hidden" name="user_id" value={user.id} />
+                            <input type="hidden" name="current_admin_id" value={currentAdmin.id} />
+                            <Button
+                              type="submit"
+                              variant="ghost"
+                              size="icon"
+                              disabled={user.id === currentAdmin.id}
+                              title={
+                                user.id === currentAdmin.id
+                                  ? "Неможливо видалити власний обліковий запис"
+                                  : "Видалити користувача"
+                              }
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="size-4" />
+                            </Button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   );
