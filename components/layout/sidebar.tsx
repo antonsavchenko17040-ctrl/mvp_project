@@ -124,13 +124,13 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
     <aside
       className={cn(
         "flex shrink-0 flex-col bg-white text-sidebar-foreground transition-[width] duration-200 ease-in-out",
-        collapsed ? "w-14" : "w-[280px]",
+        collapsed ? "w-14" : "w-[300px]",
       )}
     >
       <div
         className={cn(
           "flex h-16 items-center border-b border-black/20",
-          collapsed ? "cursor-pointer px-1" : "gap-1 px-4",
+          collapsed ? "cursor-pointer px-1" : "gap-1 px-3",
         )}
         onClick={collapsed ? toggleCollapsed : undefined}
         title={collapsed ? "Розгорнути меню" : undefined}
@@ -147,7 +147,7 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
               height={28}
               className="h-7 w-auto shrink-0"
             />
-            <span className="whitespace-nowrap">{uk.appName}</span>
+            <span className="min-w-0 whitespace-nowrap">{uk.appName}</span>
           </Link>
         ) : null}
         {!collapsed ? (
