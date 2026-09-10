@@ -1,5 +1,6 @@
 import { AdminAuditFolderRow } from "@/components/admin/admin-audit-folder-row";
 import { AdminRecommendationRow } from "@/components/admin/admin-recommendation-row";
+import { ImportFileInput } from "@/components/import-file-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -158,10 +159,9 @@ export default async function AdminPage({
           >
             <div className="md:col-span-2">
               <Label htmlFor="admin-import-file">Файл таблиці (.xlsx)</Label>
-              <Input
+              <ImportFileInput
                 id="admin-import-file"
                 name="file"
-                type="file"
                 accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 required
               />

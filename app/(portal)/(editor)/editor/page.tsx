@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 
 import { EditorAuditFolderCard } from "@/components/editor/editor-audit-folder-card";
+import { ImportFileInput } from "@/components/import-file-input";
 import { ReportsLibraryFilters } from "@/components/reports-library-filters";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -91,7 +92,12 @@ export default async function EditorPage({
           <form action={importAuditFolderFromXlsx} className="grid gap-3 md:grid-cols-3" encType="multipart/form-data">
             <div className="md:col-span-2">
               <Label htmlFor="import-file">Файл таблиці (.xlsx)</Label>
-              <Input id="import-file" name="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required />
+              <ImportFileInput
+                id="import-file"
+                name="file"
+                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                required
+              />
             </div>
             <div>
               <Label htmlFor="import-year">Рік</Label>
