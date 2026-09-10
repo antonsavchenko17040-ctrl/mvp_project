@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import {
   Building2,
   ChevronDown,
   ClipboardList,
+  Folders,
   History,
   LayoutDashboard,
   Shield,
@@ -26,14 +27,26 @@ import {
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const roleWorkspaceMap: Record<UserRole, { href: string; label: string; icon: ComponentType<{ className?: string }> }> =
+const roleWorkspaceMap: Record<
+  Exclude<UserRole, "admin">,
+  { href: string; label: string; icon: ComponentType<{ className?: string }> }
+> = {
+  editor: { href: "/editor", label: "Редактор", icon: UserPen },
+  ssp: { href: "/ssp", label: "Відповідальний", icon: Users },
+  manager: { href: "/manager", label: "Керівник", icon: UserCog },
+  analyst: { href: "/analyst", label: "Аналітик", icon: UserCheck },
+};
+
+const adminNavItems = [
+  { href: "/admin", label: "Список аудитів", icon: Folders as ComponentType<{ className?: string }> },
+  { href: "/admin/users", label: "Користувачі", icon: Users as ComponentType<{ className?: string }> },
   {
-    editor: { href: "/editor", label: "Редактор", icon: UserPen },
-    ssp: { href: "/ssp", label: "Відповідальний", icon: Users },
-    manager: { href: "/manager", label: "Керівник", icon: UserCog },
-    analyst: { href: "/analyst", label: "Аналітик", icon: UserCheck },
-    admin: { href: "/admin", label: "Адміністратор", icon: Shield },
-  };
+    href: "/admin/departments",
+    label: "Підрозділи",
+    icon: Building2 as ComponentType<{ className?: string }>,
+  },
+  { href: "/admin/audit-log", label: "Журнал змін", icon: History as ComponentType<{ className?: string }> },
+] as const;
 
 const navItems = [
   { href: "/dashboard", label: "Дашборд", icon: LayoutDashboard },
@@ -43,7 +56,14 @@ const navItems = [
 const isActivePath = (pathname: string, href: string) => {
   if (href === "/dashboard") return isPortalDashboardActive(pathname);
   if (href === "/reports") return isPortalReportsLibraryActive(pathname);
-  return pathname.startsWith(href);
+  if (href === "/admin") {
+    return (
+      pathname === "/admin" ||
+      pathname.startsWith("/admin/folders/") ||
+      pathname.startsWith("/admin/recommendations/")
+    );
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
 };
 
 const Item = ({
@@ -75,32 +95,22 @@ const Item = ({
   );
 };
 
-const workspaceOrder: UserRole[] = ["admin", "editor", "ssp", "manager", "analyst"];
+const workspaceOrder: Array<Exclude<UserRole, "admin">> = ["editor", "ssp", "manager", "analyst"];
 
 export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
   const pathname = usePathname();
+  const hasAdmin = userRoles.includes("admin");
   const workspaceItems = useMemo(() => {
-    const items: Array<{ href: string; label: string; icon: ComponentType<{ className?: string }> }> = [];
-    for (const role of workspaceOrder) {
-      if (!userRoles.includes(role)) continue;
-      if (role === "admin") {
-        items.push(
-          roleWorkspaceMap.admin,
-          { href: "/admin/users", label: "Користувачі", icon: Users as ComponentType<{ className?: string }> },
-          {
-            href: "/admin/departments",
-            label: "Підрозділи",
-            icon: Building2 as ComponentType<{ className?: string }>,
-          },
-          { href: "/admin/audit-log", label: "Журнал змін", icon: History as ComponentType<{ className?: string }> },
-        );
-      } else {
-        items.push(roleWorkspaceMap[role]);
-      }
-    }
-    return items;
+    return workspaceOrder
+      .filter((role) => userRoles.includes(role))
+      .map((role) => roleWorkspaceMap[role]);
   }, [userRoles]);
   const [workspaceOpen, setWorkspaceOpen] = useState(true);
+  const [adminOpen, setAdminOpen] = useState(true);
+
+  useEffect(() => {
+    if (pathname.startsWith("/admin")) setAdminOpen(true);
+  }, [pathname]);
 
   return (
     <aside className="flex w-[300px] shrink-0 flex-col bg-white text-sidebar-foreground">
@@ -130,20 +140,33 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
             Робочий простір
             <ChevronDown className={cn("size-[1.125rem] transition-transform", workspaceOpen && "rotate-180")} />
           </button>
-          {workspaceOpen
-            ? workspaceItems.map((item) => (
-                <Item
-                  key={item.href}
-                  {...item}
-                  pathname={pathname}
-                  compact={
-                    item.href === "/admin/users" ||
-                    item.href === "/admin/departments" ||
-                    item.href === "/admin/audit-log"
-                  }
-                />
-              ))
-            : null}
+          {workspaceOpen ? (
+            <>
+              {hasAdmin ? (
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => setAdminOpen((value) => !value)}
+                    className="flex w-full items-center gap-2.5 border-b border-black/20 px-6 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]"
+                  >
+                    <Shield className="size-[1.125rem] shrink-0" />
+                    <span className="min-w-0 flex-1 truncate text-left">Адміністратор</span>
+                    <ChevronDown
+                      className={cn("size-[1.125rem] shrink-0 transition-transform", adminOpen && "rotate-180")}
+                    />
+                  </button>
+                  {adminOpen
+                    ? adminNavItems.map((item) => (
+                        <Item key={item.href} {...item} pathname={pathname} compact />
+                      ))
+                    : null}
+                </div>
+              ) : null}
+              {workspaceItems.map((item) => (
+                <Item key={item.href} {...item} pathname={pathname} />
+              ))}
+            </>
+          ) : null}
         </div>
 
         <div>
