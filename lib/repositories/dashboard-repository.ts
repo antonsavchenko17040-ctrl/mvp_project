@@ -1,17 +1,15 @@
 import {
-  executionStatusSourceText,
-  isDoneOrEnsuredLabel,
-  isPartialExecutionLabel,
-  resolveExecutionStatusLabel,
+  countExecutionStatuses,
 } from "@/lib/recommendation-execution-status";
 import { db } from "@/lib/db";
 import { isExecutionPubliclyVisible } from "@/lib/public-recommendation-visibility";
 
 export interface DashboardStats {
   total: number;
-  done: number;
+  full: number;
   partial: number;
   notDone: number;
+  deadlineNotReached: number;
 }
 
 /**
@@ -25,22 +23,14 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   });
 
   const verified = rows.filter((item) => isExecutionPubliclyVisible(item.status));
-  const done = verified.filter((item) =>
-    isDoneOrEnsuredLabel(
-      resolveExecutionStatusLabel(executionStatusSourceText(item.progressReport, item.executionIndicator)),
-    ),
-  ).length;
-  const partial = verified.filter((item) =>
-    isPartialExecutionLabel(
-      resolveExecutionStatusLabel(executionStatusSourceText(item.progressReport, item.executionIndicator)),
-    ),
-  ).length;
+  const counts = countExecutionStatuses(verified);
 
   return {
     total: rows.length,
-    done,
-    partial,
-    notDone: Math.max(verified.length - done - partial, 0),
+    full: counts.full,
+    partial: counts.partial,
+    notDone: counts.notDone,
+    deadlineNotReached: counts.deadlineNotReached,
   };
 }
 

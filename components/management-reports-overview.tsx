@@ -8,7 +8,7 @@ import { getDashboardStats, getVerifiedRecentFolders } from "@/lib/repositories/
 type ManagementReportsOverviewProps = {
   /** Префікс посилання на папку, напр. `/dashboard/folders` або `/reports/folders`. */
   folderHrefPrefix: string;
-  /** Блок із чотирма картками статистики (лише дашборд / головна). */
+  /** Блок із картками статистики статусів виконання (лише дашборд / головна). */
   showDashboardSummary?: boolean;
   foldersSectionTitle?: string;
   /** Скільки папок показати; `"all"` — усі з рекомендаціями (бібліотека звітів). */
@@ -43,16 +43,17 @@ export async function ManagementReportsOverview({
   const summaryCards = stats
     ? [
         { title: "Рекомендацій", value: stats.total },
-        { title: "Виконано / Забезпечено виконання", value: stats.done },
-        { title: "Частково виконано", value: stats.partial },
-        { title: "Не виконані", value: stats.notDone },
+        { title: "Виконано повністю", value: stats.full },
+        { title: "Виконано частково", value: stats.partial },
+        { title: "Не виконано", value: stats.notDone },
+        { title: "Термін виконання не настав", value: stats.deadlineNotReached },
       ]
     : [];
 
   return (
     <section className="space-y-6">
       {showDashboardSummary && stats ? (
-        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
           {summaryCards.map((card) => (
             <Card key={card.title} className="border bg-background">
               <CardHeader>
