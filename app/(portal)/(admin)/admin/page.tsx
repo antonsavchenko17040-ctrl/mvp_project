@@ -184,7 +184,7 @@ export default async function AdminPage({
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <th className={dataTable.th}>Назва</th>
-                  <th className={dataTable.th}>Рік</th>
+                  <th className={cn(dataTable.th, "w-20 min-w-20 whitespace-nowrap")}>Рік</th>
                   <th className={dataTable.th}>Автор</th>
                   <th className={dataTable.th}>Рекомендацій</th>
                   <th className={dataTable.th}>Дії</th>
