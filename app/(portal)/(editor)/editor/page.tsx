@@ -88,10 +88,6 @@ export default async function EditorPage({
           <CardTitle>Імпорт звіту з XLSX</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Завантажуйте лише неповністю заповнені звіти (є незаповнені комірки). Після імпорту звіт
-            потрапляє в статус «Чернетка». Повністю заповнені звіти завантажує адміністратор.
-          </p>
           <form action={importAuditFolderFromXlsx} className="grid gap-3 md:grid-cols-3" encType="multipart/form-data">
             <div className="md:col-span-2">
               <Label htmlFor="import-file">Файл таблиці (.xlsx)</Label>
