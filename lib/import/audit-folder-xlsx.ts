@@ -276,3 +276,13 @@ export async function parseAuditFolderXlsx(
 export function auditFolderTitleFromFilename(filename: string): string {
   return titleFromFilename(filename);
 }
+
+/**
+ * Повністю заповнений звіт: у всіх рядків є дані виконання (колонки J–O),
+ * тож парсер виставляє статус `published`.
+ */
+export function isFullyFilledImportedFolder(
+  recommendations: ParsedImportRecommendation[],
+): boolean {
+  return recommendations.length > 0 && recommendations.every((item) => item.status === "published");
+}
