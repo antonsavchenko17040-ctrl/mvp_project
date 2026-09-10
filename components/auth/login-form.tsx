@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { signInAction, type LoginActionState } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ export function LoginForm({
   title?: string;
 }) {
   const [state, formAction, isPending] = useActionState(signInAction, initialState);
+  const [showForgotPasswordHint, setShowForgotPasswordHint] = useState(false);
 
   return (
     <form action={formAction} className="space-y-4">
@@ -47,9 +48,29 @@ export function LoginForm({
           className={compact ? "h-8" : ""}
         />
       </div>
-      {compact ? (
-        <p className="text-center text-xs text-muted-foreground">Забули пароль?</p>
-      ) : null}
+      <div className="space-y-1 text-center">
+        <button
+          type="button"
+          className={
+            compact
+              ? "text-xs text-muted-foreground underline-offset-2 hover:underline"
+              : "text-sm text-muted-foreground underline-offset-2 hover:underline"
+          }
+          onClick={() => setShowForgotPasswordHint(true)}
+        >
+          Забули пароль?
+        </button>
+        {showForgotPasswordHint ? (
+          <p
+            className={
+              compact ? "text-xs text-muted-foreground" : "text-sm text-muted-foreground"
+            }
+            role="status"
+          >
+            Для оновлення пароля зверніться до адміністратора
+          </p>
+        ) : null}
+      </div>
       <Button
         type="submit"
         disabled={isPending}
@@ -60,4 +81,3 @@ export function LoginForm({
     </form>
   );
 }
-
