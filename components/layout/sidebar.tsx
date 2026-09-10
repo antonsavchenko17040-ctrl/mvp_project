@@ -110,8 +110,8 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
   }, [pathname]);
 
   return (
-    <aside className="flex w-[300px] shrink-0 flex-col bg-white text-sidebar-foreground">
-      <div className="flex h-16 items-center border-b border-black/20 px-3">
+    <aside className="flex h-full w-[300px] shrink-0 flex-col bg-white text-sidebar-foreground">
+      <div className="flex h-16 shrink-0 items-center border-b border-black/20 px-3">
         <Link
           href={PORTAL_DASHBOARD_HOME}
           className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold leading-none hover:opacity-90"
@@ -127,7 +127,7 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
         </Link>
       </div>
 
-      <div className="flex flex-1 flex-col border-r border-black/20">
+      <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain border-r border-black/20">
         <div>
           {navItems.map((item) => (
             <Item key={item.href} {...item} pathname={pathname} />
@@ -159,9 +159,7 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
             <Item key={item.href} {...item} pathname={pathname} />
           ))}
         </div>
-
-        <div className="flex-1" />
-      </div>
+      </nav>
     </aside>
   );
 }
