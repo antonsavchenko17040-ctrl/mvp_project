@@ -9,7 +9,7 @@ export type DeadlineReminderItem = {
   message: string;
 };
 
-export type DeadlineUrgencyBand = "red" | "yellow" | "blue";
+export type DeadlineUrgencyBand = "red" | "yellow";
 
 function startOfLocalDay(value: Date): Date {
   return new Date(value.getFullYear(), value.getMonth(), value.getDate());
@@ -23,15 +23,14 @@ export function daysUntilDeadline(deadline: Date, now = new Date()): number {
 }
 
 /**
- * Підсвітка за залишком днів:
+ * Підсвітка комірки терміну в робочих просторах ролей:
  * — 1–3 дні → червоний;
- * — 4–7 днів → жовтий;
- * — 8–30 днів → синій.
+ * — 4–7 днів → жовтий.
+ * Діапазон 8–30 днів підсвічується лише в «Нагадуванні», не в таблицях.
  */
 export function deadlineUrgencyBand(daysLeft: number): DeadlineUrgencyBand | null {
   if (daysLeft >= 1 && daysLeft <= 3) return "red";
   if (daysLeft >= 4 && daysLeft <= 7) return "yellow";
-  if (daysLeft >= 8 && daysLeft <= 30) return "blue";
   return null;
 }
 
@@ -45,9 +44,6 @@ export function deadlineUrgencyCellClass(band: DeadlineUrgencyBand | null): stri
   }
   if (band === "yellow") {
     return "bg-amber-100 group-hover:bg-transparent group-focus-visible:bg-transparent group-data-[highlighted=true]:bg-transparent";
-  }
-  if (band === "blue") {
-    return "bg-sky-100 group-hover:bg-transparent group-focus-visible:bg-transparent group-data-[highlighted=true]:bg-transparent";
   }
   return undefined;
 }
