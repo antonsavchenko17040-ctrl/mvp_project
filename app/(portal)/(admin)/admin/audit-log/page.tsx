@@ -268,7 +268,7 @@ export default async function AdminAuditLogPage({
               entries.map((entry) => {
                 const description = formatAuditDescription(entry.summary, entry.difference);
                 return (
-                <tr key={entry.id} className={cn(dataTable.bodyRow, dataTable.rowHover, "align-top")}>
+                <tr key={entry.id} className={cn(dataTable.bodyRow, dataTable.rowHover, "align-middle")}>
                   <td className={cn(dataTable.cell, "max-w-[14rem]")}>
                     <div className="text-sm font-medium">
                       {entry.actorName || entry.actorEmail || "—"}

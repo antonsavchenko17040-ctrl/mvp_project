@@ -43,7 +43,7 @@ export function AdminAuditFolderRow({
       aria-pressed={selected}
       className={cn(
         dataTable.bodyRow,
-        "relative cursor-pointer align-top transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+        "relative cursor-pointer align-middle transition-colors duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         isArchived
           ? selected
             ? "bg-[#c9ced8] text-slate-900 hover:bg-[#b8bfcc]"
@@ -60,13 +60,13 @@ export function AdminAuditFolderRow({
         }
       }}
     >
-      <td className={cn(dataTable.cell, "relative font-medium", isArchived && "pt-7")}>
+      <td className={cn(dataTable.cell, "relative font-medium")}>
         {isArchived ? (
           <span className="absolute top-1.5 left-1.5 z-10 rounded-full border border-slate-600 bg-slate-700 px-2 py-0.5 text-[11px] font-semibold leading-none text-white">
             Завершено
           </span>
         ) : null}
-        <span>{title}</span>
+        <span className={cn(isArchived && "inline-block pt-4")}>{title}</span>
       </td>
       <td className={cn(dataTable.cell, "w-20 min-w-20 whitespace-nowrap")}>{year}</td>
       <td className={dataTable.cell}>

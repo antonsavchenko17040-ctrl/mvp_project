@@ -110,7 +110,7 @@ export default async function AdminUsersPage() {
                       <td className={dataTable.cell}>
                         <p className="font-mono text-sm">{user.email}</p>
                       </td>
-                      <td className={cn(dataTable.cell, "align-top")}>
+                      <td className={dataTable.cell}>
                         <form action={assignRole} className="space-y-2">
                           <input type="hidden" name="user_id" value={user.id} />
                           <div className="flex flex-wrap gap-x-3 gap-y-1">

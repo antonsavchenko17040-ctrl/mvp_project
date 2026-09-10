@@ -10,8 +10,8 @@ export const dataTable = {
   thCenter: "p-3 text-center align-middle",
   bodyRow: "border-t border-black",
   rowHover: "transition-colors hover:bg-[#f2ecbe] focus-visible:bg-[#f2ecbe]",
-  cell: "p-3 align-top",
-  emptyCell: "p-6 text-center text-base text-muted-foreground",
+  cell: "p-3 align-middle",
+  emptyCell: "p-6 text-center align-middle text-base text-muted-foreground",
 } as const;
 
 export function dataTableWrapClassName(className?: string) {
