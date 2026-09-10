@@ -38,13 +38,13 @@ const roleWorkspaceMap: Record<
 };
 
 const adminNavItems = [
-  { href: "/admin", label: "Список аудитів", icon: Folders as ComponentType<{ className?: string }> },
   { href: "/admin/users", label: "Користувачі", icon: Users as ComponentType<{ className?: string }> },
   {
     href: "/admin/departments",
     label: "Підрозділи",
     icon: Building2 as ComponentType<{ className?: string }>,
   },
+  { href: "/admin", label: "Список аудитів", icon: Folders as ComponentType<{ className?: string }> },
   { href: "/admin/audit-log", label: "Журнал змін", icon: History as ComponentType<{ className?: string }> },
 ] as const;
 
