@@ -569,6 +569,8 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
   revalidatePath("/public/reports");
   revalidatePath("/dashboard");
   revalidatePath("/reports");
+  revalidatePath("/reports/active");
+  revalidatePath("/reports/completed");
   revalidatePath(`/public/folders/${folder.id}`);
   revalidatePath(`/dashboard/folders/${folder.id}`);
   revalidatePath(`/reports/folders/${folder.id}`);
@@ -786,6 +788,8 @@ export async function adminPublishRecommendation(formData: FormData) {
   revalidatePath("/public/reports");
   revalidatePath("/dashboard");
   revalidatePath("/reports");
+  revalidatePath("/reports/active");
+  revalidatePath("/reports/completed");
   redirect(`/admin/recommendations/${id}?ok=published`);
 }
 
@@ -905,6 +909,8 @@ export async function adminDeactivateRecommendation(formData: FormData) {
   revalidatePath("/public/reports");
   revalidatePath("/dashboard");
   revalidatePath("/reports");
+  revalidatePath("/reports/active");
+  revalidatePath("/reports/completed");
   redirect("/admin?ok=deactivated");
 }
 
@@ -953,6 +959,8 @@ export async function adminReactivateRecommendation(formData: FormData) {
   revalidatePath("/public/reports");
   revalidatePath("/dashboard");
   revalidatePath("/reports");
+  revalidatePath("/reports/active");
+  revalidatePath("/reports/completed");
   redirect(`/admin/recommendations/${id}?ok=reactivated`);
 }
 
@@ -1016,6 +1024,8 @@ export async function renameDepartmentAction(formData: FormData) {
   revalidatePath("/analyst");
   revalidatePath("/dashboard");
   revalidatePath("/reports");
+  revalidatePath("/reports/active");
+  revalidatePath("/reports/completed");
   redirect("/admin/departments?ok=department_renamed");
 }
 

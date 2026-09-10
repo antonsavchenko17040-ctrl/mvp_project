@@ -833,6 +833,8 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
   revalidatePath("/public/reports");
   revalidatePath("/dashboard");
   revalidatePath("/reports");
+  revalidatePath("/reports/active");
+  revalidatePath("/reports/completed");
   revalidatePath(`/public/folders/${folder.id}`);
   revalidatePath(`/dashboard/folders/${folder.id}`);
   revalidatePath(`/reports/folders/${folder.id}`);

@@ -1,7 +1,11 @@
+import { notFound } from "next/navigation";
+
 import { ReportFolderDetailView } from "@/components/report-folder-detail-view";
+import { db } from "@/lib/db";
 import {
+  PORTAL_REPORTS_ACTIVE_HOME,
+  PORTAL_REPORTS_COMPLETED_HOME,
   PORTAL_REPORTS_LIBRARY_FOLDERS_PREFIX,
-  PORTAL_REPORTS_LIBRARY_HOME,
 } from "@/lib/reports-section";
 
 export default async function ReportsLibraryFolderPage({
@@ -18,12 +22,22 @@ export default async function ReportsLibraryFolderPage({
   }>;
 }) {
   const { id } = await params;
+  const folder = await db.auditFolder.findFirst({
+    where: { id },
+    select: { id: true, archivedAt: true },
+  });
+  if (!folder) notFound();
+
+  const isArchived = folder.archivedAt != null;
+  const backHref = isArchived ? PORTAL_REPORTS_COMPLETED_HOME : PORTAL_REPORTS_ACTIVE_HOME;
+  const backLabel = isArchived ? "Повернутися до завершених звітів" : "Повернутися до активних звітів";
+
   return (
     <ReportFolderDetailView
       folderId={id}
       folderHref={`${PORTAL_REPORTS_LIBRARY_FOLDERS_PREFIX}/${id}`}
-      backHref={PORTAL_REPORTS_LIBRARY_HOME}
-      backLabel="Повернутися до бібліотеки звітів"
+      backHref={backHref}
+      backLabel={backLabel}
       filtersMode="library"
       searchParams={searchParams}
     />
