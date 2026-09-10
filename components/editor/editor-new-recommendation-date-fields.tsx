@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
-import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 function formatDateInputValue(date: Date): string {
   const y = date.getFullYear();
@@ -12,17 +12,26 @@ function formatDateInputValue(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-/** Date fields for creating a recommendation with linked min constraints. */
+const dateInputClassName = cn(
+  "h-11 w-full min-w-0 rounded-md border border-input bg-background px-3 text-base text-foreground",
+  "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+  "disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50",
+);
+
+/**
+ * Календарні обмеження одразу в picker:
+ * — термін виконання ≥ сьогодні;
+ * — строк інформування ≥ термін виконання.
+ */
 export function EditorNewRecommendationDateFields() {
-  const today = formatDateInputValue(new Date());
+  const today = useMemo(() => formatDateInputValue(new Date()), []);
   const [deadline, setDeadline] = useState("");
   const [informingDeadline, setInformingDeadline] = useState("");
-  const informingMin = deadline || today;
 
   return (
     <>
       <RecommendationFieldBlock label="Термін виконання" htmlFor="deadline">
-        <Input
+        <input
           id="deadline"
           name="deadline"
           type="date"
@@ -31,25 +40,42 @@ export function EditorNewRecommendationDateFields() {
           value={deadline}
           onChange={(event) => {
             const nextDeadline = event.target.value;
+            if (nextDeadline && nextDeadline < today) {
+              setDeadline(today);
+              if (informingDeadline && informingDeadline < today) {
+                setInformingDeadline("");
+              }
+              return;
+            }
             setDeadline(nextDeadline);
             if (informingDeadline && nextDeadline && informingDeadline < nextDeadline) {
               setInformingDeadline("");
             }
           }}
-          className="h-11 text-base"
+          className={dateInputClassName}
         />
       </RecommendationFieldBlock>
 
       <RecommendationFieldBlock label="Строк інформування" htmlFor="informing_deadline">
-        <Input
+        <input
           id="informing_deadline"
           name="informing_deadline"
           type="date"
           required
-          min={informingMin}
+          disabled={!deadline}
+          min={deadline || today}
           value={informingDeadline}
-          onChange={(event) => setInformingDeadline(event.target.value)}
-          className="h-11 text-base"
+          onChange={(event) => {
+            const nextInforming = event.target.value;
+            const minAllowed = deadline || today;
+            if (nextInforming && nextInforming < minAllowed) {
+              setInformingDeadline(minAllowed);
+              return;
+            }
+            setInformingDeadline(nextInforming);
+          }}
+          className={dateInputClassName}
+          title={!deadline ? "Спочатку оберіть термін виконання" : undefined}
         />
       </RecommendationFieldBlock>
     </>
