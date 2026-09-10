@@ -129,6 +129,12 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
 
       <div className="flex flex-1 flex-col border-r border-black/20">
         <div>
+          {navItems.map((item) => (
+            <Item key={item.href} {...item} pathname={pathname} />
+          ))}
+        </div>
+
+        <div>
           {hasAdmin ? (
             <div>
               <button
@@ -150,12 +156,6 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
             </div>
           ) : null}
           {roleItems.map((item) => (
-            <Item key={item.href} {...item} pathname={pathname} />
-          ))}
-        </div>
-
-        <div>
-          {navItems.map((item) => (
             <Item key={item.href} {...item} pathname={pathname} />
           ))}
         </div>
