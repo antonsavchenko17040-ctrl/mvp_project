@@ -278,6 +278,7 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "user.deleted": "Видалено користувача",
   "user.password_reset": "Скинуто пароль",
   "department.created": "Створено підрозділ",
+  "department.renamed": "Перейменовано підрозділ",
   "department.archived": "Архівовано підрозділ",
   "department.member_assigned": "Додано до підрозділу",
   "department.member_removed": "Вилучено з підрозділу",
