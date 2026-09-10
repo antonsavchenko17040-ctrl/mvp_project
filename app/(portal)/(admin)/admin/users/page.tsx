@@ -148,7 +148,7 @@ export default async function AdminUsersPage() {
                         </form>
                       </td>
                       <td className={cn(dataTable.cell, "text-center")}>
-                        <div className="inline-flex flex-col items-center gap-2">
+                        <div className="inline-flex items-center justify-center gap-2">
                           <form action={generateUserPassword}>
                             <input type="hidden" name="user_id" value={user.id} />
                             <Button type="submit" size="sm" variant="outline">
