@@ -161,11 +161,17 @@ function isEmptyDataRow(texts: string[]): boolean {
   return texts.every((value) => !value.trim() || value.trim() === "—");
 }
 
-function hasExecutionData(texts: string[]): boolean {
-  return EXECUTION_TEXT_INDEXES.some((index) => {
-    const value = texts[index]?.trim();
-    return Boolean(value && value !== "—");
-  });
+function isFilledCell(value: string | undefined): boolean {
+  const trimmed = value?.trim();
+  return Boolean(trimmed && trimmed !== "—");
+}
+
+/**
+ * Секція виконання (колонки після «Строк інформування», J–O) заповнена повністю:
+ * усі комірки мають значення. Часткове або порожнє заповнення — неповний рядок.
+ */
+export function isExecutionSectionFullyFilled(texts: string[]): boolean {
+  return EXECUTION_TEXT_INDEXES.every((index) => isFilledCell(texts[index]));
 }
 
 function parseSequenceNumber(raw: string, fallback: number): number {
@@ -238,7 +244,7 @@ export async function parseAuditFolderXlsx(
       return trimmed;
     };
 
-    const status: RecommendationStatus = hasExecutionData(texts) ? "published" : "draft";
+    const status: RecommendationStatus = isExecutionSectionFullyFilled(texts) ? "published" : "draft";
 
     recommendations.push({
       excelRow: rowIndex,
@@ -278,8 +284,9 @@ export function auditFolderTitleFromFilename(filename: string): string {
 }
 
 /**
- * Повністю заповнений звіт: у всіх рядків є дані виконання (колонки J–O),
- * тож парсер виставляє статус `published`.
+ * Повністю заповнений звіт: у кожної рекомендації секція після «Строк інформування»
+ * заповнена повністю (парсер ставить `published`). Якщо хоча б один рядок частковий
+ * або порожній — звіт неповний (`draft`).
  */
 export function isFullyFilledImportedFolder(
   recommendations: ParsedImportRecommendation[],
