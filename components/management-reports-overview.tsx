@@ -67,14 +67,14 @@ export async function ManagementReportsOverview({
       {showDashboardSummary && stats ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
           {summaryCards.map((card) => (
-            <Card key={card.title} className="border bg-background">
-              <CardHeader>
+            <Card key={card.title} className="h-full border bg-background">
+              <CardHeader className="flex-1">
                 <CardTitle className="text-base font-medium text-muted-foreground 2xl:text-lg">
                   {card.title}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-5xl font-bold 2xl:text-6xl">{card.value}</p>
+                <p className="text-5xl font-bold tabular-nums 2xl:text-6xl">{card.value}</p>
               </CardContent>
             </Card>
           ))}
