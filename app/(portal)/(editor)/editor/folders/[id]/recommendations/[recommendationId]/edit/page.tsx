@@ -28,7 +28,7 @@ const errorMessages: Record<string, string> = {
   recommendation_not_found: "Рекомендацію не знайдено або доступ до неї відсутній.",
   cannot_edit_status: "Редагування доступне лише для чернетки редактора або чернетки відповідального.",
   assignee_required_before_start:
-    "Спочатку збережіть зміни та призначте відповідальну особу ССП, потім натисніть «Передати в роботу».",
+    "Перед передачею в роботу оберіть відповідальний підрозділ зі списку.",
   cannot_start_from_status: "Передати в роботу можна лише з чернетки редактора або чернетки відповідального.",
 };
 
@@ -84,6 +84,9 @@ export default async function EditorRecommendationEditPage({
   }
 
   const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
+  const selectedSspUnit = activeDepartments.some((d) => d.name === recommendation.sspUnit)
+    ? recommendation.sspUnit
+    : "";
   const redirectPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}/edit`;
 
   const errorKey = query.error ?? "";
@@ -204,7 +207,7 @@ export default async function EditorRecommendationEditPage({
                   id="ssp_unit"
                   name="ssp_unit"
                   className={editSelectClass}
-                  defaultValue={recommendation.sspUnit}
+                  defaultValue={selectedSspUnit}
                   required
                 >
                   <option value="">— Оберіть підрозділ —</option>

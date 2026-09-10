@@ -154,6 +154,7 @@ export async function startExecution(formData: FormData) {
     },
     select: {
       assigneeUserId: true,
+      sspUnit: true,
       auditFolderId: true,
       status: true,
       auditFolder: { select: { archivedAt: true } },
@@ -170,9 +171,23 @@ export async function startExecution(formData: FormData) {
   if (recommendation.status !== "draft" && recommendation.status !== "ssp_draft") {
     redirect(`${errorBase}?error=cannot_start_from_status`);
   }
+
+  // SSP бачить рекомендації за точним sspUnit ∈ підрозділів користувача —
+  // під час передачі в роботу обов’язково зберігаємо валідний підрозділ з форми.
+  const sspUnitRaw = String(formData.get("ssp_unit") ?? "").trim();
+  const sspUnit = sspUnitRaw || recommendation.sspUnit.trim();
+  const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
+  const matchedDepartment = activeDepartments.find((department) => department.name === sspUnit);
+  if (!matchedDepartment) {
+    redirect(`${errorBase}?error=invalid_department`);
+  }
+
   await db.recommendation.update({
     where: { id: recommendationId },
-    data: { status: "in_progress" },
+    data: {
+      status: "in_progress",
+      sspUnit: matchedDepartment.name,
+    },
   });
   await writeAuditLog({
     actor: profile,
@@ -183,7 +198,11 @@ export async function startExecution(formData: FormData) {
     recommendationId,
     auditFolderId: recommendation.auditFolderId,
     summary: `Передано на виконання (було: ${statusLabelUk(recommendation.status)})`,
-    difference: { from: recommendation.status, to: "in_progress" },
+    difference: {
+      from: recommendation.status,
+      to: "in_progress",
+      sspUnit: matchedDepartment.name,
+    },
   });
   revalidatePath("/editor");
   revalidatePath(`/editor/folders/${recommendation.auditFolderId}`);
