@@ -10,6 +10,7 @@ import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { recommendationSequenceOrderBy } from "@/lib/recommendation-sequence";
 import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 import {
@@ -184,7 +185,7 @@ export default async function AdminPage({
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <th className={dataTable.th}>Назва</th>
-                  <th className={dataTable.th}>Рік</th>
+                  <th className={cn(dataTable.th, "w-20 min-w-20 whitespace-nowrap")}>Рік</th>
                   <th className={dataTable.th}>Автор</th>
                   <th className={dataTable.th}>Рекомендацій</th>
                   <th className={dataTable.th}>Дії</th>

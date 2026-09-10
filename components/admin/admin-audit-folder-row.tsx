@@ -68,7 +68,7 @@ export function AdminAuditFolderRow({
         ) : null}
         <span>{title}</span>
       </td>
-      <td className={dataTable.cell}>{year}</td>
+      <td className={cn(dataTable.cell, "w-20 min-w-20 whitespace-nowrap")}>{year}</td>
       <td className={dataTable.cell}>
         <span className="text-sm">{authorEmail}</span>
         {authorFullName ? (
