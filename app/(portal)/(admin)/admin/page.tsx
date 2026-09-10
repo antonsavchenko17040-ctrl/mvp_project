@@ -10,6 +10,7 @@ import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { recommendationSequenceOrderBy } from "@/lib/recommendation-sequence";
 import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 import {
