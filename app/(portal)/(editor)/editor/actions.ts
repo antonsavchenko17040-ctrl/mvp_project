@@ -157,6 +157,14 @@ export async function startExecution(formData: FormData) {
       sspUnit: true,
       auditFolderId: true,
       status: true,
+      vkElement: true,
+      observationSignificance: true,
+      deficiency: true,
+      recommendationText: true,
+      executionIndicator: true,
+      expectedResult: true,
+      deadline: true,
+      informingDeadline: true,
       auditFolder: { select: { archivedAt: true } },
     },
   });
@@ -172,21 +180,78 @@ export async function startExecution(formData: FormData) {
     redirect(`${errorBase}?error=cannot_start_from_status`);
   }
 
-  // SSP бачить рекомендації за точним sspUnit ∈ підрозділів користувача —
-  // під час передачі в роботу обов’язково зберігаємо валідний підрозділ з форми.
+  // Кнопка «Передати в роботу» сабмітить ту саму форму, що й «Зберегти зміни» —
+  // зберігаємо всі поля, інакше правки редактора втрачаються.
+  const assigneeUserIdRaw = String(formData.get("assignee_user_id") ?? "").trim();
+  const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
   const sspUnitRaw = String(formData.get("ssp_unit") ?? "").trim();
   const sspUnit = sspUnitRaw || recommendation.sspUnit.trim();
+  const observationSignificance = String(formData.get("observation_significance") ?? "середній");
+  const informingDeadlineRaw = String(formData.get("informing_deadline") ?? "").trim();
+  const informingDeadline = informingDeadlineRaw === "" ? null : new Date(informingDeadlineRaw);
+  const deadline = new Date(String(formData.get("deadline") ?? ""));
+  if (Number.isNaN(deadline.getTime())) {
+    redirect(`${errorBase}?error=invalid_deadline`);
+  }
+  if (informingDeadline && Number.isNaN(informingDeadline.getTime())) {
+    redirect(`${errorBase}?error=invalid_informing_deadline`);
+  }
+
+  const nextValues = {
+    vkElement: String(formData.get("vk_element") ?? ""),
+    observationSignificance,
+    deficiency: String(formData.get("deficiency") ?? ""),
+    recommendationText: String(formData.get("recommendation_text") ?? ""),
+    executionIndicator: String(formData.get("execution_indicator") ?? ""),
+    expectedResult: String(formData.get("expected_result") ?? ""),
+    sspUnit,
+    deadline,
+    informingDeadline,
+    assigneeUserId,
+  };
+
+  if (assigneeUserId) {
+    const assignee = await db.profile.findFirst({
+      where: {
+        id: assigneeUserId,
+        isActive: true,
+        roles: { some: { role: "ssp" } },
+      },
+      select: { id: true },
+    });
+    if (!assignee) {
+      redirect(`${errorBase}?error=assignee_not_found`);
+    }
+  }
+
   const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
-  const matchedDepartment = activeDepartments.find((department) => department.name === sspUnit);
+  const matchedDepartment = activeDepartments.find((department) => department.name === nextValues.sspUnit);
   if (!matchedDepartment) {
     redirect(`${errorBase}?error=invalid_department`);
   }
+  nextValues.sspUnit = matchedDepartment.name;
+
+  const fieldDifference = buildObjectDifference(
+    {
+      vkElement: recommendation.vkElement,
+      observationSignificance: recommendation.observationSignificance,
+      deficiency: recommendation.deficiency,
+      recommendationText: recommendation.recommendationText,
+      executionIndicator: recommendation.executionIndicator,
+      expectedResult: recommendation.expectedResult,
+      sspUnit: recommendation.sspUnit,
+      deadline: recommendation.deadline,
+      informingDeadline: recommendation.informingDeadline,
+      assigneeUserId: recommendation.assigneeUserId,
+    },
+    nextValues,
+  );
 
   await db.recommendation.update({
     where: { id: recommendationId },
     data: {
+      ...nextValues,
       status: "in_progress",
-      sspUnit: matchedDepartment.name,
     },
   });
   await writeAuditLog({
@@ -201,11 +266,12 @@ export async function startExecution(formData: FormData) {
     difference: {
       from: recommendation.status,
       to: "in_progress",
-      sspUnit: matchedDepartment.name,
+      ...fieldDifference,
     },
   });
   revalidatePath("/editor");
   revalidatePath(`/editor/folders/${recommendation.auditFolderId}`);
+  revalidatePath(`/editor/folders/${recommendation.auditFolderId}/recommendations/${recommendationId}`);
   revalidatePath(`/ssp/recommendations/${recommendationId}`);
   revalidatePath("/ssp");
   redirect(`/editor/folders/${recommendation.auditFolderId}`);

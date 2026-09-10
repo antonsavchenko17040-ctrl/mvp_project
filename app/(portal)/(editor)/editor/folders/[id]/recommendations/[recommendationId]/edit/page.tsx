@@ -25,6 +25,8 @@ const errorMessages: Record<string, string> = {
   assignee_not_found:
     "Оберіть дійсного користувача з роллю ССП або залиште поле «Відповідальна особа» порожнім.",
   invalid_department: "Оберіть дійсний активний підрозділ зі списку.",
+  invalid_deadline: "Некоректний термін виконання.",
+  invalid_informing_deadline: "Некоректний строк інформування.",
   recommendation_not_found: "Рекомендацію не знайдено або доступ до неї відсутній.",
   cannot_edit_status: "Редагування доступне лише для чернетки редактора або чернетки відповідального.",
   assignee_required_before_start:
