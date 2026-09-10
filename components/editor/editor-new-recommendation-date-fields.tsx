@@ -16,6 +16,7 @@ function formatDateInputValue(date: Date): string {
 export function EditorNewRecommendationDateFields() {
   const today = formatDateInputValue(new Date());
   const [deadline, setDeadline] = useState("");
+  const [informingDeadline, setInformingDeadline] = useState("");
   const informingMin = deadline || today;
 
   return (
@@ -31,6 +32,9 @@ export function EditorNewRecommendationDateFields() {
           onChange={(event) => {
             const nextDeadline = event.target.value;
             setDeadline(nextDeadline);
+            if (informingDeadline && nextDeadline && informingDeadline < nextDeadline) {
+              setInformingDeadline("");
+            }
           }}
           className="h-11 text-base"
         />
@@ -43,6 +47,8 @@ export function EditorNewRecommendationDateFields() {
           type="date"
           required
           min={informingMin}
+          value={informingDeadline}
+          onChange={(event) => setInformingDeadline(event.target.value)}
           className="h-11 text-base"
         />
       </RecommendationFieldBlock>
