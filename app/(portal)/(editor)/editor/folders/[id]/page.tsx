@@ -301,6 +301,11 @@ export default async function EditorFolderPage({
                 видалення недоступне.
               </p>
             ) : null}
+            {query.error === "invalid_department" ? (
+              <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
+                Перед передачею в роботу відкрийте «Редагувати» та оберіть дійсний відповідальний підрозділ.
+              </p>
+            ) : null}
             {query.error === "assignee_required_before_start" ? (
               <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
               Перед передачею в роботу відкрийте «Редагувати» та оберіть відповідальну особу ССП для цієї
