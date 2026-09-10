@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useMemo, useState, type ComponentType } from "react";
 import {
   Building2,
   ChevronDown,
@@ -52,29 +52,25 @@ const Item = ({
   icon: Icon,
   pathname,
   compact = false,
-  collapsed = false,
 }: {
   href: string;
   label: string;
   icon: ComponentType<{ className?: string }>;
   pathname: string;
   compact?: boolean;
-  collapsed?: boolean;
 }) => {
   const active = isActivePath(pathname, href);
   return (
     <Link
       href={href}
-      title={collapsed ? label : undefined}
       className={cn(
-        "flex items-center border-b border-black/20 py-2.5 font-medium transition-colors",
-        collapsed ? "justify-center px-2" : "gap-2.5 px-6 text-base",
-        compact && !collapsed && "pl-12 text-sm font-normal",
+        "flex items-center gap-2.5 border-b border-black/20 px-6 py-2.5 text-base font-medium transition-colors",
+        compact && "pl-12 text-sm font-normal",
         active ? "bg-[#eee6a5] text-foreground" : "text-foreground hover:bg-[#f2ecbe]",
       )}
     >
-      <Icon className={cn("size-[1.125rem] shrink-0", compact && !collapsed && "size-4")} />
-      {!collapsed ? <span className="truncate">{label}</span> : null}
+      <Icon className={cn("size-[1.125rem] shrink-0", compact && "size-4")} />
+      <span className="truncate">{label}</span>
     </Link>
   );
 };
@@ -105,108 +101,58 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
     return items;
   }, [userRoles]);
   const [workspaceOpen, setWorkspaceOpen] = useState(true);
-  const [collapsed, setCollapsed] = useState(false);
-
-  useEffect(() => {
-    const stored = window.localStorage.getItem("portal-sidebar-collapsed");
-    if (stored === "true") setCollapsed(true);
-  }, []);
-
-  const toggleCollapsed = () => {
-    setCollapsed((value) => {
-      const next = !value;
-      window.localStorage.setItem("portal-sidebar-collapsed", String(next));
-      return next;
-    });
-  };
 
   return (
-    <aside
-      className={cn(
-        "flex shrink-0 flex-col bg-white text-sidebar-foreground transition-[width] duration-200 ease-in-out",
-        collapsed ? "w-14" : "w-[300px]",
-      )}
-    >
-      <div
-        className={cn(
-          "flex h-16 items-center border-b border-black/20",
-          collapsed ? "cursor-pointer px-1" : "gap-1 px-3",
-        )}
-        onClick={collapsed ? toggleCollapsed : undefined}
-        title={collapsed ? "Розгорнути меню" : undefined}
-      >
-        {!collapsed ? (
-          <Link
-            href={PORTAL_DASHBOARD_HOME}
-            className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold leading-none hover:opacity-90"
-          >
-            <Image
-              src="/logo-nazk-source.png"
-              alt="Логотип порталу"
-              width={22}
-              height={28}
-              className="h-7 w-auto shrink-0"
-            />
-            <span className="min-w-0 whitespace-nowrap">{uk.appName}</span>
-          </Link>
-        ) : null}
-        {!collapsed ? (
-          <div
-            className="h-full w-3 shrink-0 cursor-pointer self-stretch"
-            onClick={toggleCollapsed}
-            title="Згорнути меню"
-            aria-label="Згорнути бокове меню"
+    <aside className="flex w-[300px] shrink-0 flex-col bg-white text-sidebar-foreground">
+      <div className="flex h-16 items-center border-b border-black/20 px-3">
+        <Link
+          href={PORTAL_DASHBOARD_HOME}
+          className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold leading-none hover:opacity-90"
+        >
+          <Image
+            src="/logo-nazk-source.png"
+            alt="Логотип порталу"
+            width={22}
+            height={28}
+            className="h-7 w-auto shrink-0"
           />
-        ) : null}
+          <span className="min-w-0 whitespace-nowrap">{uk.appName}</span>
+        </Link>
       </div>
 
       <div className="flex flex-1 flex-col border-r border-black/20">
-        {!collapsed ? (
-          <div>
-            <button
-              type="button"
-              onClick={() => setWorkspaceOpen((value) => !value)}
-              className="flex w-full items-center justify-between border-b border-black/20 px-6 py-2.5 text-sm font-semibold uppercase text-muted-foreground hover:bg-muted/40"
-            >
-              Робочий простір
-              <ChevronDown className={cn("size-[1.125rem] transition-transform", workspaceOpen && "rotate-180")} />
-            </button>
-            {workspaceOpen
-              ? workspaceItems.map((item) => (
-                  <Item
-                    key={item.href}
-                    {...item}
-                    pathname={pathname}
-                    compact={
-                      item.href === "/admin/users" ||
-                      item.href === "/admin/departments" ||
-                      item.href === "/admin/audit-log"
-                    }
-                    collapsed={collapsed}
-                  />
-                ))
-              : null}
-          </div>
-        ) : (
-          <div className="border-b border-black/20 py-1">
-            {workspaceItems.map((item) => (
-              <Item key={item.href} {...item} pathname={pathname} collapsed={collapsed} />
-            ))}
-          </div>
-        )}
+        <div>
+          <button
+            type="button"
+            onClick={() => setWorkspaceOpen((value) => !value)}
+            className="flex w-full items-center justify-between border-b border-black/20 px-6 py-2.5 text-sm font-semibold uppercase text-muted-foreground hover:bg-muted/40"
+          >
+            Робочий простір
+            <ChevronDown className={cn("size-[1.125rem] transition-transform", workspaceOpen && "rotate-180")} />
+          </button>
+          {workspaceOpen
+            ? workspaceItems.map((item) => (
+                <Item
+                  key={item.href}
+                  {...item}
+                  pathname={pathname}
+                  compact={
+                    item.href === "/admin/users" ||
+                    item.href === "/admin/departments" ||
+                    item.href === "/admin/audit-log"
+                  }
+                />
+              ))
+            : null}
+        </div>
 
         <div>
           {navItems.map((item) => (
-            <Item key={item.href} {...item} pathname={pathname} collapsed={collapsed} />
+            <Item key={item.href} {...item} pathname={pathname} />
           ))}
         </div>
 
-        <div
-          className={cn("flex-1", collapsed ? "cursor-pointer" : "cursor-pointer hover:bg-[#f8f3cf]")}
-          onClick={toggleCollapsed}
-          title={collapsed ? "Розгорнути меню" : "Згорнути меню"}
-          aria-label={collapsed ? "Розгорнути бокове меню" : "Згорнути бокове меню"}
-        />
+        <div className="flex-1" />
       </div>
     </aside>
   );
