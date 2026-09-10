@@ -9,20 +9,30 @@ export function EditorRecommendationTableCell({
   className?: string;
   align?: "left" | "center";
 }) {
+  const content =
+    typeof children === "string" || typeof children === "number" ? (
+      <p
+        className={cn(
+          "m-0 line-clamp-3 break-words text-sm leading-snug text-foreground",
+          align === "center" && "text-center",
+        )}
+      >
+        {children}
+      </p>
+    ) : (
+      children
+    );
+
   return (
-    <td className={cn("p-3 align-middle", align === "center" && "text-center", className)}>
-      {typeof children === "string" ? (
-        <p
-          className={cn(
-            "m-0 line-clamp-3 break-words text-sm leading-snug text-foreground",
-            align === "center" && "text-center",
-          )}
-        >
-          {children}
-        </p>
-      ) : (
-        children
+    <td
+      className={cn(
+        "p-3 align-middle",
+        align === "center" && "text-center",
+        className,
       )}
+      style={{ verticalAlign: "middle" }}
+    >
+      {content}
     </td>
   );
 }

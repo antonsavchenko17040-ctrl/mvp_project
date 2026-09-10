@@ -13,7 +13,7 @@ import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/
 import { type TableSortState, applySortParams } from "@/lib/table-sort";
 import { cn } from "@/lib/utils";
 
-const clampText = "m-0 min-h-[4.5rem] break-words text-left text-sm leading-snug text-foreground line-clamp-3";
+const clampText = "m-0 break-words text-left text-sm leading-snug text-foreground line-clamp-3";
 
 export type { DashboardFolderSortKey } from "@/lib/dashboard/folder-table-sort";
 export { dashboardFolderSortDefaults, dashboardFolderSortKeys } from "@/lib/dashboard/folder-table-sort";
@@ -123,7 +123,7 @@ export function DashboardFolderRecommendationsTable({
                 <p className={clampText}>{item.sspUnit}</p>
               </EditorRecommendationTableCell>
               <EditorRecommendationTableCell>
-                <div className="flex min-h-[4.5rem] items-start pt-0.5">
+                <div className="flex items-center">
                   {item.progressReport || item.executionIndicator.trim() ? (
                     <RecommendationExecutionStatusBadge
                       progressReport={item.progressReport}
