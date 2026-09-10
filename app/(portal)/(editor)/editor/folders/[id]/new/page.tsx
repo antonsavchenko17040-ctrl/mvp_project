@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { EditorNewRecommendationDateFields } from "@/components/editor/editor-new-recommendation-date-fields";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { requireRole } from "@/lib/auth/session";
@@ -13,6 +14,17 @@ import { db } from "@/lib/db";
 import { cn } from "@/lib/utils";
 
 import { createRecommendation } from "../../../actions";
+
+const createErrorMessages: Record<string, string> = {
+  folder_not_found: "Папку не знайдено або доступ відсутній.",
+  assignee_not_found: "Оберіть дійсного користувача з роллю ССП.",
+  invalid_department: "Оберіть дійсний активний підрозділ зі списку.",
+  invalid_deadline: "Вкажіть коректний термін виконання.",
+  invalid_informing_deadline: "Вкажіть коректний строк інформування.",
+  deadline_before_today: "Термін виконання не може бути ранішим за поточну дату.",
+  informing_before_deadline:
+    "Строк інформування не може бути ранішим за дату в полі «Термін виконання».",
+};
 
 export default async function NewRecommendationPage({
   params,
@@ -60,19 +72,9 @@ export default async function NewRecommendationPage({
 
       <Card className="border border-black/20 shadow-sm">
         <CardContent className="space-y-6 p-5 sm:p-6">
-          {query.error === "folder_not_found" ? (
+          {query.error && createErrorMessages[query.error] ? (
             <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
-              Папку не знайдено або доступ відсутній.
-            </p>
-          ) : null}
-          {query.error === "assignee_not_found" ? (
-            <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
-              Оберіть дійсного користувача з роллю ССП.
-            </p>
-          ) : null}
-          {query.error === "invalid_department" ? (
-            <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
-              Оберіть дійсний активний підрозділ зі списку.
+              {createErrorMessages[query.error]}
             </p>
           ) : null}
 
@@ -171,13 +173,7 @@ export default async function NewRecommendationPage({
                 </select>
               </RecommendationFieldBlock>
 
-              <RecommendationFieldBlock label="Термін виконання" htmlFor="deadline">
-                <Input id="deadline" name="deadline" type="date" required className="h-11 text-base" />
-              </RecommendationFieldBlock>
-
-              <RecommendationFieldBlock label="Строк інформування" htmlFor="informing_deadline">
-                <Input id="informing_deadline" name="informing_deadline" type="date" required className="h-11 text-base" />
-              </RecommendationFieldBlock>
+              <EditorNewRecommendationDateFields />
             </div>
 
             <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
