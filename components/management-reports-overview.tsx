@@ -8,7 +8,7 @@ import { getDashboardStats, getVerifiedRecentFolders } from "@/lib/repositories/
 type ManagementReportsOverviewProps = {
   /** Префікс посилання на папку, напр. `/dashboard/folders` або `/reports/folders`. */
   folderHrefPrefix: string;
-  /** Блок «Управління звітами» і чотири картки статистики (лише дашборд). */
+  /** Блок із чотирма картками статистики (лише дашборд / головна). */
   showDashboardSummary?: boolean;
   foldersSectionTitle?: string;
   /** Скільки папок показати; `"all"` — усі з рекомендаціями (бібліотека звітів). */
