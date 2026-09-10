@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { AUDIT_ACTION_LABELS, auditActionLabel, formatAuditDescription, formatDifferenceText } from "@/lib/audit-log";
+import { AUDIT_ACTION_LABELS, auditActionLabel, formatAuditDescription } from "@/lib/audit-log";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
