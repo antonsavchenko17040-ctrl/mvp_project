@@ -282,12 +282,6 @@ export default async function EditorRecommendationEditPage({
               <Button type="submit" formAction={startExecution} variant="outline">
                 Передати в роботу
               </Button>
-              <Link
-                href={`/editor/folders/${folder.id}/recommendations/${recommendation.id}`}
-                className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-muted"
-              >
-                Доповнити з історією
-              </Link>
               <Button
                 type="submit"
                 formAction={deleteRecommendation}

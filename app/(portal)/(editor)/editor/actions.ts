@@ -484,6 +484,9 @@ export async function supplementRecommendationField(formData: FormData) {
   if (recommendation.status === "ssp_draft") {
     redirect(`${redirectPath}?error=cannot_supplement_ssp_draft`);
   }
+  if (recommendation.status === "draft") {
+    redirect(`${redirectPath}?error=cannot_supplement_draft`);
+  }
 
   if (!isSupplementFieldKey(fieldKeyRaw)) {
     redirect(`${redirectPath}?error=invalid_field`);
