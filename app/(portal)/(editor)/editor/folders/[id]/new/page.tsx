@@ -18,7 +18,6 @@ import { createRecommendation } from "../../../actions";
 const createErrorMessages: Record<string, string> = {
   folder_not_found: "Папку не знайдено або доступ відсутній.",
   assignee_not_found: "Оберіть дійсного користувача з роллю ССП.",
-  significance_required: "Перед передачею в роботу оберіть значущість спостереження.",
   invalid_department: "Оберіть дійсний активний підрозділ зі списку.",
   invalid_deadline: "Вкажіть коректний термін виконання.",
   invalid_informing_deadline: "Вкажіть коректний строк інформування.",
@@ -114,7 +113,7 @@ export default async function NewRecommendationPage({
                
                 defaultValue=""
               >
-                <option value="">Не обрано</option>
+                <option value="">—</option>
                 <option value="низька">низька</option>
                 <option value="середня">середня</option>
                 <option value="висока">висока</option>

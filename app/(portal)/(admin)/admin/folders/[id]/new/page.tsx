@@ -109,7 +109,7 @@ export default async function AdminNewRecommendationPage({
                 required
                 defaultValue=""
               >
-                <option value="">Не обрано</option>
+                <option value="">—</option>
                 <option value="низька">низька</option>
                 <option value="середня">середня</option>
                 <option value="висока">висока</option>
