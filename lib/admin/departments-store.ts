@@ -133,10 +133,3 @@ export async function assignDepartmentMember(departmentId: string, profileId: st
 export async function removeDepartmentMember(departmentId: string, profileId: string) {
   await db.departmentMember.deleteMany({ where: { departmentId, profileId } });
 }
-
-/** Замінити підрозділ користувача (один активний або зняти призначення). */
-export async function setUserDepartment(profileId: string, departmentId: string | null) {
-  await db.departmentMember.deleteMany({ where: { profileId } });
-  if (!departmentId) return;
-  await assignDepartmentMember(departmentId, profileId);
-}
