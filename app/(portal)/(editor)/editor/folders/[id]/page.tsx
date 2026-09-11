@@ -10,6 +10,7 @@ import { EditorRecommendationTableCell } from "@/components/editor/editor-recomm
 import { EditorRecommendationTableRow } from "@/components/editor/editor-recommendation-table-row";
 import { ReportFolderBackLink } from "@/components/report-folder-back-link";
 import { ReportFolderHeaderCard } from "@/components/report-folder-header-card";
+import { RoleWorkspaceColumnFilterTh } from "@/components/role-workspace-column-filter-th";
 import { TableSortableTh } from "@/components/table-sortable-th";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +18,11 @@ import { canArchiveFolderByRecommendations, isFolderArchived } from "@/lib/audit
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { countExecutionStatuses } from "@/lib/recommendation-execution-status";
-import type { RecommendationStatus } from "@/lib/types";
+import {
+  EDITOR_FOLDER_STATUS_FILTERS,
+  editorFolderStatusWhere,
+  parseEditorFolderStatusFilter,
+} from "@/lib/editor/editor-folder-status-filters";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
 import { recommendationSequenceOrderBy } from "@/lib/recommendation-sequence";
 import {
@@ -71,16 +76,7 @@ export default async function EditorFolderPage({
     redirect(`/editor/folders/${folder.id}/recommendations/${query.recommendationId}/edit`);
   }
 
-  const allowedStatuses: RecommendationStatus[] = [
-    "draft",
-    "in_progress",
-    "on_review",
-    "revision",
-    "published",
-  ];
-  const activeStatus = allowedStatuses.includes((query.status ?? "") as RecommendationStatus)
-    ? (query.status as RecommendationStatus)
-    : "all";
+  const activeStatus = parseEditorFolderStatusFilter(query.status);
   const searchQuery = (query.q ?? "").trim().toLowerCase();
   const searchFieldRaw = (query.qf ?? "").trim();
   const searchField =
@@ -94,12 +90,7 @@ export default async function EditorFolderPage({
     where: {
       auditFolderId: folder.id,
       isActive: true,
-      status:
-        activeStatus === "all"
-          ? { not: "ssp_draft" }
-          : activeStatus === "on_review"
-            ? { in: ["manager_review", "on_review"] }
-            : activeStatus,
+      ...editorFolderStatusWhere(activeStatus),
     },
     select: {
       id: true,
@@ -161,7 +152,7 @@ export default async function EditorFolderPage({
   })();
 
   const preserveParams = {
-    status: activeStatus,
+    status: activeStatus === "all" ? undefined : activeStatus,
     q: searchQuery || undefined,
     qf: searchField || undefined,
   };
@@ -187,59 +178,6 @@ export default async function EditorFolderPage({
     { key: "deadline", value: executionCounts.deadlineNotReached, label: "термін не настав" },
   ] as const;
 
-  const folderRecommendationFilters = [
-    {
-      key: "all" as const,
-      label: "Усі рекомендації",
-      chip: "border-neutral-900 text-neutral-900 hover:bg-neutral-50",
-      dot: "bg-neutral-900",
-      active: "bg-neutral-100",
-    },
-    {
-      key: "draft" as const,
-      label: "Чернетка",
-      chip: "border-violet-600 text-violet-800 hover:bg-violet-50/60",
-      dot: "bg-violet-600",
-      active: "bg-violet-50",
-    },
-    {
-      key: "published" as const,
-      label: "Виконано",
-      chip: "border-emerald-600 text-emerald-700 hover:bg-emerald-50/60",
-      dot: "bg-emerald-600",
-      active: "bg-emerald-50",
-    },
-    {
-      key: "on_review" as const,
-      label: "На верифікації",
-      chip: "border-amber-500 text-amber-800 hover:bg-amber-50/70",
-      dot: "bg-amber-500",
-      active: "bg-amber-50",
-    },
-    {
-      key: "in_progress" as const,
-      label: "На виконанні",
-      chip: "border-sky-600 text-sky-700 hover:bg-sky-50/70",
-      dot: "bg-sky-600",
-      active: "bg-sky-50",
-    },
-    {
-      key: "revision" as const,
-      label: "На доопрацюванні",
-      chip: "border-red-600 text-red-700 hover:bg-red-50/70",
-      dot: "bg-red-600",
-      active: "bg-red-50",
-    },
-  ];
-
-  const statusHref = (statusKey: string) => {
-    const params = new URLSearchParams();
-    params.set("status", statusKey);
-    if (searchQuery) params.set("q", searchQuery);
-    if (searchField) params.set("qf", searchField);
-    applySortParams(params, sort);
-    return `${folderPath}?${params.toString()}`;
-  };
 
   return (
     <section className="space-y-5">
@@ -343,26 +281,7 @@ export default async function EditorFolderPage({
               </Suspense>
             </div>
 
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-              <div className="flex min-w-0 flex-1 flex-wrap gap-2 sm:gap-2.5">
-                {folderRecommendationFilters.map((item) => {
-                  const selected = activeStatus === item.key;
-                  return (
-                    <Link
-                      key={item.key}
-                      href={statusHref(item.key)}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1 text-xs font-bold transition-colors sm:px-3.5 sm:text-sm",
-                        item.chip,
-                        selected && item.active,
-                      )}
-                    >
-                      <span className={cn("size-1.5 shrink-0 rounded-full", item.dot)} aria-hidden />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                 {canArchive ? (
                   <form action={archiveAuditFolder}>
@@ -414,16 +333,33 @@ export default async function EditorFolderPage({
                       preserveParams={preserveParams}
                       className="w-28"
                     />
-                    <TableSortableTh
-                      label="Етап виконання"
-                      column="status"
-                      sort={sort}
-                      defaults={editorSortDefaults}
-                      pathname={folderPath}
-                      preserveParams={preserveParams}
-                      className="w-40"
-                      align="center"
-                    />
+                    <Suspense
+                      fallback={
+                        <TableSortableTh
+                          label="Етап виконання"
+                          column="status"
+                          sort={sort}
+                          defaults={editorSortDefaults}
+                          pathname={folderPath}
+                          preserveParams={preserveParams}
+                          className="w-40"
+                          align="center"
+                        />
+                      }
+                    >
+                      <RoleWorkspaceColumnFilterTh
+                        label="Етап виконання"
+                        column="status"
+                        filterParam="status"
+                        sort={sort}
+                        defaults={editorSortDefaults}
+                        pathname={folderPath}
+                        preserveParams={preserveParams}
+                        options={EDITOR_FOLDER_STATUS_FILTERS}
+                        className="w-40"
+                        align="center"
+                      />
+                    </Suspense>
                     <TableSortableTh
                       label="Відповідальний ССП"
                       column="sspUnit"
