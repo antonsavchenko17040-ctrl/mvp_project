@@ -110,7 +110,7 @@ export default async function NewRecommendationPage({
                   "h-11 w-full rounded-md border border-input bg-background px-3 text-base",
                   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                 )}
-               
+                required
                 defaultValue=""
               >
                 <option value="">—</option>
@@ -178,7 +178,14 @@ export default async function NewRecommendationPage({
             </div>
 
             <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-              <Button type="submit" variant="outline" name="intent" value="draft" className="sm:min-w-[200px]">
+              <Button
+                type="submit"
+                variant="outline"
+                name="intent"
+                value="draft"
+                formNoValidate
+                className="sm:min-w-[200px]"
+              >
                 Зберегти як чернетку
               </Button>
               <Button type="submit" className="bg-[#3a6fb8] hover:bg-[#2f5e9a] sm:min-w-[220px]" name="intent" value="assign">
