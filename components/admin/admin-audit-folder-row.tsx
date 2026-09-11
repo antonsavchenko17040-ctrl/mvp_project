@@ -13,7 +13,7 @@ type AdminAuditFolderRowProps = {
   authorEmail: string;
   authorFullName: string | null;
   recommendationsCount: number;
-  selected: boolean;
+  selected?: boolean;
   archivedAt?: Date | string | null;
   actions: ReactNode;
 };
@@ -25,7 +25,7 @@ export function AdminAuditFolderRow({
   authorEmail,
   authorFullName,
   recommendationsCount,
-  selected,
+  selected = false,
   archivedAt = null,
   actions,
 }: AdminAuditFolderRowProps) {
@@ -33,7 +33,7 @@ export function AdminAuditFolderRow({
   const isArchived = archivedAt != null && archivedAt !== "";
 
   const openFolder = () => {
-    router.push(`/admin?folder=${id}`);
+    router.push(`/admin/folders/${id}`);
   };
 
   return (

@@ -130,7 +130,7 @@ export default async function AdminEditRecommendationPage({
     recommendation.status === "manager_review"
       ? (recommendation.managerComment ?? "")
       : (recommendation.analystComment ?? "");
-  const backHref = `/admin?folder=${recommendation.auditFolder.id}`;
+  const backHref = `/admin/folders/${recommendation.auditFolder.id}`;
   const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}${
     !recommendation.isActive ? " · Деактивована" : ""
   }`;
@@ -154,7 +154,7 @@ export default async function AdminEditRecommendationPage({
             <ArrowLeft className="size-5" strokeWidth={2} aria-hidden />
           </span>
           <span className="min-w-0 text-left text-sm font-medium sm:text-base">
-            <span className="block">Назад до робочого столу</span>
+            <span className="block">Назад до критичних операцій</span>
             <span className="mt-0.5 block text-xs font-normal text-muted-foreground sm:text-sm">
               Папка звіту: «{recommendation.auditFolder.title}» ({recommendation.auditFolder.year})
               {recommendation.auditFolder.archivedAt ? (
