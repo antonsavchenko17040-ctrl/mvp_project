@@ -10,8 +10,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { findDepartmentByName, getDepartments } from "@/lib/admin/departments-store";
-import { observationSignificanceSelectValue } from "@/lib/observation-significance";
+import {
+  findDepartmentByName,
+  getDepartments,
+  normalizeImportedDepartmentName,
+  resolveDepartmentNameFromImport,
+} from "@/lib/admin/departments-store";
+import {
+  isObservationSignificanceSelected,
+  observationSignificanceSelectValue,
+} from "@/lib/observation-significance";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
@@ -87,8 +95,27 @@ export default async function EditorRecommendationEditPage({
     redirect(`/editor/folders/${folder.id}/recommendations/${recommendation.id}`);
   }
 
+  const importedSspUnit = normalizeImportedDepartmentName(recommendation.sspUnit);
+  // Якщо підрозділ уже є в імпортованих даних — гарантуємо, що він є в довіднику й у dropdown.
+  const resolvedImportedSspUnit = importedSspUnit
+    ? await resolveDepartmentNameFromImport(importedSspUnit)
+    : "";
+  if (
+    resolvedImportedSspUnit &&
+    resolvedImportedSspUnit !== recommendation.sspUnit
+  ) {
+    await db.recommendation.update({
+      where: { id: recommendation.id },
+      data: { sspUnit: resolvedImportedSspUnit },
+    });
+    recommendation.sspUnit = resolvedImportedSspUnit;
+  }
+
   const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
-  const selectedSspUnit = findDepartmentByName(activeDepartments, recommendation.sspUnit)?.name ?? "";
+  const selectedSspUnit =
+    findDepartmentByName(activeDepartments, recommendation.sspUnit)?.name ??
+    (resolvedImportedSspUnit || "");
+  const significanceSelected = isObservationSignificanceSelected(recommendation.observationSignificance);
   const redirectPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}/edit`;
 
   const errorKey = query.error ?? "";
@@ -154,7 +181,6 @@ export default async function EditorRecommendationEditPage({
                 name="observation_significance"
                 className={editSelectClass}
                 defaultValue={observationSignificanceSelectValue(recommendation.observationSignificance)}
-               
               >
                 <option value="">Не обрано</option>
                 <option value="низька">низька</option>
@@ -162,6 +188,11 @@ export default async function EditorRecommendationEditPage({
                 <option value="висока">висока</option>
                 <option value="критична">критична</option>
               </select>
+              {!significanceSelected ? (
+                <p className="mt-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
+                  Перед передачею в роботу оберіть значущість спостереження.
+                </p>
+              ) : null}
             </RecommendationFieldBlock>
 
             <RecommendationFieldBlock label="Недоліки, проблеми та порушення (точки зростання)" htmlFor="deficiency">
@@ -214,6 +245,10 @@ export default async function EditorRecommendationEditPage({
                   required
                 >
                   <option value="">— Оберіть підрозділ —</option>
+                  {selectedSspUnit &&
+                  !activeDepartments.some((department) => department.name === selectedSspUnit) ? (
+                    <option value={selectedSspUnit}>{selectedSspUnit}</option>
+                  ) : null}
                   {activeDepartments.map((department) => (
                     <option key={department.id} value={department.name}>
                       {department.name}

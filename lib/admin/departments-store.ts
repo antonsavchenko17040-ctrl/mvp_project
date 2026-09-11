@@ -21,9 +21,14 @@ export async function getDepartments(): Promise<DepartmentRecord[]> {
   }));
 }
 
+/** Нормалізація відображуваної назви підрозділу (пробіли / NBSP). */
+export function normalizeImportedDepartmentName(name: string): string {
+  return name.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+}
+
 /** Нормалізація назви підрозділу для порівняння (пробіли, регістр). */
 export function normalizeDepartmentNameKey(name: string): string {
-  return name.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim().toLocaleLowerCase("uk");
+  return normalizeImportedDepartmentName(name).toLocaleLowerCase("uk");
 }
 
 /** Знайти підрозділ за назвою з імпорту/форми (нечутливо до регістру й зайвих пробілів). */
@@ -34,6 +39,23 @@ export function findDepartmentByName<T extends { name: string }>(
   const key = normalizeDepartmentNameKey(importedName);
   if (!key || key === "—") return undefined;
   return departments.find((department) => normalizeDepartmentNameKey(department.name) === key);
+}
+
+/**
+ * Підставити канонічну назву підрозділу з імпорту:
+ * знайти серед наявних або створити новий активний запис.
+ */
+export async function resolveDepartmentNameFromImport(importedName: string): Promise<string> {
+  const normalized = normalizeImportedDepartmentName(importedName);
+  if (!normalized || normalized === "—") return "";
+
+  const departments = await getDepartments();
+  const matched = findDepartmentByName(departments, normalized);
+  if (matched) return matched.name;
+
+  await createDepartment(normalized);
+  const afterCreate = await getDepartments();
+  return findDepartmentByName(afterCreate, normalized)?.name ?? normalized;
 }
 
 export async function createDepartment(name: string) {

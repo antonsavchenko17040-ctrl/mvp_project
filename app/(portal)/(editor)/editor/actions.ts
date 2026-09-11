@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { findDepartmentByName, getDepartments } from "@/lib/admin/departments-store";
+import {
+  findDepartmentByName,
+  getDepartments,
+  resolveDepartmentNameFromImport,
+} from "@/lib/admin/departments-store";
 import {
   isObservationSignificanceSelected,
   normalizeObservationSignificance,
@@ -772,7 +776,13 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
     redirect("/editor?error=import_admin_only");
   }
 
-  const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
+  const sspUnitByImportKey = new Map<string, string>();
+  for (const row of parsed.recommendations) {
+    const key = row.sspUnit;
+    if (!sspUnitByImportKey.has(key)) {
+      sspUnitByImportKey.set(key, await resolveDepartmentNameFromImport(row.sspUnit));
+    }
+  }
 
   const folder = await db.$transaction(async (tx) => {
     const createdFolder = await tx.auditFolder.create({
@@ -784,8 +794,7 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
     });
 
     for (const row of parsed.recommendations) {
-      const matchedDepartment = findDepartmentByName(activeDepartments, row.sspUnit);
-      const resolvedSspUnit = matchedDepartment?.name ?? row.sspUnit.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
+      const resolvedSspUnit = sspUnitByImportKey.get(row.sspUnit) ?? "";
       const recommendation = await tx.recommendation.create({
         data: {
           auditFolderId: createdFolder.id,
