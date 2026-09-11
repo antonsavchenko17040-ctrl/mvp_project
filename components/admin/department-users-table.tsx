@@ -1,5 +1,7 @@
-import { Fragment } from "react";
-import { Trash2 } from "lucide-react";
+"use client";
+
+import { Fragment, useMemo, useState } from "react";
+import { Search, Trash2 } from "lucide-react";
 
 import {
   assignDepartmentMemberAction,
@@ -11,10 +13,16 @@ import { DepartmentSectionHeader } from "@/components/admin/department-section-h
 import { GenerateUserPasswordButton } from "@/components/admin/generate-user-password-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { formatRolesList } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/types";
 import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
+
+function matchesNameQuery(user: { fullName: string | null }, query: string) {
+  if (!query) return true;
+  return (user.fullName ?? "").toLocaleLowerCase("uk").includes(query);
+}
 
 type TableUser = {
   id: string;
@@ -136,16 +144,56 @@ export function DepartmentUsersTable({
   roleOptions,
   currentAdminId,
 }: DepartmentUsersTableProps) {
-  const userMap = new Map(users.map((user) => [user.id, user]));
-  const assignedIds = new Set(departments.flatMap((department) => department.memberIds));
-  const unassignedUsers = users.filter((user) => !assignedIds.has(user.id));
-  const activeUsers = users.filter((user) => user.isActive);
+  const [search, setSearch] = useState("");
+  const query = search.trim().toLocaleLowerCase("uk");
+
+  const userMap = useMemo(() => new Map(users.map((user) => [user.id, user])), [users]);
+  const assignedIds = useMemo(
+    () => new Set(departments.flatMap((department) => department.memberIds)),
+    [departments],
+  );
+  const activeUsers = useMemo(() => users.filter((user) => user.isActive), [users]);
+  const unassignedUsers = useMemo(
+    () =>
+      users
+        .filter((user) => !assignedIds.has(user.id))
+        .filter((user) => matchesNameQuery(user, query)),
+    [users, assignedIds, query],
+  );
+  const visibleDepartments = useMemo(
+    () =>
+      departments
+        .map((department) => {
+          const members = department.memberIds
+            .map((memberId) => userMap.get(memberId))
+            .filter((member): member is TableUser => Boolean(member))
+            .filter((member) => matchesNameQuery(member, query));
+          return { department, members };
+        })
+        .filter(({ members }) => !query || members.length > 0),
+    [departments, userMap, query],
+  );
   const colSpan = 4;
+  const hasRows = visibleDepartments.length > 0 || unassignedUsers.length > 0;
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3 space-y-0">
         <CardTitle>Склад підрозділів</CardTitle>
+        <div className="relative w-full min-w-[12rem] sm:w-72 sm:max-w-xs">
+          <Search
+            className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
+          <Input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Пошук за іменем…"
+            aria-label="Пошук користувача за іменем"
+            className="h-9 rounded-3xl bg-white pl-8 sm:h-10"
+          />
+        </div>
       </CardHeader>
       <CardContent>
         <div className={dataTableWrapClassName()}>
@@ -159,18 +207,17 @@ export function DepartmentUsersTable({
               </tr>
             </thead>
             <tbody>
-              {departments.length === 0 && unassignedUsers.length === 0 ? (
+              {!hasRows ? (
                 <tr className={dataTable.bodyRow}>
                   <td className={dataTable.emptyCell} colSpan={colSpan}>
-                    Немає підрозділів і користувачів для відображення.
+                    {query
+                      ? "Користувачів із таким іменем не знайдено."
+                      : "Немає підрозділів і користувачів для відображення."}
                   </td>
                 </tr>
               ) : null}
 
-              {departments.map((department) => {
-                const members = department.memberIds
-                  .map((memberId) => userMap.get(memberId))
-                  .filter((member): member is TableUser => Boolean(member));
+              {visibleDepartments.map(({ department, members }) => {
                 const availableUsers = activeUsers.filter(
                   (user) => !department.memberIds.includes(user.id),
                 );
@@ -182,7 +229,11 @@ export function DepartmentUsersTable({
                         <DepartmentSectionHeader
                           departmentId={department.id}
                           name={department.name}
-                          memberCount={members.length}
+                          memberCount={
+                            query
+                              ? members.length
+                              : department.memberIds.filter((id) => userMap.has(id)).length
+                          }
                         />
                       </td>
                     </tr>
@@ -216,34 +267,36 @@ export function DepartmentUsersTable({
                       })
                     )}
 
-                    <tr className={dataTable.bodyRow}>
-                      <td colSpan={colSpan} className={dataTable.cell}>
-                        <form
-                          action={assignDepartmentMemberAction}
-                          className="flex max-w-3xl flex-col gap-2 sm:flex-row sm:items-center"
-                        >
-                          <input type="hidden" name="department_id" value={department.id} />
-                          <select
-                            name="profile_id"
-                            className="h-10 w-full rounded-md border bg-background px-3 text-sm"
-                            defaultValue=""
-                            required
+                    {!query ? (
+                      <tr className={dataTable.bodyRow}>
+                        <td colSpan={colSpan} className={dataTable.cell}>
+                          <form
+                            action={assignDepartmentMemberAction}
+                            className="flex max-w-3xl flex-col gap-2 sm:flex-row sm:items-center"
                           >
-                            <option value="">-- Оберіть користувача --</option>
-                            {availableUsers.map((user) => (
-                              <option key={user.id} value={user.id}>
-                                {`${user.fullName ?? "Без імені"} (${formatRolesList(
-                                  user.roles.map((role) => role.role as UserRole),
-                                )})`}
-                              </option>
-                            ))}
-                          </select>
-                          <Button type="submit" variant="secondary" className="shrink-0">
-                            Додати
-                          </Button>
-                        </form>
-                      </td>
-                    </tr>
+                            <input type="hidden" name="department_id" value={department.id} />
+                            <select
+                              name="profile_id"
+                              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                              defaultValue=""
+                              required
+                            >
+                              <option value="">-- Оберіть користувача --</option>
+                              {availableUsers.map((user) => (
+                                <option key={user.id} value={user.id}>
+                                  {`${user.fullName ?? "Без імені"} (${formatRolesList(
+                                    user.roles.map((role) => role.role as UserRole),
+                                  )})`}
+                                </option>
+                              ))}
+                            </select>
+                            <Button type="submit" variant="secondary" className="shrink-0">
+                              Додати
+                            </Button>
+                          </form>
+                        </td>
+                      </tr>
+                    ) : null}
                   </Fragment>
                 );
               })}
