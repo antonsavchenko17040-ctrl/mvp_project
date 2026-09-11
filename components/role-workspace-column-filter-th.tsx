@@ -22,7 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 
 type RoleWorkspaceColumnFilterThProps<TKey extends string> = {
-  /** Для aria/title сортування (напр. «Статус», «Термін виконання»). */
+  /** Для aria/title сортування (напр. «Етап виконання», «Термін виконання»). */
   label: string;
   column: TKey;
   filterParam: "status" | "deadline";
