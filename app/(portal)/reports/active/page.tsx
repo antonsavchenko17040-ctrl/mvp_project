@@ -17,6 +17,7 @@ export default async function ReportsActivePage({
       foldersSectionTitle="Активні звіти"
       verifiedFolderLimit="all"
       enableFolderFilters
+      enableYearExport
       titleQuery={titleQuery}
       yearFilter={yearFilter}
       archiveFilter="active"

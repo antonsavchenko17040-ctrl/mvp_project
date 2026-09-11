@@ -232,29 +232,22 @@ export function auditFolderExportFilename(title: string): string {
   return `${safe || "zvit"}.xlsx`;
 }
 
-/** XLSX за зразком КМУ: назва аудиту + заголовки + історія змін у комірках. */
-export async function buildAuditFolderXlsxBuffer(
-  input: AuditFolderXlsxExportInput,
-): Promise<Buffer> {
-  const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Портал моніторингу звітності";
-  workbook.created = new Date();
+/** Назва зведеного файлу за рік. */
+export function yearAuditFoldersExportFilename(year: number): string {
+  return `Звіти за ${year}.xlsx`;
+}
 
-  const sheet = workbook.addWorksheet("Аркуш1");
-
-  COLUMN_WIDTHS.forEach((width, index) => {
-    sheet.getColumn(index + 1).width = width;
-  });
-
-  // Рядок 1 — назва аудиту (жирним, без меж таблиці)
-  sheet.getRow(1).getCell(1).value = input.title;
+function writeSheetTitle(sheet: ExcelJS.Worksheet, title: string) {
+  sheet.getRow(1).getCell(1).value = title;
   sheet.mergeCells("A1:O1");
   const titleCell = sheet.getCell("A1");
   titleCell.font = { bold: true, size: 12, name: "Calibri" };
   titleCell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
   const titleWidth = COLUMN_WIDTHS.reduce((sum, w) => sum + w, 0);
-  sheet.getRow(1).height = estimateRowHeight([estimateWrappedLines(input.title, titleWidth)]) * 2;
+  sheet.getRow(1).height = estimateRowHeight([estimateWrappedLines(title, titleWidth)]) * 2;
+}
 
+function writeSheetHeaders(sheet: ExcelJS.Worksheet) {
   const headerRow1 = [
     "№",
     "Виявлені недоліки, проблеми та порушення",
@@ -322,37 +315,95 @@ export async function buildAuditFolderXlsxBuffer(
       styleHeaderCell(row.getCell(col));
     }
   }
+}
+
+function writeRecommendationRow(
+  sheet: ExcelJS.Worksheet,
+  dataRowIndex: number,
+  item: AuditFolderXlsxRecommendation,
+) {
+  const row = sheet.getRow(dataRowIndex);
+  const lineCounts: number[] = [];
+
+  for (let col = 1; col <= 15; col++) {
+    const cell = row.getCell(col);
+    const spec = COLUMN_SPECS[col - 1];
+    const colWidth = COLUMN_WIDTHS[col - 1];
+
+    if (spec.kind === "number") {
+      cell.value = item.sequenceNumber;
+      cell.font = { ...bodyFont };
+      cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+      lineCounts.push(1);
+    } else {
+      const blocks = buildFieldDisplayBlocks(
+        spec.fieldKey,
+        spec.currentValue(item),
+        item.fieldSupplements,
+      );
+      setCellFromBlocks(cell, blocks);
+      cell.alignment = { vertical: "top", wrapText: true };
+      lineCounts.push(estimateWrappedLines(plainTextFromBlocks(blocks), colWidth));
+    }
+    applyBorder(cell);
+  }
+
+  row.height = estimateRowHeight(lineCounts);
+}
+
+function createWorkbookSheet(title: string) {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Портал моніторингу звітності";
+  workbook.created = new Date();
+
+  const sheet = workbook.addWorksheet("Аркуш1");
+  COLUMN_WIDTHS.forEach((width, index) => {
+    sheet.getColumn(index + 1).width = width;
+  });
+  writeSheetTitle(sheet, title);
+  writeSheetHeaders(sheet);
+  return { workbook, sheet };
+}
+
+/** XLSX за зразком КМУ: назва аудиту + заголовки + історія змін у комірках. */
+export async function buildAuditFolderXlsxBuffer(
+  input: AuditFolderXlsxExportInput,
+): Promise<Buffer> {
+  const { workbook, sheet } = createWorkbookSheet(input.title);
 
   let dataRowIndex = 4;
   for (const item of input.recommendations) {
-    const row = sheet.getRow(dataRowIndex);
-    const lineCounts: number[] = [];
-
-    for (let col = 1; col <= 15; col++) {
-      const cell = row.getCell(col);
-      const spec = COLUMN_SPECS[col - 1];
-      const colWidth = COLUMN_WIDTHS[col - 1];
-
-      if (spec.kind === "number") {
-        cell.value = item.sequenceNumber;
-        cell.font = { ...bodyFont };
-        cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
-        lineCounts.push(1);
-      } else {
-        const blocks = buildFieldDisplayBlocks(
-          spec.fieldKey,
-          spec.currentValue(item),
-          item.fieldSupplements,
-        );
-        setCellFromBlocks(cell, blocks);
-        cell.alignment = { vertical: "top", wrapText: true };
-        lineCounts.push(estimateWrappedLines(plainTextFromBlocks(blocks), colWidth));
-      }
-      applyBorder(cell);
-    }
-
-    row.height = estimateRowHeight(lineCounts);
+    writeRecommendationRow(sheet, dataRowIndex, item);
     dataRowIndex += 1;
+  }
+
+  const arrayBuffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+export type YearAuditFolderXlsxExportInput = {
+  year: number;
+  folders: Array<{
+    title: string;
+    recommendations: AuditFolderXlsxRecommendation[];
+  }>;
+};
+
+/**
+ * Зведений XLSX за рік: одна таблиця з тими ж колонками,
+ * рядки всіх звітів додаються послідовно один за одним.
+ */
+export async function buildYearAuditFoldersXlsxBuffer(
+  input: YearAuditFolderXlsxExportInput,
+): Promise<Buffer> {
+  const { workbook, sheet } = createWorkbookSheet(`Звіти за ${input.year}`);
+
+  let dataRowIndex = 4;
+  for (const folder of input.folders) {
+    for (const item of folder.recommendations) {
+      writeRecommendationRow(sheet, dataRowIndex, item);
+      dataRowIndex += 1;
+    }
   }
 
   const arrayBuffer = await workbook.xlsx.writeBuffer();

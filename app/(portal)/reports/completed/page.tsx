@@ -17,6 +17,7 @@ export default async function ReportsCompletedPage({
       foldersSectionTitle="Завершені звіти"
       verifiedFolderLimit="all"
       enableFolderFilters
+      enableYearExport
       titleQuery={titleQuery}
       yearFilter={yearFilter}
       archiveFilter="archived"
