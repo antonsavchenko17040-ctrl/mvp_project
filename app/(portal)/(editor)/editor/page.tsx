@@ -1,21 +1,16 @@
 import { Suspense } from "react";
 
 import { EditorAuditFolderCard } from "@/components/editor/editor-audit-folder-card";
-import { ImportFileInput } from "@/components/import-file-input";
+import { EditorFolderActions } from "@/components/editor/editor-folder-actions";
 import { ReportsLibraryFilters } from "@/components/reports-library-filters";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth/session";
-
-import { createAuditFolder, importAuditFolderFromXlsx } from "./actions";
 
 export default async function EditorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; row?: string; q?: string; year?: string }>;
+  searchParams: Promise<{ error?: string; row?: string; q?: string; year?: string; ok?: string }>;
 }) {
   const profile = await requireRole(["editor"]);
   const query = await searchParams;
@@ -46,108 +41,20 @@ export default async function EditorPage({
 
   return (
     <section className="space-y-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-5xl font-semibold">Простір Редактора</h1>
+        <EditorFolderActions
+          currentYear={currentYear}
+          error={query.error ?? null}
+          errorRow={errorRow}
+        />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Створення папки аудиту</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action={createAuditFolder} className="grid gap-3 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <Label htmlFor="title">Назва</Label>
-              <Input id="title" name="title" required />
-            </div>
-            <div>
-              <Label htmlFor="year">Рік</Label>
-              <Input
-                id="year"
-                name="year"
-                type="number"
-                defaultValue={currentYear}
-                min={2000}
-                max={currentYear}
-                required
-              />
-            </div>
-            <Button type="submit" className="md:col-span-3 w-fit bg-[#e8d773] text-black hover:bg-[#dcca64]">
-              Створити папку
-            </Button>
-          </form>
-          {query.error === "invalid_year" ? (
-            <p className="mt-3 text-sm text-red-600">
-              Рік папки аудиту не може бути більшим за поточний ({currentYear}).
-            </p>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Імпорт звіту з XLSX</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <form action={importAuditFolderFromXlsx} className="grid gap-3 md:grid-cols-3" encType="multipart/form-data">
-            <div className="md:col-span-2">
-              <Label htmlFor="import-file">Файл таблиці (.xlsx)</Label>
-              <ImportFileInput
-                id="import-file"
-                name="file"
-                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="import-year">Рік</Label>
-              <select
-                id="import-year"
-                name="year"
-                required
-                defaultValue=""
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
-              >
-                <option value="">Не обрано</option>
-                {Array.from({ length: currentYear - 1999 }, (_, index) => currentYear - index).map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Button type="submit" className="md:col-span-3 w-fit bg-[#e8d773] text-black hover:bg-[#dcca64]">
-              Завантажити звіт
-            </Button>
-          </form>
-          {query.error === "import_no_file" ? (
-            <p className="text-sm text-red-600">Оберіть файл XLSX для імпорту.</p>
-          ) : null}
-          {query.error === "import_invalid_format" ? (
-            <p className="text-sm text-red-600">Підтримується лише формат .xlsx.</p>
-          ) : null}
-          {query.error === "import_invalid_year" ? (
-            <p className="text-sm text-red-600">Вкажіть коректний рік звіту.</p>
-          ) : null}
-          {query.error === "import_parse_failed" ? (
-            <p className="text-sm text-red-600">Не вдалося прочитати файл. Перевірте формат таблиці.</p>
-          ) : null}
-          {query.error === "import_no_rows" ? (
-            <p className="text-sm text-red-600">У файлі не знайдено рядків з рекомендаціями.</p>
-          ) : null}
-          {query.error === "import_empty_workbook" ? (
-            <p className="text-sm text-red-600">Файл не містить аркушів.</p>
-          ) : null}
-          {query.error === "import_invalid_deadline" ? (
-            <p className="text-sm text-red-600">Некоректний термін виконання{errorRow}.</p>
-          ) : null}
-          {query.error === "import_admin_only" ? (
-            <p className="text-sm text-red-600">
-              Повністю заповнені звіти може завантажувати лише адміністратор.
-            </p>
-          ) : null}
-        </CardContent>
-      </Card>
+      {query.ok === "folder_created" ? (
+        <p className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-base text-emerald-900">
+          Папку аудиту створено.
+        </p>
+      ) : null}
 
       <Card>
         <CardHeader>
