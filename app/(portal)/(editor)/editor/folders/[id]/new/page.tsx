@@ -113,7 +113,7 @@ export default async function NewRecommendationPage({
                 required
                 defaultValue=""
               >
-                <option value="">—</option>
+                <option value="">Не обрано</option>
                 <option value="низька">низька</option>
                 <option value="середня">середня</option>
                 <option value="висока">висока</option>

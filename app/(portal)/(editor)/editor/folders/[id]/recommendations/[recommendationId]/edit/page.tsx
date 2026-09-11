@@ -178,7 +178,7 @@ export default async function EditorRecommendationEditPage({
                 defaultValue={observationSignificanceSelectValue(recommendation.observationSignificance)}
                 required
               >
-                <option value="">—</option>
+                <option value="">Не обрано</option>
                 <option value="низька">низька</option>
                 <option value="середня">середня</option>
                 <option value="висока">висока</option>
