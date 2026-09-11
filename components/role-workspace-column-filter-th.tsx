@@ -21,6 +21,8 @@ import {
 } from "@/lib/table-sort";
 import { cn } from "@/lib/utils";
 
+type FilterOption = { key: string; label: string };
+
 type RoleWorkspaceColumnFilterThProps<TKey extends string> = {
   /** Для aria/title сортування (напр. «Етап виконання», «Термін виконання»). */
   label: string;
@@ -30,6 +32,8 @@ type RoleWorkspaceColumnFilterThProps<TKey extends string> = {
   defaults: TableSortState<TKey>;
   pathname: string;
   preserveParams?: Record<string, string | undefined | null>;
+  /** Якщо передано — замість стандартних ROLE_WORKSPACE_* опцій. */
+  options?: readonly FilterOption[];
   className?: string;
   align?: "left" | "center";
 };
@@ -43,6 +47,7 @@ export function RoleWorkspaceColumnFilterTh<TKey extends string>({
   defaults,
   pathname,
   preserveParams = {},
+  options: optionsProp,
   className,
   align = "left",
 }: RoleWorkspaceColumnFilterThProps<TKey>) {
@@ -53,11 +58,16 @@ export function RoleWorkspaceColumnFilterTh<TKey extends string>({
   const searchParamsKey = searchParams.toString();
 
   const options =
-    filterParam === "status" ? ROLE_WORKSPACE_STATUS_FILTERS : ROLE_WORKSPACE_DEADLINE_FILTERS;
-  const selectedValue =
-    filterParam === "status"
-      ? parseRoleWorkspaceStatusFilter(searchParams.get("status") ?? undefined)
-      : parseRoleWorkspaceDeadlineFilter(searchParams.get("deadline") ?? undefined);
+    optionsProp ??
+    (filterParam === "status" ? ROLE_WORKSPACE_STATUS_FILTERS : ROLE_WORKSPACE_DEADLINE_FILTERS);
+  const rawSelected = searchParams.get(filterParam) ?? undefined;
+  const selectedValue = optionsProp
+    ? options.some((item) => item.key === rawSelected)
+      ? (rawSelected as string)
+      : "all"
+    : filterParam === "status"
+      ? parseRoleWorkspaceStatusFilter(rawSelected)
+      : parseRoleWorkspaceDeadlineFilter(rawSelected);
 
   const active = sort.explicit && sort.key === column;
   const next = nextTableSort(sort, column, defaults);
