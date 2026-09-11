@@ -1,23 +1,7 @@
-import { ManagementReportsOverview } from "@/components/management-reports-overview";
-import { PUBLIC_REPORTS_LIBRARY_FOLDERS_PREFIX } from "@/lib/reports-section";
+import { redirect } from "next/navigation";
 
-export default async function PublicReportsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; year?: string }>;
-}) {
-  const query = await searchParams;
-  const titleQuery = (query.q ?? "").trim();
-  const yearRaw = Number(query.year);
-  const yearFilter = Number.isFinite(yearRaw) ? yearRaw : null;
+import { PUBLIC_REPORTS_ACTIVE_HOME } from "@/lib/reports-section";
 
-  return (
-    <ManagementReportsOverview
-      folderHrefPrefix={PUBLIC_REPORTS_LIBRARY_FOLDERS_PREFIX}
-      verifiedFolderLimit="all"
-      enableFolderFilters
-      titleQuery={titleQuery}
-      yearFilter={yearFilter}
-    />
-  );
+export default function PublicReportsPage() {
+  redirect(PUBLIC_REPORTS_ACTIVE_HOME);
 }

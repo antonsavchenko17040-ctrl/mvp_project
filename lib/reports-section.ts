@@ -4,6 +4,8 @@ export const PORTAL_REPORTS_ACTIVE_HOME = "/reports/active";
 export const PORTAL_REPORTS_COMPLETED_HOME = "/reports/completed";
 export const PUBLIC_DASHBOARD_HOME = "/public/dashboard";
 export const PUBLIC_REPORTS_LIBRARY_HOME = "/public/reports";
+export const PUBLIC_REPORTS_ACTIVE_HOME = "/public/reports/active";
+export const PUBLIC_REPORTS_COMPLETED_HOME = "/public/reports/completed";
 
 export const PORTAL_DASHBOARD_FOLDERS_PREFIX = "/dashboard/folders";
 export const PUBLIC_DASHBOARD_FOLDERS_PREFIX = "/public/folders";
@@ -47,6 +49,16 @@ export function isPublicDashboardActive(pathname: string): boolean {
 export function isPublicReportsLibraryActive(pathname: string): boolean {
   return (
     pathname === PUBLIC_REPORTS_LIBRARY_HOME ||
+    pathname === PUBLIC_REPORTS_ACTIVE_HOME ||
+    pathname === PUBLIC_REPORTS_COMPLETED_HOME ||
     pathname.startsWith(`${PUBLIC_REPORTS_LIBRARY_FOLDERS_PREFIX}/`)
   );
+}
+
+export function isPublicReportsActiveListActive(pathname: string): boolean {
+  return pathname === PUBLIC_REPORTS_ACTIVE_HOME;
+}
+
+export function isPublicReportsCompletedListActive(pathname: string): boolean {
+  return pathname === PUBLIC_REPORTS_COMPLETED_HOME;
 }

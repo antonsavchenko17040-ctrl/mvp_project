@@ -103,9 +103,7 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
           overlayClassName="bg-black/45 backdrop-blur-[1px]"
         >
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">
-              Імпорт повністю заповненого звіту з XLSX
-            </DialogTitle>
+            <DialogTitle className="text-xl font-semibold">Імпорт папки аудиту</DialogTitle>
           </DialogHeader>
           <form
             action={adminImportAuditFolderFromXlsx}
