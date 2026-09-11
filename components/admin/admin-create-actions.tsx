@@ -23,11 +23,14 @@ const yellowButtonClass =
 
 type RoleOption = { value: UserRole; label: string };
 
+type DepartmentOption = { id: string; name: string };
+
 type AdminCreateActionsProps = {
   roleOptions: RoleOption[];
+  departments: DepartmentOption[];
 };
 
-export function AdminCreateActions({ roleOptions }: AdminCreateActionsProps) {
+export function AdminCreateActions({ roleOptions, departments }: AdminCreateActionsProps) {
   const [userOpen, setUserOpen] = useState(false);
   const [departmentOpen, setDepartmentOpen] = useState(false);
 
@@ -91,6 +94,25 @@ export function AdminCreateActions({ roleOptions }: AdminCreateActionsProps) {
                   </label>
                 ))}
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="create_user_department">ССП</Label>
+              <select
+                id="create_user_department"
+                name="department_id"
+                required
+                defaultValue=""
+                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                <option value="" disabled>
+                  Оберіть ССП
+                </option>
+                {departments.map((department) => (
+                  <option key={department.id} value={department.id}>
+                    {department.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="email">Логін</Label>

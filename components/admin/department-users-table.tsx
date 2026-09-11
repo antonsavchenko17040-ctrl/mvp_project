@@ -7,6 +7,7 @@ import {
   deleteUserAccount,
   removeDepartmentMemberAction,
 } from "@/app/(portal)/(admin)/admin/actions";
+import { DepartmentSectionHeader } from "@/components/admin/department-section-header";
 import { GenerateUserPasswordButton } from "@/components/admin/generate-user-password-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -178,12 +179,11 @@ export function DepartmentUsersTable({
                   <Fragment key={department.id}>
                     <tr className={dataTable.bodyRow}>
                       <td colSpan={colSpan} className={cn(dataTable.cell, "bg-[#f5f7fa] py-3")}>
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="text-base font-semibold">{department.name}</p>
-                          <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                            {members.length} співроб.
-                          </span>
-                        </div>
+                        <DepartmentSectionHeader
+                          departmentId={department.id}
+                          name={department.name}
+                          memberCount={members.length}
+                        />
                       </td>
                     </tr>
 
