@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuditFolderCard } from "@/components/audit-folder-card";
 import { ReportsLibraryFilters } from "@/components/reports-library-filters";
+import { ReportsYearXlsxExport } from "@/components/reports-year-xlsx-export";
 import { getDashboardStats, getVerifiedRecentFolders } from "@/lib/repositories/dashboard-repository";
 
 type ManagementReportsOverviewProps = {
@@ -15,6 +16,8 @@ type ManagementReportsOverviewProps = {
   verifiedFolderLimit?: number | "all";
   /** Панель пошуку/фільтра року для бібліотеки звітів. */
   enableFolderFilters?: boolean;
+  /** Зведений Excel за минулі роки (портальна бібліотека звітів). */
+  enableYearExport?: boolean;
   titleQuery?: string;
   yearFilter?: number | null;
   /** Фільтр архіву папок: активні / завершені / усі. */
@@ -27,6 +30,7 @@ export async function ManagementReportsOverview({
   foldersSectionTitle = "Додані звіти",
   verifiedFolderLimit = "all",
   enableFolderFilters = false,
+  enableYearExport = false,
   titleQuery = "",
   yearFilter = null,
   archiveFilter = "all",
@@ -45,6 +49,10 @@ export async function ManagementReportsOverview({
   const availableYears = Array.from(new Set(archiveScopedFolders.map((folder) => folder.year))).sort(
     (a, b) => b - a,
   );
+  const currentYear = new Date().getFullYear();
+  const exportYears = Array.from(new Set(folders.map((folder) => folder.year)))
+    .filter((year) => year !== currentYear)
+    .sort((a, b) => b - a);
   const normalizedTitleQuery = titleQuery.trim().toLowerCase();
   const filteredFolders = archiveScopedFolders.filter((folder) => {
     if (yearFilter != null && folder.year !== yearFilter) return false;
@@ -84,16 +92,19 @@ export async function ManagementReportsOverview({
       <div className="space-y-3">
         <h2 className="text-3xl font-semibold xl:text-4xl">{foldersSectionTitle}</h2>
         {enableFolderFilters ? (
-          <Suspense
-            fallback={
-              <div className="flex w-full flex-col gap-2 rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:flex-row sm:items-center sm:p-3.5">
-                <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
-                <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-40" />
-              </div>
-            }
-          >
-            <ReportsLibraryFilters years={availableYears} />
-          </Suspense>
+          <div className="space-y-2">
+            <Suspense
+              fallback={
+                <div className="flex w-full flex-col gap-2 rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:flex-row sm:items-center sm:p-3.5">
+                  <div className="h-9 min-w-0 flex-1 rounded-3xl border bg-white sm:h-10" />
+                  <div className="h-9 w-full rounded-3xl border bg-white sm:h-10 sm:w-40" />
+                </div>
+              }
+            >
+              <ReportsLibraryFilters years={availableYears} />
+            </Suspense>
+            {enableYearExport ? <ReportsYearXlsxExport years={exportYears} /> : null}
+          </div>
         ) : null}
         {filteredFolders.length === 0 ? (
           <p className="text-base text-muted-foreground">
