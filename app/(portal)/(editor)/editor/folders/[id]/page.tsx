@@ -470,7 +470,7 @@ export default async function EditorFolderPage({
                           {item.recommendationText}
                         </EditorRecommendationTableCell>
                         <EditorRecommendationTableCell className="w-28 p-3">
-                          {normalizeObservationSignificance(item.observationSignificance) || "Не обрано"}
+                          {normalizeObservationSignificance(item.observationSignificance) || "—"}
                         </EditorRecommendationTableCell>
                         <EditorRecommendationTableCell className="w-40 p-3" align="center">
                           <div className="flex justify-center">

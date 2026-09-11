@@ -71,7 +71,6 @@ export function EditorFieldSupplementControls({
         <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>
           <select id={contentId} name="content" className={inputClass} required>
             <option value="">— Оберіть —</option>
-            <option value="">Не обрано</option>
             <option value="низька">низька</option>
             <option value="середня">середня</option>
             <option value="висока">висока</option>
