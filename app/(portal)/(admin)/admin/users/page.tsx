@@ -31,7 +31,13 @@ export default async function AdminUsersPage() {
     <section className="space-y-5">
       <h1 className="text-3xl font-semibold">Керування користувачами</h1>
 
-      <AdminCreateActions roleOptions={roleOptions} />
+      <AdminCreateActions
+        roleOptions={roleOptions}
+        departments={departments.map((department) => ({
+          id: department.id,
+          name: department.name,
+        }))}
+      />
 
       <DepartmentUsersTable
         departments={departments}

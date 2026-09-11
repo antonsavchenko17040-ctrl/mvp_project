@@ -62,6 +62,7 @@ export async function createUserAccount(formData: FormData) {
   const actor = await requireRole(["admin"]);
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const fullName = String(formData.get("full_name") ?? "");
+  const departmentId = String(formData.get("department_id") ?? "").trim();
   const roles = parseRolesFromForm(formData);
   const tempPassword = generateTempPassword();
   await db.profile.create({
@@ -77,6 +78,9 @@ export async function createUserAccount(formData: FormData) {
   const createdUser = await db.profile.findUnique({ where: { email }, select: { id: true } });
   if (createdUser) {
     await setTempPassword(createdUser.id, tempPassword);
+    if (departmentId) {
+      await assignDepartmentMember(departmentId, createdUser.id);
+    }
     await writeAuditLog({
       actor,
       actorRole: "admin",
@@ -84,7 +88,7 @@ export async function createUserAccount(formData: FormData) {
       entityType: "user",
       entityId: createdUser.id,
       summary: `Створено користувача ${email}`,
-      difference: { email, fullName, roles },
+      difference: { email, fullName, roles, departmentId: departmentId || null },
     });
   }
 
@@ -986,8 +990,11 @@ export async function renameDepartmentAction(formData: FormData) {
   const actor = await requireRole(["admin"]);
   const departmentId = String(formData.get("department_id") ?? "");
   const name = String(formData.get("name") ?? "");
+  const returnTo = String(formData.get("return_to") ?? "");
+  const usersReturn = returnTo === "/admin/users";
+  const errorBase = usersReturn ? "/admin/users" : "/admin/departments";
   if (!departmentId) {
-    redirect("/admin/departments?error=department_not_found");
+    redirect(`${errorBase}?error=department_not_found`);
   }
 
   const previous = await db.department.findFirst({
@@ -997,16 +1004,17 @@ export async function renameDepartmentAction(formData: FormData) {
   const result = await renameDepartment(departmentId, name);
 
   if (result === "empty") {
-    redirect("/admin/departments?error=department_name_required");
+    redirect(`${errorBase}?error=department_name_required`);
   }
   if (result === "not_found") {
-    redirect("/admin/departments?error=department_not_found");
+    redirect(`${errorBase}?error=department_not_found`);
   }
   if (result === "duplicate") {
-    redirect("/admin/departments?error=department_duplicate");
+    redirect(`${errorBase}?error=department_duplicate`);
   }
   if (result === "unchanged") {
     revalidatePath("/admin/departments");
+    revalidatePath("/admin/users");
     return;
   }
 
@@ -1020,6 +1028,7 @@ export async function renameDepartmentAction(formData: FormData) {
     difference: { before: previous?.name ?? null, after: name.trim() },
   });
   revalidatePath("/admin/departments");
+  revalidatePath("/admin/users");
   revalidatePath("/admin");
   revalidatePath("/editor");
   revalidatePath("/ssp");
@@ -1029,7 +1038,7 @@ export async function renameDepartmentAction(formData: FormData) {
   revalidatePath("/reports");
   revalidatePath("/reports/active");
   revalidatePath("/reports/completed");
-  redirect("/admin/departments?ok=department_renamed");
+  redirect(usersReturn ? "/admin/users?ok=department_renamed" : "/admin/departments?ok=department_renamed");
 }
 
 export async function archiveDepartmentAction(formData: FormData) {
