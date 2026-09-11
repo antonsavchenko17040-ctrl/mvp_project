@@ -1,10 +1,8 @@
-import { CreateDepartmentSection } from "@/components/admin/create-department-section";
+import { AdminCreateActions } from "@/components/admin/admin-create-actions";
 import { DepartmentMembershipSection } from "@/components/admin/department-membership-section";
 import { GenerateUserPasswordButton } from "@/components/admin/generate-user-password-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
 import { requireRole } from "@/lib/auth/session";
 import { getDepartments } from "@/lib/admin/departments-store";
@@ -13,7 +11,7 @@ import type { UserRole } from "@/lib/types";
 import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
-import { assignRole, createUserAccount, deleteUserAccount } from "../actions";
+import { assignRole, deleteUserAccount } from "../actions";
 
 export default async function AdminUsersPage() {
   const roleOptions: Array<{ value: UserRole; label: string }> = [
@@ -42,48 +40,7 @@ export default async function AdminUsersPage() {
     <section className="space-y-5">
       <h1 className="text-3xl font-semibold">Керування користувачами</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Додати нового користувача</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action={createUserAccount} className="grid gap-3 md:grid-cols-3">
-            <div className="md:col-span-3 grid gap-3 md:grid-cols-2">
-              <div>
-                <Label htmlFor="full_name">Повне ПІБ</Label>
-                <Input id="full_name" name="full_name" placeholder="Напр. Шевченко Тарас" required />
-              </div>
-              <div className="space-y-2">
-                <Label>Ролі (оберіть одну або кілька)</Label>
-                <div className="flex flex-wrap gap-x-4 gap-y-2 rounded-md border bg-background px-3 py-2">
-                  {roleOptions.map((roleOption) => (
-                    <label key={roleOption.value} className="flex cursor-pointer items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="roles"
-                        value={roleOption.value}
-                        defaultChecked={roleOption.value === "editor"}
-                      />
-                      {roleOption.label}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="email">Логін</Label>
-              <Input id="email" name="email" type="text" placeholder="Введіть логін..." required />
-            </div>
-            <div>
-              <Label htmlFor="password_hint">Пароль</Label>
-              <Input id="password_hint" value="Генерується автоматично" disabled />
-            </div>
-            <Button type="submit" className="self-end">
-              + Створити
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <AdminCreateActions roleOptions={roleOptions} />
 
       <Card>
         <CardHeader>
@@ -171,8 +128,6 @@ export default async function AdminUsersPage() {
           </div>
         </CardContent>
       </Card>
-
-      <CreateDepartmentSection />
 
       <DepartmentMembershipSection departments={departments} users={activeUsers} />
     </section>
