@@ -198,14 +198,6 @@ export function DepartmentUsersTable({
       <CardContent>
         <div className={dataTableWrapClassName()}>
           <table className={dataTableClassName("min-w-[960px]")}>
-            <thead className={dataTable.thead}>
-              <tr className={dataTable.headRow}>
-                <th className={dataTable.th}>Ім&apos;я користувача</th>
-                <th className={dataTable.th}>Логін</th>
-                <th className={dataTable.th}>Ролі</th>
-                <th className={dataTable.thCenter}>Дії</th>
-              </tr>
-            </thead>
             <tbody>
               {!hasRows ? (
                 <tr className={dataTable.bodyRow}>

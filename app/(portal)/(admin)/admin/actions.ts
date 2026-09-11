@@ -982,7 +982,6 @@ export async function createDepartmentAction(formData: FormData) {
     summary: `Створено підрозділ «${name}»`,
     difference: { name },
   });
-  revalidatePath("/admin/departments");
   revalidatePath("/admin/users");
 }
 
@@ -990,11 +989,8 @@ export async function renameDepartmentAction(formData: FormData) {
   const actor = await requireRole(["admin"]);
   const departmentId = String(formData.get("department_id") ?? "");
   const name = String(formData.get("name") ?? "");
-  const returnTo = String(formData.get("return_to") ?? "");
-  const usersReturn = returnTo === "/admin/users";
-  const errorBase = usersReturn ? "/admin/users" : "/admin/departments";
   if (!departmentId) {
-    redirect(`${errorBase}?error=department_not_found`);
+    redirect("/admin/users?error=department_not_found");
   }
 
   const previous = await db.department.findFirst({
@@ -1004,16 +1000,15 @@ export async function renameDepartmentAction(formData: FormData) {
   const result = await renameDepartment(departmentId, name);
 
   if (result === "empty") {
-    redirect(`${errorBase}?error=department_name_required`);
+    redirect("/admin/users?error=department_name_required");
   }
   if (result === "not_found") {
-    redirect(`${errorBase}?error=department_not_found`);
+    redirect("/admin/users?error=department_not_found");
   }
   if (result === "duplicate") {
-    redirect(`${errorBase}?error=department_duplicate`);
+    redirect("/admin/users?error=department_duplicate");
   }
   if (result === "unchanged") {
-    revalidatePath("/admin/departments");
     revalidatePath("/admin/users");
     return;
   }
@@ -1027,7 +1022,6 @@ export async function renameDepartmentAction(formData: FormData) {
     summary: `Перейменовано підрозділ «${previous?.name ?? ""}» → «${name.trim()}»`,
     difference: { before: previous?.name ?? null, after: name.trim() },
   });
-  revalidatePath("/admin/departments");
   revalidatePath("/admin/users");
   revalidatePath("/admin");
   revalidatePath("/editor");
@@ -1038,7 +1032,7 @@ export async function renameDepartmentAction(formData: FormData) {
   revalidatePath("/reports");
   revalidatePath("/reports/active");
   revalidatePath("/reports/completed");
-  redirect(usersReturn ? "/admin/users?ok=department_renamed" : "/admin/departments?ok=department_renamed");
+  redirect("/admin/users?ok=department_renamed");
 }
 
 export async function archiveDepartmentAction(formData: FormData) {
@@ -1054,7 +1048,6 @@ export async function archiveDepartmentAction(formData: FormData) {
     summary: "Архівовано підрозділ",
     difference: { departmentId },
   });
-  revalidatePath("/admin/departments");
   revalidatePath("/admin/users");
 }
 
@@ -1080,7 +1073,6 @@ export async function assignDepartmentMemberAction(formData: FormData) {
     summary: `Додано ${profile.email} до підрозділу`,
     difference: { departmentId, profileId },
   });
-  revalidatePath("/admin/departments");
   revalidatePath("/admin/users");
 }
 
@@ -1100,7 +1092,6 @@ export async function removeDepartmentMemberAction(formData: FormData) {
     summary: "Вилучено учасника з підрозділу",
     difference: { departmentId, profileId },
   });
-  revalidatePath("/admin/departments");
   revalidatePath("/admin/users");
 }
 
