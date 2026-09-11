@@ -1,3 +1,4 @@
+import { DepartmentMembershipSection } from "@/components/admin/department-membership-section";
 import { GenerateUserPasswordButton } from "@/components/admin/generate-user-password-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
 import { requireRole } from "@/lib/auth/session";
+import { getDepartments } from "@/lib/admin/departments-store";
 import { db } from "@/lib/db";
 import type { UserRole } from "@/lib/types";
 import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
@@ -31,6 +33,9 @@ export default async function AdminUsersPage() {
     },
     orderBy: { fullName: "asc" },
   });
+
+  const departments = (await getDepartments()).filter((item) => item.isActive);
+  const activeUsers = users.filter((user) => user.isActive);
 
   return (
     <section className="space-y-5">
@@ -165,6 +170,8 @@ export default async function AdminUsersPage() {
           </div>
         </CardContent>
       </Card>
+
+      <DepartmentMembershipSection departments={departments} users={activeUsers} />
     </section>
   );
 }
