@@ -237,17 +237,21 @@ export function yearAuditFoldersExportFilename(year: number): string {
   return `Звіти за ${year}.xlsx`;
 }
 
-function writeSheetTitle(sheet: ExcelJS.Worksheet, title: string) {
-  sheet.getRow(1).getCell(1).value = title;
-  sheet.mergeCells("A1:O1");
-  const titleCell = sheet.getCell("A1");
+/** Повертає наступний вільний рядок після заголовка звіту. */
+function writeSheetTitle(sheet: ExcelJS.Worksheet, startRow: number, title: string): number {
+  const titleRow = sheet.getRow(startRow);
+  titleRow.getCell(1).value = title;
+  sheet.mergeCells(startRow, 1, startRow, 15);
+  const titleCell = sheet.getCell(startRow, 1);
   titleCell.font = { bold: true, size: 12, name: "Calibri" };
   titleCell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
   const titleWidth = COLUMN_WIDTHS.reduce((sum, w) => sum + w, 0);
-  sheet.getRow(1).height = estimateRowHeight([estimateWrappedLines(title, titleWidth)]) * 2;
+  titleRow.height = estimateRowHeight([estimateWrappedLines(title, titleWidth)]) * 2;
+  return startRow + 1;
 }
 
-function writeSheetHeaders(sheet: ExcelJS.Worksheet) {
+/** Дворівнева шапка таблиці; повертає перший рядок даних. */
+function writeSheetHeaders(sheet: ExcelJS.Worksheet, startRow: number): number {
   const headerRow1 = [
     "№",
     "Виявлені недоліки, проблеми та порушення",
@@ -284,37 +288,41 @@ function writeSheetHeaders(sheet: ExcelJS.Worksheet) {
     null,
   ] as const;
 
-  const row2 = sheet.getRow(2);
-  const row3 = sheet.getRow(3);
-  row3.height = 60;
+  const topRowIndex = startRow;
+  const bottomRowIndex = startRow + 1;
+  const topRow = sheet.getRow(topRowIndex);
+  const bottomRow = sheet.getRow(bottomRowIndex);
+  bottomRow.height = 60;
 
   for (let col = 1; col <= 15; col++) {
     const v1 = headerRow1[col - 1];
     const v2 = headerRow2[col - 1];
-    if (v1 != null) row2.getCell(col).value = v1;
-    if (v2 != null) row3.getCell(col).value = v2;
+    if (v1 != null) topRow.getCell(col).value = v1;
+    if (v2 != null) bottomRow.getCell(col).value = v2;
   }
 
-  sheet.mergeCells("A2:A3");
-  sheet.mergeCells("B2:C2");
-  sheet.mergeCells("D2:D3");
-  sheet.mergeCells("E2:F2");
-  sheet.mergeCells("G2:G3");
-  sheet.mergeCells("H2:H3");
-  sheet.mergeCells("I2:I3");
-  sheet.mergeCells("J2:J3");
-  sheet.mergeCells("K2:K3");
-  sheet.mergeCells("L2:L3");
-  sheet.mergeCells("M2:M3");
-  sheet.mergeCells("N2:N3");
-  sheet.mergeCells("O2:O3");
+  sheet.mergeCells(topRowIndex, 1, bottomRowIndex, 1); // A
+  sheet.mergeCells(topRowIndex, 2, topRowIndex, 3); // B:C top
+  sheet.mergeCells(topRowIndex, 4, bottomRowIndex, 4); // D
+  sheet.mergeCells(topRowIndex, 5, topRowIndex, 6); // E:F top
+  sheet.mergeCells(topRowIndex, 7, bottomRowIndex, 7); // G
+  sheet.mergeCells(topRowIndex, 8, bottomRowIndex, 8); // H
+  sheet.mergeCells(topRowIndex, 9, bottomRowIndex, 9); // I
+  sheet.mergeCells(topRowIndex, 10, bottomRowIndex, 10); // J
+  sheet.mergeCells(topRowIndex, 11, bottomRowIndex, 11); // K
+  sheet.mergeCells(topRowIndex, 12, bottomRowIndex, 12); // L
+  sheet.mergeCells(topRowIndex, 13, bottomRowIndex, 13); // M
+  sheet.mergeCells(topRowIndex, 14, bottomRowIndex, 14); // N
+  sheet.mergeCells(topRowIndex, 15, bottomRowIndex, 15); // O
 
-  for (let r = 2; r <= 3; r++) {
+  for (let r = topRowIndex; r <= bottomRowIndex; r++) {
     const row = sheet.getRow(r);
     for (let col = 1; col <= 15; col++) {
       styleHeaderCell(row.getCell(col));
     }
   }
+
+  return bottomRowIndex + 1;
 }
 
 function writeRecommendationRow(
@@ -351,7 +359,7 @@ function writeRecommendationRow(
   row.height = estimateRowHeight(lineCounts);
 }
 
-function createWorkbookSheet(title: string) {
+function createWorkbook() {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Портал моніторингу звітності";
   workbook.created = new Date();
@@ -360,22 +368,33 @@ function createWorkbookSheet(title: string) {
   COLUMN_WIDTHS.forEach((width, index) => {
     sheet.getColumn(index + 1).width = width;
   });
-  writeSheetTitle(sheet, title);
-  writeSheetHeaders(sheet);
   return { workbook, sheet };
+}
+
+/** Один звіт: назва + шапка + рядки. Повертає наступний вільний рядок. */
+function writeAuditFolderSection(
+  sheet: ExcelJS.Worksheet,
+  startRow: number,
+  folder: { title: string; recommendations: AuditFolderXlsxRecommendation[] },
+): number {
+  let row = writeSheetTitle(sheet, startRow, folder.title);
+  row = writeSheetHeaders(sheet, row);
+  for (const item of folder.recommendations) {
+    writeRecommendationRow(sheet, row, item);
+    row += 1;
+  }
+  return row;
 }
 
 /** XLSX за зразком КМУ: назва аудиту + заголовки + історія змін у комірках. */
 export async function buildAuditFolderXlsxBuffer(
   input: AuditFolderXlsxExportInput,
 ): Promise<Buffer> {
-  const { workbook, sheet } = createWorkbookSheet(input.title);
-
-  let dataRowIndex = 4;
-  for (const item of input.recommendations) {
-    writeRecommendationRow(sheet, dataRowIndex, item);
-    dataRowIndex += 1;
-  }
+  const { workbook, sheet } = createWorkbook();
+  writeAuditFolderSection(sheet, 1, {
+    title: input.title,
+    recommendations: input.recommendations,
+  });
 
   const arrayBuffer = await workbook.xlsx.writeBuffer();
   return Buffer.from(arrayBuffer);
@@ -390,20 +409,20 @@ export type YearAuditFolderXlsxExportInput = {
 };
 
 /**
- * Зведений XLSX за рік: одна таблиця з тими ж колонками,
- * рядки всіх звітів додаються послідовно один за одним.
+ * Зведений XLSX за рік: кожен звіт іде один за одним
+ * зі своєю назвою та шапкою таблиці (без спільного річного заголовка).
  */
 export async function buildYearAuditFoldersXlsxBuffer(
   input: YearAuditFolderXlsxExportInput,
 ): Promise<Buffer> {
-  const { workbook, sheet } = createWorkbookSheet(`Звіти за ${input.year}`);
+  const { workbook, sheet } = createWorkbook();
 
-  let dataRowIndex = 4;
-  for (const folder of input.folders) {
-    for (const item of folder.recommendations) {
-      writeRecommendationRow(sheet, dataRowIndex, item);
-      dataRowIndex += 1;
+  let row = 1;
+  for (let index = 0; index < input.folders.length; index += 1) {
+    if (index > 0) {
+      row += 1; // порожній рядок між звітами
     }
+    row = writeAuditFolderSection(sheet, row, input.folders[index]);
   }
 
   const arrayBuffer = await workbook.xlsx.writeBuffer();
