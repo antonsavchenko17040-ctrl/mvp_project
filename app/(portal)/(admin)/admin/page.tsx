@@ -1,9 +1,7 @@
+import { AdminAuditFolderActions } from "@/components/admin/admin-audit-folder-actions";
 import { AdminAuditFolderRow } from "@/components/admin/admin-audit-folder-row";
-import { ImportFileInput } from "@/components/import-file-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { canArchiveFolderByRecommendations } from "@/lib/audit-folder-archive";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -13,8 +11,6 @@ import Link from "next/link";
 
 import {
   adminArchiveAuditFolder,
-  adminCreateAuditFolder,
-  adminImportAuditFolderFromXlsx,
   hardDeleteAuditFolder,
 } from "./actions";
 
@@ -70,7 +66,6 @@ export default async function AdminPage({
     take: 50,
   });
 
-
   return (
     <section className="space-y-5">
       <h1 className="text-3xl font-semibold">Список аудитів</h1>
@@ -86,62 +81,7 @@ export default async function AdminPage({
         </p>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Створення папки аудиту</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form action={adminCreateAuditFolder} className="grid gap-3 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <Label htmlFor="title">Назва</Label>
-              <Input id="title" name="title" required />
-            </div>
-            <div>
-              <Label htmlFor="year">Рік</Label>
-              <Input id="year" name="year" type="number" defaultValue={new Date().getFullYear()} required />
-            </div>
-            <Button type="submit" className="md:col-span-3 w-fit">
-              Створити папку
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Імпорт повністю заповненого звіту з XLSX</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <form
-            action={adminImportAuditFolderFromXlsx}
-            className="grid gap-3 md:grid-cols-3"
-            encType="multipart/form-data"
-          >
-            <div className="md:col-span-2">
-              <Label htmlFor="admin-import-file">Файл таблиці (.xlsx)</Label>
-              <ImportFileInput
-                id="admin-import-file"
-                name="file"
-                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="admin-import-year">Рік</Label>
-              <Input
-                id="admin-import-year"
-                name="year"
-                type="number"
-                defaultValue={new Date().getFullYear()}
-                required
-              />
-            </div>
-            <Button type="submit" className="md:col-span-3 w-fit">
-              Завантажити звіт
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <AdminAuditFolderActions error={query.error ?? null} />
 
       <Card>
         <CardHeader>
@@ -171,40 +111,40 @@ export default async function AdminPage({
                     const canComplete =
                       !folder.archivedAt && canArchiveFolderByRecommendations(folder.recommendations);
                     return (
-                    <AdminAuditFolderRow
-                      key={folder.id}
-                      id={folder.id}
-                      title={folder.title}
-                      year={folder.year}
-                      authorEmail={folder.createdBy.email}
-                      authorFullName={folder.createdBy.fullName}
-                      recommendationsCount={folder._count.recommendations}
-                      archivedAt={folder.archivedAt}
-                      actions={
-                        <div className="flex flex-wrap gap-2">
-                          <Link
-                            href={`/admin/folders/${folder.id}/new`}
-                            className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-background px-3 text-base font-medium hover:bg-muted"
-                          >
-                            Додати рекомендацію
-                          </Link>
-                          {canComplete ? (
-                            <form action={adminArchiveAuditFolder}>
+                      <AdminAuditFolderRow
+                        key={folder.id}
+                        id={folder.id}
+                        title={folder.title}
+                        year={folder.year}
+                        authorEmail={folder.createdBy.email}
+                        authorFullName={folder.createdBy.fullName}
+                        recommendationsCount={folder._count.recommendations}
+                        archivedAt={folder.archivedAt}
+                        actions={
+                          <div className="flex flex-wrap gap-2">
+                            <Link
+                              href={`/admin/folders/${folder.id}/new`}
+                              className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-background px-3 text-base font-medium hover:bg-muted"
+                            >
+                              Додати рекомендацію
+                            </Link>
+                            {canComplete ? (
+                              <form action={adminArchiveAuditFolder}>
+                                <input type="hidden" name="audit_folder_id" value={folder.id} />
+                                <Button type="submit" variant="outline">
+                                  Архівувати
+                                </Button>
+                              </form>
+                            ) : null}
+                            <form action={hardDeleteAuditFolder}>
                               <input type="hidden" name="audit_folder_id" value={folder.id} />
-                              <Button type="submit" variant="outline">
-                                Архівувати
+                              <Button type="submit" variant="destructive">
+                                Видалити папку
                               </Button>
                             </form>
-                          ) : null}
-                          <form action={hardDeleteAuditFolder}>
-                            <input type="hidden" name="audit_folder_id" value={folder.id} />
-                            <Button type="submit" variant="destructive">
-                              Видалити папку
-                            </Button>
-                          </form>
-                        </div>
-                      }
-                    />
+                          </div>
+                        }
+                      />
                     );
                   })
                 )}
@@ -213,7 +153,6 @@ export default async function AdminPage({
           </div>
         </CardContent>
       </Card>
-
     </section>
   );
 }
