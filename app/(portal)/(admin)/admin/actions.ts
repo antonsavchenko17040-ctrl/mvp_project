@@ -1070,6 +1070,7 @@ export async function assignDepartmentMemberAction(formData: FormData) {
     difference: { departmentId, profileId },
   });
   revalidatePath("/admin/departments");
+  revalidatePath("/admin/users");
 }
 
 export async function removeDepartmentMemberAction(formData: FormData) {
@@ -1089,6 +1090,7 @@ export async function removeDepartmentMemberAction(formData: FormData) {
     difference: { departmentId, profileId },
   });
   revalidatePath("/admin/departments");
+  revalidatePath("/admin/users");
 }
 
 function adminRecommendationRedirect(recommendationId: string, query?: string) {
