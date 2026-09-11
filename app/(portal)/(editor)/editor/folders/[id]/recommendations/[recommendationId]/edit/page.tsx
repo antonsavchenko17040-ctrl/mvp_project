@@ -16,10 +16,7 @@ import {
   normalizeImportedDepartmentName,
   resolveDepartmentNameFromImport,
 } from "@/lib/admin/departments-store";
-import {
-  isObservationSignificanceSelected,
-  observationSignificanceSelectValue,
-} from "@/lib/observation-significance";
+import { observationSignificanceSelectValue } from "@/lib/observation-significance";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
@@ -40,7 +37,6 @@ const errorMessages: Record<string, string> = {
   cannot_edit_status: "Редагування доступне лише для чернетки редактора або чернетки відповідального.",
   assignee_required_before_start:
     "Перед передачею в роботу оберіть відповідальний підрозділ зі списку.",
-  significance_required: "Перед передачею в роботу оберіть значущість спостереження.",
   cannot_start_from_status: "Передати в роботу можна лише з чернетки редактора або чернетки відповідального.",
 };
 
@@ -115,7 +111,6 @@ export default async function EditorRecommendationEditPage({
   const selectedSspUnit =
     findDepartmentByName(activeDepartments, recommendation.sspUnit)?.name ??
     (resolvedImportedSspUnit || "");
-  const significanceSelected = isObservationSignificanceSelected(recommendation.observationSignificance);
   const redirectPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}/edit`;
 
   const errorKey = query.error ?? "";
@@ -182,17 +177,12 @@ export default async function EditorRecommendationEditPage({
                 className={editSelectClass}
                 defaultValue={observationSignificanceSelectValue(recommendation.observationSignificance)}
               >
-                <option value="">Не обрано</option>
+                <option value="">—</option>
                 <option value="низька">низька</option>
                 <option value="середня">середня</option>
                 <option value="висока">висока</option>
                 <option value="критична">критична</option>
               </select>
-              {!significanceSelected ? (
-                <p className="mt-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
-                  Перед передачею в роботу оберіть значущість спостереження.
-                </p>
-              ) : null}
             </RecommendationFieldBlock>
 
             <RecommendationFieldBlock label="Недоліки, проблеми та порушення (точки зростання)" htmlFor="deficiency">
