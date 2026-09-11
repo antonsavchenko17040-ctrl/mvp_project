@@ -2,7 +2,7 @@ import type { RecommendationStatus } from "@/lib/types";
 
 /** Спільний фільтр статусу для ССП / керівника / аналітика. */
 export const ROLE_WORKSPACE_STATUS_FILTERS = [
-  { key: "all", label: "Статус" },
+  { key: "all", label: "Етап виконання" },
   { key: "in_progress", label: "Виконати" },
   { key: "on_review", label: "На верифікації" },
   { key: "revision", label: "Доопрацювати" },
