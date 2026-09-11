@@ -387,11 +387,12 @@ export async function hardDeleteRecommendation(formData: FormData) {
     summary: `Остаточно видалено рекомендацію №${rec.sequenceNumber}`,
   });
   revalidatePath("/admin");
+  revalidatePath(`/admin/folders/${rec.auditFolderId}`);
   revalidatePath(`/editor/folders/${rec.auditFolderId}`);
   revalidatePath("/editor");
   revalidatePath("/public/dashboard");
   revalidatePath("/public/reports");
-  redirect("/admin");
+  redirect(`/admin/folders/${rec.auditFolderId}`);
 }
 
 export async function hardDeleteAuditFolder(formData: FormData) {
@@ -564,7 +565,7 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
   });
 
   revalidatePath("/admin");
-  revalidatePath(`/admin?folder=${folder.id}`);
+  revalidatePath(`/admin/folders/${folder.id}`);
   revalidatePath("/editor");
   revalidatePath("/public/dashboard");
   revalidatePath("/public/reports");
@@ -577,7 +578,7 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
   revalidatePath(`/reports/folders/${folder.id}`);
   revalidatePath(`/public/reports/folders/${folder.id}`);
 
-  redirect(`/admin?folder=${folder.id}&ok=imported`);
+  redirect(`/admin/folders/${folder.id}?ok=imported`);
 }
 
 /** Ручне завершення папки адміністратором (без автозавершення під час імпорту). */
@@ -603,11 +604,11 @@ export async function adminArchiveAuditFolder(formData: FormData) {
   }
 
   if (isFolderArchived(folder.archivedAt)) {
-    redirect(`/admin?folder=${folder.id}&error=already_archived`);
+    redirect(`/admin/folders/${folder.id}?error=already_archived`);
   }
 
   if (!canArchiveFolderByRecommendations(folder.recommendations)) {
-    redirect(`/admin?folder=${folder.id}&error=cannot_archive_incomplete`);
+    redirect(`/admin/folders/${folder.id}?error=cannot_archive_incomplete`);
   }
 
   const archivedAt = new Date();
@@ -634,7 +635,7 @@ export async function adminArchiveAuditFolder(formData: FormData) {
   revalidatePath(`/reports/folders/${folder.id}`);
   revalidatePath(`/public/reports/folders/${folder.id}`);
   revalidatePath("/ssp");
-  redirect(`/admin?folder=${folder.id}&ok=archived`);
+  redirect(`/admin/folders/${folder.id}?ok=archived`);
 }
 
 export async function adminCreateRecommendation(formData: FormData) {

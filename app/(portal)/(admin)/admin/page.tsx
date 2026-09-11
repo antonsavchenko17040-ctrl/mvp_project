@@ -1,5 +1,4 @@
 import { AdminAuditFolderRow } from "@/components/admin/admin-audit-folder-row";
-import { AdminRecommendationRow } from "@/components/admin/admin-recommendation-row";
 import { ImportFileInput } from "@/components/import-file-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { canArchiveFolderByRecommendations } from "@/lib/audit-folder-archive";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { recommendationSequenceOrderBy } from "@/lib/recommendation-sequence";
 import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -18,7 +16,6 @@ import {
   adminCreateAuditFolder,
   adminImportAuditFolderFromXlsx,
   hardDeleteAuditFolder,
-  hardDeleteRecommendation,
 } from "./actions";
 
 const adminListErrors: Record<string, string> = {
@@ -50,14 +47,12 @@ const adminListOk: Record<string, string> = {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; ok?: string; folder?: string }>;
+  searchParams: Promise<{ error?: string; ok?: string }>;
 }) {
   await requireRole(["admin"]);
   const query = await searchParams;
   const listError = query.error && adminListErrors[query.error] ? adminListErrors[query.error] : null;
   const listOk = query.ok && adminListOk[query.ok] ? adminListOk[query.ok] : null;
-  const selectedFolderId = String(query.folder ?? "").trim();
-
   const auditFolders = await db.auditFolder.findMany({
     select: {
       id: true,
@@ -75,29 +70,6 @@ export default async function AdminPage({
     take: 50,
   });
 
-  const selectedFolder = selectedFolderId
-    ? auditFolders.find((folder) => folder.id === selectedFolderId) ??
-      (await db.auditFolder.findUnique({
-        where: { id: selectedFolderId },
-        select: { id: true, title: true, year: true, archivedAt: true },
-      }))
-    : null;
-
-  const recommendations = selectedFolder
-    ? await db.recommendation.findMany({
-        where: { auditFolderId: selectedFolder.id },
-        select: {
-          id: true,
-          vkElement: true,
-          observationSignificance: true,
-          recommendationText: true,
-          status: true,
-          progressReport: true,
-          isActive: true,
-        },
-        orderBy: recommendationSequenceOrderBy,
-      })
-    : [];
 
   return (
     <section className="space-y-5">
@@ -177,7 +149,7 @@ export default async function AdminPage({
         </CardHeader>
         <CardContent>
           <p className="mb-4 text-base text-muted-foreground">
-            Натисніть на рядок папки, щоб відкрити її рекомендації. Також можна додати рекомендацію або видалити
+            Натисніть на рядок папки, щоб відкрити критичні операції з рекомендаціями для цього звіту. Також можна додати рекомендацію або видалити
             папку разом із усіма рекомендаціями (каскадно).
           </p>
           <div className={dataTableWrapClassName()}>
@@ -212,7 +184,6 @@ export default async function AdminPage({
                       authorFullName={folder.createdBy.fullName}
                       recommendationsCount={folder._count.recommendations}
                       archivedAt={folder.archivedAt}
-                      selected={selectedFolder?.id === folder.id}
                       actions={
                         <div className="flex flex-wrap gap-2">
                           <Link
@@ -247,68 +218,6 @@ export default async function AdminPage({
         </CardContent>
       </Card>
 
-      {selectedFolder ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex flex-wrap items-center gap-2">
-              <span>
-                Критичні операції з рекомендаціями — {selectedFolder.title} ({selectedFolder.year})
-              </span>
-              {selectedFolder.archivedAt ? (
-                <span className="rounded-full border border-slate-400/70 bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700">
-                  Завершено
-                </span>
-              ) : null}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={dataTableWrapClassName()}>
-              <table className={dataTableClassName("min-w-[1100px]")}>
-                <thead className={dataTable.thead}>
-                  <tr className={dataTable.headRow}>
-                    <th className={dataTable.th}>Елемент ВК</th>
-                    <th className={dataTable.th}>Рекомендація</th>
-                    <th className={`${dataTable.th} whitespace-nowrap`}>Значущість спостереження</th>
-                    <th className={`${dataTable.th} whitespace-nowrap`}>Стан</th>
-                    <th className={`${dataTable.th} whitespace-nowrap`}>Стан виконання</th>
-                    <th className={dataTable.th}>Дії</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recommendations.length === 0 ? (
-                    <tr className={dataTable.bodyRow}>
-                      <td className={dataTable.emptyCell} colSpan={6}>
-                        У цій папці ще немає рекомендацій.
-                      </td>
-                    </tr>
-                  ) : (
-                    recommendations.map((item) => (
-                      <AdminRecommendationRow
-                        key={item.id}
-                        id={item.id}
-                        vkElement={item.vkElement}
-                        recommendationText={item.recommendationText}
-                        observationSignificance={item.observationSignificance}
-                        status={item.status}
-                        progressReport={item.progressReport}
-                        isActive={item.isActive}
-                        actions={
-                          <form action={hardDeleteRecommendation}>
-                            <input type="hidden" name="recommendation_id" value={item.id} />
-                            <Button type="submit" variant="destructive">
-                              Видалити
-                            </Button>
-                          </form>
-                        }
-                      />
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
     </section>
   );
 }
