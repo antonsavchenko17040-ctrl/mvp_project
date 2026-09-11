@@ -24,6 +24,7 @@ import {
   getDepartments,
   removeDepartmentMember,
   renameDepartment,
+  setUserDepartment,
 } from "@/lib/admin/departments-store";
 import { canArchiveFolderByRecommendations, isFolderArchived } from "@/lib/audit-folder-archive";
 import { buildObjectDifference, buildUpdateSummary, statusLabelUk, writeAuditLog } from "@/lib/audit-log";
@@ -1091,6 +1092,55 @@ export async function removeDepartmentMemberAction(formData: FormData) {
     summary: "Вилучено учасника з підрозділу",
     difference: { departmentId, profileId },
   });
+  revalidatePath("/admin/departments");
+  revalidatePath("/admin/users");
+}
+
+export async function setUserDepartmentAction(formData: FormData) {
+  const actor = await requireRole(["admin"]);
+  const profileId = String(formData.get("profile_id") ?? "");
+  const departmentId = String(formData.get("department_id") ?? "").trim();
+  if (!profileId) return;
+
+  const profile = await db.profile.findUnique({
+    where: { id: profileId },
+    select: { id: true, isActive: true, email: true },
+  });
+  if (!profile || !profile.isActive) return;
+
+  if (departmentId) {
+    const department = await db.department.findFirst({
+      where: { id: departmentId, isActive: true },
+      select: { id: true, name: true },
+    });
+    if (!department) return;
+    await setUserDepartment(profileId, department.id);
+    await writeAuditLog({
+      actor,
+      actorRole: "admin",
+      action: "department.member_assigned",
+      entityType: "department",
+      entityId: department.id,
+      summary: `Призначено ${profile.email} до підрозділу «${department.name}»`,
+      difference: { departmentId: department.id, profileId },
+    });
+  } else {
+    const previous = await db.departmentMember.findMany({
+      where: { profileId },
+      select: { departmentId: true },
+    });
+    await setUserDepartment(profileId, null);
+    await writeAuditLog({
+      actor,
+      actorRole: "admin",
+      action: "department.member_removed",
+      entityType: "department",
+      entityId: previous[0]?.departmentId,
+      summary: `Знято призначення підрозділу для ${profile.email}`,
+      difference: { profileId, previousDepartmentIds: previous.map((item) => item.departmentId) },
+    });
+  }
+
   revalidatePath("/admin/departments");
   revalidatePath("/admin/users");
 }
