@@ -27,7 +27,7 @@ export function isObservationSignificanceSelected(raw: string | null | undefined
   return (OBSERVATION_SIGNIFICANCE_VALUES as readonly string[]).includes(normalized);
 }
 
-/** Значення для `<select defaultValue>` (порожнє = «—»). */
+/** Значення для `<select defaultValue>` (порожнє = «Не обрано»). */
 export function observationSignificanceSelectValue(raw: string | null | undefined): string {
   return normalizeObservationSignificance(raw);
 }
