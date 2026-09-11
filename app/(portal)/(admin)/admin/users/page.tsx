@@ -1,17 +1,9 @@
 import { AdminCreateActions } from "@/components/admin/admin-create-actions";
-import { DepartmentMembershipSection } from "@/components/admin/department-membership-section";
-import { GenerateUserPasswordButton } from "@/components/admin/generate-user-password-button";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2 } from "lucide-react";
+import { DepartmentUsersTable } from "@/components/admin/department-users-table";
 import { requireRole } from "@/lib/auth/session";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { db } from "@/lib/db";
 import type { UserRole } from "@/lib/types";
-import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
-import { cn } from "@/lib/utils";
-
-import { assignRole, deleteUserAccount } from "../actions";
 
 export default async function AdminUsersPage() {
   const roleOptions: Array<{ value: UserRole; label: string }> = [
@@ -34,7 +26,6 @@ export default async function AdminUsersPage() {
   });
 
   const departments = (await getDepartments()).filter((item) => item.isActive);
-  const activeUsers = users.filter((user) => user.isActive);
 
   return (
     <section className="space-y-5">
@@ -42,94 +33,12 @@ export default async function AdminUsersPage() {
 
       <AdminCreateActions roleOptions={roleOptions} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Користувачі</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className={dataTableWrapClassName()}>
-            <table className={dataTableClassName("min-w-[880px]")}>
-              <thead className={dataTable.thead}>
-                <tr className={dataTable.headRow}>
-                  <th className={dataTable.th}>Ім&apos;я користувача</th>
-                  <th className={dataTable.th}>Логін</th>
-                  <th className={dataTable.th}>Ролі</th>
-                  <th className={dataTable.thCenter}>Дії</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => {
-                  const roleValues = user.roles.map((r) => r.role as UserRole);
-                  return (
-                    <tr
-                      key={user.id}
-                      className={cn(dataTable.bodyRow, dataTable.rowHover, "align-middle")}
-                    >
-                      <td className={dataTable.cell}>
-                        <p className="font-medium">{user.fullName ?? "Без імені"}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                        {!user.isActive ? <p className="text-xs text-destructive">Деактивований</p> : null}
-                      </td>
-                      <td className={dataTable.cell}>
-                        <p className="font-mono text-sm">{user.email}</p>
-                      </td>
-                      <td className={dataTable.cell}>
-                        <form action={assignRole} className="space-y-2">
-                          <input type="hidden" name="user_id" value={user.id} />
-                          <div className="flex flex-wrap gap-x-3 gap-y-1">
-                            {roleOptions.map((roleOption) => (
-                              <label
-                                key={`${user.id}-${roleOption.value}`}
-                                className="flex cursor-pointer items-center gap-1.5 text-sm leading-tight"
-                              >
-                                <input
-                                  type="checkbox"
-                                  name="roles"
-                                  value={roleOption.value}
-                                  defaultChecked={roleValues.includes(roleOption.value)}
-                                />
-                                {roleOption.label}
-                              </label>
-                            ))}
-                          </div>
-                          <Button type="submit" variant="outline" size="sm">
-                            Зберегти
-                          </Button>
-                        </form>
-                      </td>
-                      <td className={cn(dataTable.cell, "text-center")}>
-                        <div className="inline-flex items-center justify-center gap-2">
-                          <GenerateUserPasswordButton userId={user.id} />
-                          <form action={deleteUserAccount} className="inline-flex">
-                            <input type="hidden" name="user_id" value={user.id} />
-                            <input type="hidden" name="current_admin_id" value={currentAdmin.id} />
-                            <Button
-                              type="submit"
-                              variant="ghost"
-                              size="icon"
-                              disabled={user.id === currentAdmin.id}
-                              title={
-                                user.id === currentAdmin.id
-                                  ? "Неможливо видалити власний обліковий запис"
-                                  : "Видалити користувача"
-                              }
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="size-4" />
-                            </Button>
-                          </form>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      <DepartmentMembershipSection departments={departments} users={activeUsers} />
+      <DepartmentUsersTable
+        departments={departments}
+        users={users}
+        roleOptions={roleOptions}
+        currentAdminId={currentAdmin.id}
+      />
     </section>
   );
 }
