@@ -7,7 +7,7 @@ export const uk = {
     sspDesk: "Робочий стіл ССП",
     managerDesk: "Робочий стіл керівника",
     analystDesk: "Робочий стіл аналітика",
-    adminDesk: "Робочий стіл адміністратора",
+    adminDesk: "Список аудитів",
   },
   auth: {
     login: "Вхід",
