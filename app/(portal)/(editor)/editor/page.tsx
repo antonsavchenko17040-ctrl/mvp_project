@@ -101,7 +101,20 @@ export default async function EditorPage({
             </div>
             <div>
               <Label htmlFor="import-year">Рік</Label>
-              <Input id="import-year" name="year" type="number" defaultValue={new Date().getFullYear()} required />
+              <select
+                id="import-year"
+                name="year"
+                required
+                defaultValue=""
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm"
+              >
+                <option value="">Не обрано</option>
+                {Array.from({ length: currentYear - 1999 }, (_, index) => currentYear - index).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
             <Button type="submit" className="md:col-span-3 w-fit bg-[#e8d773] text-black hover:bg-[#dcca64]">
               Завантажити звіт

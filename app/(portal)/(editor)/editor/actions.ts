@@ -740,13 +740,14 @@ export async function archiveAuditFolder(formData: FormData) {
 export async function importAuditFolderFromXlsx(formData: FormData) {
   const profile = await requireRole(["editor"]);
   const file = formData.get("file");
-  const year = Number(formData.get("year") ?? new Date().getFullYear());
+  const yearRaw = String(formData.get("year") ?? "").trim();
+  const year = Number(yearRaw);
 
   if (!(file instanceof File) || file.size === 0) {
     redirect("/editor?error=import_no_file");
   }
 
-  if (!Number.isFinite(year) || year < 2000 || year > 2100) {
+  if (!yearRaw || !Number.isFinite(year) || year < 2000 || year > 2100) {
     redirect("/editor?error=import_invalid_year");
   }
 
