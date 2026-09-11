@@ -85,6 +85,7 @@ export async function createAuditFolder(formData: FormData) {
     difference: { title, year },
   });
   revalidatePath("/editor");
+  redirect(`/editor?ok=folder_created`);
 }
 
 export async function createRecommendation(formData: FormData) {
