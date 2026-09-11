@@ -6,11 +6,7 @@ import { Input } from "@/components/ui/input";
 import { requireRole } from "@/lib/auth/session";
 import { getDepartments } from "@/lib/admin/departments-store";
 
-import {
-  archiveDepartmentAction,
-  createDepartmentAction,
-  renameDepartmentAction,
-} from "../actions";
+import { archiveDepartmentAction, renameDepartmentAction } from "../actions";
 
 const errorMessages: Record<string, string> = {
   department_name_required: "Вкажіть назву підрозділу.",
@@ -92,16 +88,6 @@ export default async function AdminDepartmentsPage({
                 ))}
               </ul>
             )}
-          </div>
-
-          <div className="border-t pt-6">
-            <h3 className="mb-3 text-xl font-medium">Додати новий підрозділ</h3>
-            <form action={createDepartmentAction} className="flex max-w-2xl items-center gap-3">
-              <Input name="name" placeholder="Назва..." required />
-              <Button type="submit" className="min-w-32 bg-[#c9ccf3] text-white hover:bg-[#b5b9ea]">
-                + Додати
-              </Button>
-            </form>
           </div>
         </CardContent>
       </Card>
