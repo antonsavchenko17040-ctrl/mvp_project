@@ -49,6 +49,7 @@ const errorMessages: Record<string, string> = {
   invalid_change_date: "Некоректна дата внесення змін.",
   invalid_field: "Невідоме поле для доповнення.",
   cannot_supplement_ssp_draft: "Доповнення недоступне для чернетки відповідального.",
+  cannot_supplement_draft: "Доповнення з історією недоступне для чернетки редактора.",
   folder_archived: "Папку архівовано. Зміни недоступні.",
 };
 
@@ -91,6 +92,9 @@ export default async function EditorRecommendationDetailPage({
   });
   if (!recommendation) notFound();
 
+  if (recommendation.status === "draft") {
+    redirect(`/editor/folders/${folder.id}/recommendations/${recommendation.id}/edit`);
+  }
   if (recommendation.status === "ssp_draft") {
     redirect(`/editor/folders/${folder.id}`);
   }
@@ -325,67 +329,63 @@ export default async function EditorRecommendationDetailPage({
             />
           </EditorSupplementableField>
 
-          {recommendation.status !== "draft" ? (
-            <>
-              <RecommendationFieldBlock label="Стан впровадження рекомендацій" htmlFor="progress_report">
-                <EditorAppendFieldDisplay
-                  id="progress_report"
-                  fieldKey="progressReport"
-                  currentValue={recommendation.progressReport ?? ""}
-                  supplements={supplements}
-                />
-              </RecommendationFieldBlock>
+          <RecommendationFieldBlock label="Стан впровадження рекомендацій" htmlFor="progress_report">
+            <EditorAppendFieldDisplay
+              id="progress_report"
+              fieldKey="progressReport"
+              currentValue={recommendation.progressReport ?? ""}
+              supplements={supplements}
+            />
+          </RecommendationFieldBlock>
 
-              <RecommendationFieldBlock label="Фактична дата впровадження" htmlFor="actual_implementation_date">
-                <EditorAppendFieldDisplay
-                  id="actual_implementation_date"
-                  fieldKey="actualImplementationDate"
-                  currentValue={
-                    recommendation.actualImplementationDate
-                      ? formatDay(recommendation.actualImplementationDate)
-                      : "—"
-                  }
-                  supplements={supplements}
-                />
-              </RecommendationFieldBlock>
+          <RecommendationFieldBlock label="Фактична дата впровадження" htmlFor="actual_implementation_date">
+            <EditorAppendFieldDisplay
+              id="actual_implementation_date"
+              fieldKey="actualImplementationDate"
+              currentValue={
+                recommendation.actualImplementationDate
+                  ? formatDay(recommendation.actualImplementationDate)
+                  : "—"
+              }
+              supplements={supplements}
+            />
+          </RecommendationFieldBlock>
 
-              <RecommendationFieldBlock label="Заходи з впровадження рекомендацій" htmlFor="measures">
-                <EditorAppendFieldDisplay
-                  id="measures"
-                  fieldKey="measuresDescription"
-                  currentValue={recommendation.measuresDescription ?? ""}
-                  supplements={supplements}
-                />
-              </RecommendationFieldBlock>
+          <RecommendationFieldBlock label="Заходи з впровадження рекомендацій" htmlFor="measures">
+            <EditorAppendFieldDisplay
+              id="measures"
+              fieldKey="measuresDescription"
+              currentValue={recommendation.measuresDescription ?? ""}
+              supplements={supplements}
+            />
+          </RecommendationFieldBlock>
 
-              <RecommendationFieldBlock label="Досягнення очікуваного" htmlFor="expected_achievement">
-                <EditorAppendFieldDisplay
-                  id="expected_achievement"
-                  fieldKey="expectedAchievement"
-                  currentValue={recommendation.expectedAchievement ?? ""}
-                  supplements={supplements}
-                />
-              </RecommendationFieldBlock>
+          <RecommendationFieldBlock label="Досягнення очікуваного" htmlFor="expected_achievement">
+            <EditorAppendFieldDisplay
+              id="expected_achievement"
+              fieldKey="expectedAchievement"
+              currentValue={recommendation.expectedAchievement ?? ""}
+              supplements={supplements}
+            />
+          </RecommendationFieldBlock>
 
-              <RecommendationFieldBlock label="Підтверджуючі документи" htmlFor="supporting_documents">
-                <EditorAppendFieldDisplay
-                  id="supporting_documents"
-                  fieldKey="supportingDocuments"
-                  currentValue={recommendation.supportingDocuments ?? ""}
-                  supplements={supplements}
-                />
-              </RecommendationFieldBlock>
+          <RecommendationFieldBlock label="Підтверджуючі документи" htmlFor="supporting_documents">
+            <EditorAppendFieldDisplay
+              id="supporting_documents"
+              fieldKey="supportingDocuments"
+              currentValue={recommendation.supportingDocuments ?? ""}
+              supplements={supplements}
+            />
+          </RecommendationFieldBlock>
 
-              <RecommendationFieldBlock label="Примітки" htmlFor="ssp_notes">
-                <EditorAppendFieldDisplay
-                  id="ssp_notes"
-                  fieldKey="sspNotes"
-                  currentValue={recommendation.sspNotes ?? ""}
-                  supplements={supplements}
-                />
-              </RecommendationFieldBlock>
-            </>
-          ) : null}
+          <RecommendationFieldBlock label="Примітки" htmlFor="ssp_notes">
+            <EditorAppendFieldDisplay
+              id="ssp_notes"
+              fieldKey="sspNotes"
+              currentValue={recommendation.sspNotes ?? ""}
+              supplements={supplements}
+            />
+          </RecommendationFieldBlock>
 
           {recommendation.managerComment ? (
             <RecommendationFieldBlock label="Коментар керівника" htmlFor="manager_comment">
@@ -397,17 +397,6 @@ export default async function EditorRecommendationDetailPage({
             <RecommendationFieldBlock label="Коментар аналітика" htmlFor="analyst_comment">
               <ReadBox id="analyst_comment" text={recommendation.analystComment} />
             </RecommendationFieldBlock>
-          ) : null}
-
-          {recommendation.status === "draft" && !folderArchived ? (
-            <div className="flex flex-wrap gap-2 pt-2">
-              <Link
-                href={`/editor/folders/${folder.id}/recommendations/${recommendation.id}/edit`}
-                className="inline-flex h-9 items-center justify-center rounded-md bg-[#3a6fb8] px-4 text-sm font-medium text-white hover:bg-[#2f5e9a]"
-              >
-                Редагувати чернетку
-              </Link>
-            </div>
           ) : null}
         </CardContent>
       </Card>
