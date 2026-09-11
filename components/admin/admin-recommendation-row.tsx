@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
 import type { RecommendationStatus } from "@/lib/types";
-import { dataTable } from "@/lib/ui/data-table";
+import { dataTable, dataTableCols } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
 type AdminRecommendationRowProps = {
@@ -49,20 +49,24 @@ export function AdminRecommendationRow({
         }
       }}
     >
-      <td className={dataTable.cell}>{vkElement}</td>
-      <td className={dataTable.cell}>
+      <td className={cn(dataTable.cell, dataTableCols.folder)}>{vkElement}</td>
+      <td className={cn(dataTable.cell, dataTableCols.text)}>
         {recommendationText}
         {!isActive ? (
           <span className="mt-1 block text-sm font-medium text-destructive">Деактивована</span>
         ) : null}
       </td>
-      <td className={cn(dataTable.cell, "whitespace-nowrap")}>{observationSignificance}</td>
-      <td className={cn(dataTable.cell, "whitespace-nowrap")}>
-        <RecommendationStatusBadge status={status} className="whitespace-nowrap" />
+      <td className={cn(dataTable.cell, dataTableCols.significance, "whitespace-nowrap text-center")}>
+        {observationSignificance}
       </td>
-      <td className={cn(dataTable.cell, "whitespace-nowrap")}>{progressReport ?? "-"}</td>
+      <td className={cn(dataTable.cell, dataTableCols.status, "whitespace-nowrap text-center")}>
+        <div className="flex justify-center">
+          <RecommendationStatusBadge status={status} className="whitespace-nowrap" />
+        </div>
+      </td>
+      <td className={cn(dataTable.cell, dataTableCols.text, "whitespace-nowrap")}>{progressReport ?? "-"}</td>
       <td
-        className={dataTable.cell}
+        className={cn(dataTable.cell, dataTableCols.actions)}
         onClick={(event) => event.stopPropagation()}
         onKeyDown={(event) => event.stopPropagation()}
       >

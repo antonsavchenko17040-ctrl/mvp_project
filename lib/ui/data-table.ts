@@ -14,6 +14,23 @@ export const dataTable = {
   emptyCell: "p-6 text-center align-middle [vertical-align:middle] text-base text-muted-foreground",
 } as const;
 
+/**
+ * Спільні ширини колонок рекомендаційних таблиць між ролями.
+ * Однакові ключі → однакова ширина в усіх робочих просторах.
+ */
+export const dataTableCols = {
+  /** Мінімальна ширина таблиці рекомендацій (рольові списки / папка). */
+  recommendationTableMin: "min-w-[1240px]",
+  num: "w-12",
+  folder: "w-40",
+  text: "min-w-[11rem]",
+  deadline: "w-40 min-w-[10rem]",
+  significance: "w-[8.5rem] min-w-[8.5rem]",
+  status: "w-40 min-w-[10rem]",
+  ssp: "w-40",
+  actions: "w-28",
+} as const;
+
 export function dataTableWrapClassName(className?: string) {
   return cn(dataTable.wrap, className);
 }

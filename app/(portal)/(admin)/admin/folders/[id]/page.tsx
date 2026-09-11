@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { recommendationSequenceOrderBy } from "@/lib/recommendation-sequence";
-import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
+import { dataTable, dataTableClassName, dataTableCols, dataTableWrapClassName } from "@/lib/ui/data-table";
+import { cn } from "@/lib/utils";
 
 import { hardDeleteRecommendation } from "../../actions";
 
@@ -108,15 +109,17 @@ export default async function AdminAuditFolderCriticalOpsPage({
           </CardHeader>
           <CardContent>
             <div className={dataTableWrapClassName()}>
-              <table className={dataTableClassName("min-w-[1100px]")}>
+              <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
                 <thead className={dataTable.thead}>
                   <tr className={dataTable.headRow}>
-                    <th className={dataTable.th}>Елемент ВК</th>
-                    <th className={dataTable.th}>Рекомендація</th>
-                    <th className={`${dataTable.th} whitespace-nowrap`}>Значущість спостереження</th>
-                    <th className={`${dataTable.th} whitespace-nowrap`}>Стан</th>
-                    <th className={`${dataTable.th} whitespace-nowrap`}>Стан виконання</th>
-                    <th className={dataTable.th}>Дії</th>
+                    <th className={cn(dataTable.th, dataTableCols.folder)}>Елемент ВК</th>
+                    <th className={cn(dataTable.th, dataTableCols.text)}>Рекомендація</th>
+                    <th className={cn(dataTable.thCenter, dataTableCols.significance, "whitespace-nowrap")}>
+                      Значущість спостереження
+                    </th>
+                    <th className={cn(dataTable.thCenter, dataTableCols.status, "whitespace-nowrap")}>Стан</th>
+                    <th className={cn(dataTable.th, dataTableCols.text, "whitespace-nowrap")}>Стан виконання</th>
+                    <th className={cn(dataTable.th, dataTableCols.actions)}>Дії</th>
                   </tr>
                 </thead>
                 <tbody>
