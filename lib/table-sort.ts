@@ -93,9 +93,10 @@ export function applySortParams(
 
 export function significanceRank(value: string): number {
   const n = value.trim().toLowerCase();
-  if (n === "високий") return 3;
-  if (n === "середній") return 2;
-  if (n === "низький") return 1;
+  if (n === "критична" || n === "критичний") return 4;
+  if (n === "висока" || n === "високий") return 3;
+  if (n === "середня" || n === "середній") return 2;
+  if (n === "низька" || n === "низький") return 1;
   return 0;
 }
 

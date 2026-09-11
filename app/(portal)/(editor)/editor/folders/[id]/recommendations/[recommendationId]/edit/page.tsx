@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getDepartments } from "@/lib/admin/departments-store";
+import { findDepartmentByName, getDepartments } from "@/lib/admin/departments-store";
+import { observationSignificanceSelectValue } from "@/lib/observation-significance";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
@@ -31,6 +32,7 @@ const errorMessages: Record<string, string> = {
   cannot_edit_status: "Редагування доступне лише для чернетки редактора або чернетки відповідального.",
   assignee_required_before_start:
     "Перед передачею в роботу оберіть відповідальний підрозділ зі списку.",
+  significance_required: "Перед передачею в роботу оберіть значущість спостереження.",
   cannot_start_from_status: "Передати в роботу можна лише з чернетки редактора або чернетки відповідального.",
 };
 
@@ -86,9 +88,7 @@ export default async function EditorRecommendationEditPage({
   }
 
   const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
-  const selectedSspUnit = activeDepartments.some((d) => d.name === recommendation.sspUnit)
-    ? recommendation.sspUnit
-    : "";
+  const selectedSspUnit = findDepartmentByName(activeDepartments, recommendation.sspUnit)?.name ?? "";
   const redirectPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}/edit`;
 
   const errorKey = query.error ?? "";
@@ -153,13 +153,14 @@ export default async function EditorRecommendationEditPage({
                 id="observation_significance"
                 name="observation_significance"
                 className={editSelectClass}
-                defaultValue={recommendation.observationSignificance}
-                required
+                defaultValue={observationSignificanceSelectValue(recommendation.observationSignificance)}
+               
               >
-                <option value="низький">низький</option>
-                <option value="середній">середній</option>
-                <option value="високий">високий</option>
-                <option value="критичний">критичний</option>
+                <option value="">Не обрано</option>
+                <option value="низька">низька</option>
+                <option value="середня">середня</option>
+                <option value="висока">висока</option>
+                <option value="критична">критична</option>
               </select>
             </RecommendationFieldBlock>
 

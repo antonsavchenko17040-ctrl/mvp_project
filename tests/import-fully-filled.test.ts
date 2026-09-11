@@ -27,7 +27,7 @@ function stubRecommendation(
     expectedAchievement: null,
     supportingDocuments: null,
     sspNotes: null,
-    observationSignificance: "—",
+    observationSignificance: "",
     status,
     supplements: [],
   };

@@ -112,7 +112,7 @@ model Recommendation {
   executionIndicator  String
   expectedResult      String
   vkElement           String               @default("")
-  observationSignificance String           @default("середній")
+  observationSignificance String           @default("")
   sspUnit             String
   deadline            DateTime
   informingDeadline   DateTime?

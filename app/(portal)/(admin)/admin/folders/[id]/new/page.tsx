@@ -107,12 +107,13 @@ export default async function AdminNewRecommendationPage({
                   "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
                 )}
                 required
-                defaultValue="середній"
+                defaultValue=""
               >
-                <option value="низький">низький</option>
-                <option value="середній">середній</option>
-                <option value="високий">високий</option>
-                <option value="критичний">критичний</option>
+                <option value="">Не обрано</option>
+                <option value="низька">низька</option>
+                <option value="середня">середня</option>
+                <option value="висока">висока</option>
+                <option value="критична">критична</option>
               </select>
             </RecommendationFieldBlock>
 
