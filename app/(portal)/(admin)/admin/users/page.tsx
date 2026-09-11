@@ -1,3 +1,4 @@
+import { CreateDepartmentSection } from "@/components/admin/create-department-section";
 import { DepartmentMembershipSection } from "@/components/admin/department-membership-section";
 import { GenerateUserPasswordButton } from "@/components/admin/generate-user-password-button";
 import { Button } from "@/components/ui/button";
@@ -170,6 +171,8 @@ export default async function AdminUsersPage() {
           </div>
         </CardContent>
       </Card>
+
+      <CreateDepartmentSection />
 
       <DepartmentMembershipSection departments={departments} users={activeUsers} />
     </section>

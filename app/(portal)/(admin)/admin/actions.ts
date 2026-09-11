@@ -979,6 +979,7 @@ export async function createDepartmentAction(formData: FormData) {
     difference: { name },
   });
   revalidatePath("/admin/departments");
+  revalidatePath("/admin/users");
 }
 
 export async function renameDepartmentAction(formData: FormData) {
@@ -1045,6 +1046,7 @@ export async function archiveDepartmentAction(formData: FormData) {
     difference: { departmentId },
   });
   revalidatePath("/admin/departments");
+  revalidatePath("/admin/users");
 }
 
 export async function assignDepartmentMemberAction(formData: FormData) {
