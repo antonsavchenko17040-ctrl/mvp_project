@@ -176,6 +176,7 @@ export default async function EditorRecommendationEditPage({
                 name="observation_significance"
                 className={editSelectClass}
                 defaultValue={observationSignificanceSelectValue(recommendation.observationSignificance)}
+                required
               >
                 <option value="">—</option>
                 <option value="низька">низька</option>
@@ -275,7 +276,7 @@ export default async function EditorRecommendationEditPage({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 pt-2">
-              <Button type="submit" className="bg-[#3a6fb8] hover:bg-[#2f5e9a]">
+              <Button type="submit" formNoValidate className="bg-[#3a6fb8] hover:bg-[#2f5e9a]">
                 Зберегти зміни
               </Button>
               <Button type="submit" formAction={startExecution} variant="outline">
