@@ -21,6 +21,21 @@ export async function getDepartments(): Promise<DepartmentRecord[]> {
   }));
 }
 
+/** Нормалізація назви підрозділу для порівняння (пробіли, регістр). */
+export function normalizeDepartmentNameKey(name: string): string {
+  return name.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim().toLocaleLowerCase("uk");
+}
+
+/** Знайти підрозділ за назвою з імпорту/форми (нечутливо до регістру й зайвих пробілів). */
+export function findDepartmentByName<T extends { name: string }>(
+  departments: T[],
+  importedName: string,
+): T | undefined {
+  const key = normalizeDepartmentNameKey(importedName);
+  if (!key || key === "—") return undefined;
+  return departments.find((department) => normalizeDepartmentNameKey(department.name) === key);
+}
+
 export async function createDepartment(name: string) {
   const trimmedName = name.trim();
   if (!trimmedName) return;

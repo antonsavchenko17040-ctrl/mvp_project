@@ -59,10 +59,11 @@ function ContentInput({
     return (
       <select id={contentId} name="content" className={inputClass} required defaultValue={defaultValue ?? ""}>
         <option value="">— Оберіть —</option>
-        <option value="низький">низький</option>
-        <option value="середній">середній</option>
-        <option value="високий">високий</option>
-        <option value="критичний">критичний</option>
+        <option value="">Не обрано</option>
+        <option value="низька">низька</option>
+        <option value="середня">середня</option>
+        <option value="висока">висока</option>
+        <option value="критична">критична</option>
       </select>
     );
   }

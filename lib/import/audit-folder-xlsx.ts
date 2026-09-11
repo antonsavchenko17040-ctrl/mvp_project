@@ -263,7 +263,7 @@ export async function parseAuditFolderXlsx(
       expectedAchievement: nullable(fieldValues.expectedAchievement),
       supportingDocuments: nullable(fieldValues.supportingDocuments),
       sspNotes: nullable(fieldValues.sspNotes),
-      observationSignificance: "—",
+      observationSignificance: "",
       status,
       supplements,
     });

@@ -40,6 +40,7 @@ import {
 } from "@/lib/import/audit-folder-xlsx";
 import { nextRecommendationSequenceNumber } from "@/lib/recommendation-sequence";
 import type { RecommendationStatus, UserRole } from "@/lib/types";
+import { normalizeObservationSignificance } from "@/lib/observation-significance";
 
 const allowedRoles: UserRole[] = ["editor", "ssp", "manager", "analyst", "admin"];
 
@@ -287,7 +288,7 @@ export async function adminUpdateRecommendation(formData: FormData) {
 
   const nextValues = {
     vkElement: String(formData.get("vk_element") ?? ""),
-    observationSignificance: String(formData.get("observation_significance") ?? "середній"),
+    observationSignificance: normalizeObservationSignificance(String(formData.get("observation_significance") ?? "")),
     deficiency: String(formData.get("deficiency") ?? ""),
     recommendationText: String(formData.get("recommendation_text") ?? ""),
     executionIndicator: String(formData.get("execution_indicator") ?? ""),
@@ -642,7 +643,7 @@ export async function adminCreateRecommendation(formData: FormData) {
   const assigneeUserIdRaw = String(formData.get("assignee_user_id") ?? "").trim();
   const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
   const sspUnit = String(formData.get("ssp_unit") ?? "");
-  const observationSignificance = String(formData.get("observation_significance") ?? "середній");
+  const observationSignificance = normalizeObservationSignificance(String(formData.get("observation_significance") ?? ""));
   const redirectPath = String(formData.get("redirect_path") ?? "/admin");
   const informingDeadlineRaw = String(formData.get("informing_deadline") ?? "").trim();
   const informingDeadline = informingDeadlineRaw === "" ? null : new Date(informingDeadlineRaw);

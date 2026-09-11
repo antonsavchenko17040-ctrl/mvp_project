@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { getDepartments } from "@/lib/admin/departments-store";
+import { findDepartmentByName, getDepartments } from "@/lib/admin/departments-store";
+import {
+  isObservationSignificanceSelected,
+  normalizeObservationSignificance,
+} from "@/lib/observation-significance";
 import { canArchiveFolderByRecommendations, isFolderArchived } from "@/lib/audit-folder-archive";
 import { buildObjectDifference, buildUpdateSummary, statusLabelUk, writeAuditLog } from "@/lib/audit-log";
 import { requireRole } from "@/lib/auth/session";
@@ -85,7 +89,7 @@ export async function createRecommendation(formData: FormData) {
   const assigneeUserIdRaw = String(formData.get("assignee_user_id") ?? "").trim();
   const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
   const sspUnit = String(formData.get("ssp_unit") ?? "");
-  const observationSignificance = String(formData.get("observation_significance") ?? "середній");
+  const observationSignificance = normalizeObservationSignificance(String(formData.get("observation_significance") ?? ""));
   const redirectPath = String(formData.get("redirect_path") ?? "/editor");
   const deadline = parseDateOnlyInput(String(formData.get("deadline") ?? ""));
   const informingDeadline = parseDateOnlyInput(String(formData.get("informing_deadline") ?? ""));
@@ -128,12 +132,16 @@ export async function createRecommendation(formData: FormData) {
     }
   }
   const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
-  const validDepartment = activeDepartments.some((department) => department.name === sspUnit);
-  if (!validDepartment) {
+  const matchedDepartment = findDepartmentByName(activeDepartments, sspUnit);
+  if (!matchedDepartment) {
     redirect(`${redirectPath}?error=invalid_department`);
   }
+  const resolvedSspUnit = matchedDepartment.name;
 
   const intent = String(formData.get("intent") ?? "draft");
+  if (intent === "assign" && !isObservationSignificanceSelected(observationSignificance)) {
+    redirect(`${redirectPath}?error=significance_required`);
+  }
   const status = intent === "assign" ? "in_progress" : "draft";
 
   const sequenceNumber = await nextRecommendationSequenceNumber(auditFolderId);
@@ -148,7 +156,7 @@ export async function createRecommendation(formData: FormData) {
       expectedResult: String(formData.get("expected_result") ?? ""),
       vkElement: String(formData.get("vk_element") ?? ""),
       observationSignificance,
-      sspUnit,
+      sspUnit: resolvedSspUnit,
       deadline,
       informingDeadline,
       status,
@@ -168,7 +176,7 @@ export async function createRecommendation(formData: FormData) {
       intent === "assign"
         ? `Створено рекомендацію №${sequenceNumber} і передано на виконання`
         : `Створено чернетку рекомендації №${sequenceNumber}`,
-    difference: { status, sequenceNumber, sspUnit, intent },
+    difference: { status, sequenceNumber, sspUnit: resolvedSspUnit, intent },
   });
   revalidatePath("/editor");
   revalidatePath(`/editor/folders/${auditFolderId}`);
@@ -223,7 +231,10 @@ export async function startExecution(formData: FormData) {
   const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
   const sspUnitRaw = String(formData.get("ssp_unit") ?? "").trim();
   const sspUnit = sspUnitRaw || recommendation.sspUnit.trim();
-  const observationSignificance = String(formData.get("observation_significance") ?? "середній");
+  const observationSignificance = normalizeObservationSignificance(String(formData.get("observation_significance") ?? ""));
+  if (!isObservationSignificanceSelected(observationSignificance)) {
+    redirect(`${errorBase}?error=significance_required`);
+  }
   const informingDeadlineRaw = String(formData.get("informing_deadline") ?? "").trim();
   const informingDeadline = informingDeadlineRaw === "" ? null : new Date(informingDeadlineRaw);
   const deadline = new Date(String(formData.get("deadline") ?? ""));
@@ -262,7 +273,7 @@ export async function startExecution(formData: FormData) {
   }
 
   const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
-  const matchedDepartment = activeDepartments.find((department) => department.name === nextValues.sspUnit);
+  const matchedDepartment = findDepartmentByName(activeDepartments, nextValues.sspUnit);
   if (!matchedDepartment) {
     redirect(`${errorBase}?error=invalid_department`);
   }
@@ -359,7 +370,7 @@ export async function updateRecommendation(formData: FormData) {
   const assigneeUserIdRaw = String(formData.get("assignee_user_id") ?? "").trim();
   const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
   const sspUnit = String(formData.get("ssp_unit") ?? "");
-  const observationSignificance = String(formData.get("observation_significance") ?? "середній");
+  const observationSignificance = normalizeObservationSignificance(String(formData.get("observation_significance") ?? ""));
   const informingDeadlineRaw = String(formData.get("informing_deadline") ?? "").trim();
   const informingDeadline = informingDeadlineRaw === "" ? null : new Date(informingDeadlineRaw);
   const nextValues = {
@@ -389,10 +400,11 @@ export async function updateRecommendation(formData: FormData) {
     }
   }
   const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
-  const validDepartment = activeDepartments.some((department) => department.name === sspUnit);
-  if (!validDepartment) {
+  const matchedDepartment = findDepartmentByName(activeDepartments, sspUnit);
+  if (!matchedDepartment) {
     redirect(`${redirectPath}?error=invalid_department`);
   }
+  nextValues.sspUnit = matchedDepartment.name;
 
   await db.recommendation.update({
     where: { id: recommendation.id },
@@ -760,6 +772,8 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
     redirect("/editor?error=import_admin_only");
   }
 
+  const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
+
   const folder = await db.$transaction(async (tx) => {
     const createdFolder = await tx.auditFolder.create({
       data: {
@@ -770,6 +784,8 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
     });
 
     for (const row of parsed.recommendations) {
+      const matchedDepartment = findDepartmentByName(activeDepartments, row.sspUnit);
+      const resolvedSspUnit = matchedDepartment?.name ?? row.sspUnit.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
       const recommendation = await tx.recommendation.create({
         data: {
           auditFolderId: createdFolder.id,
@@ -779,8 +795,8 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
           recommendationText: row.recommendationText,
           executionIndicator: row.executionIndicator,
           expectedResult: row.expectedResult,
-          observationSignificance: row.observationSignificance,
-          sspUnit: row.sspUnit,
+          observationSignificance: normalizeObservationSignificance(row.observationSignificance),
+          sspUnit: resolvedSspUnit,
           deadline: row.deadline!,
           informingDeadline: row.informingDeadline,
           progressReport: row.progressReport,
