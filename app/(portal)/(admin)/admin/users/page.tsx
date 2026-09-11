@@ -1,5 +1,4 @@
 import { AdminCreateActions } from "@/components/admin/admin-create-actions";
-import { DepartmentMembershipSection } from "@/components/admin/department-membership-section";
 import { GenerateUserPasswordButton } from "@/components/admin/generate-user-password-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +10,7 @@ import type { UserRole } from "@/lib/types";
 import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
-import { assignRole, deleteUserAccount } from "../actions";
+import { assignRole, deleteUserAccount, setUserDepartmentAction } from "../actions";
 
 export default async function AdminUsersPage() {
   const roleOptions: Array<{ value: UserRole; label: string }> = [
@@ -34,7 +33,14 @@ export default async function AdminUsersPage() {
   });
 
   const departments = (await getDepartments()).filter((item) => item.isActive);
-  const activeUsers = users.filter((user) => user.isActive);
+  const departmentByUserId = new Map<string, string>();
+  for (const department of departments) {
+    for (const memberId of department.memberIds) {
+      if (!departmentByUserId.has(memberId)) {
+        departmentByUserId.set(memberId, department.id);
+      }
+    }
+  }
 
   return (
     <section className="space-y-5">
@@ -48,18 +54,20 @@ export default async function AdminUsersPage() {
         </CardHeader>
         <CardContent>
           <div className={dataTableWrapClassName()}>
-            <table className={dataTableClassName("min-w-[880px]")}>
+            <table className={dataTableClassName("min-w-[1040px]")}>
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <th className={dataTable.th}>Ім&apos;я користувача</th>
                   <th className={dataTable.th}>Логін</th>
                   <th className={dataTable.th}>Ролі</th>
+                  <th className={dataTable.th}>Підрозділ</th>
                   <th className={dataTable.thCenter}>Дії</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => {
                   const roleValues = user.roles.map((r) => r.role as UserRole);
+                  const currentDepartmentId = departmentByUserId.get(user.id) ?? "";
                   return (
                     <tr
                       key={user.id}
@@ -97,6 +105,28 @@ export default async function AdminUsersPage() {
                           </Button>
                         </form>
                       </td>
+                      <td className={dataTable.cell}>
+                        <form action={setUserDepartmentAction} className="space-y-2">
+                          <input type="hidden" name="profile_id" value={user.id} />
+                          <select
+                            name="department_id"
+                            defaultValue={currentDepartmentId}
+                            disabled={!user.isActive}
+                            className="h-9 w-full min-w-[10rem] rounded-md border bg-background px-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                            aria-label={`Підрозділ користувача ${user.fullName ?? user.email}`}
+                          >
+                            <option value="">— Не призначено —</option>
+                            {departments.map((department) => (
+                              <option key={department.id} value={department.id}>
+                                {department.name}
+                              </option>
+                            ))}
+                          </select>
+                          <Button type="submit" variant="outline" size="sm" disabled={!user.isActive}>
+                            Зберегти
+                          </Button>
+                        </form>
+                      </td>
                       <td className={cn(dataTable.cell, "text-center")}>
                         <div className="inline-flex items-center justify-center gap-2">
                           <GenerateUserPasswordButton userId={user.id} />
@@ -128,8 +158,6 @@ export default async function AdminUsersPage() {
           </div>
         </CardContent>
       </Card>
-
-      <DepartmentMembershipSection departments={departments} users={activeUsers} />
     </section>
   );
 }
