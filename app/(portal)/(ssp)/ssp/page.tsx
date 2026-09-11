@@ -240,7 +240,7 @@ export default async function SspPage({
                   <Suspense
                     fallback={
                       <TableSortableTh
-                        label="Статус"
+                        label="Етап виконання"
                         column="status"
                         sort={sort}
                         defaults={sspSortDefaults}
@@ -252,7 +252,7 @@ export default async function SspPage({
                     }
                   >
                     <RoleWorkspaceColumnFilterTh
-                      label="Статус"
+                      label="Етап виконання"
                       column="status"
                       filterParam="status"
                       sort={sort}

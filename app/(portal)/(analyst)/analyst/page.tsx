@@ -234,7 +234,7 @@ export default async function AnalystPage({
                   <Suspense
                     fallback={
                       <TableSortableTh
-                        label="Статус"
+                        label="Етап виконання"
                         column="status"
                         sort={sort}
                         defaults={analystSortDefaults}
@@ -246,7 +246,7 @@ export default async function AnalystPage({
                     }
                   >
                     <RoleWorkspaceColumnFilterTh
-                      label="Статус"
+                      label="Етап виконання"
                       column="status"
                       filterParam="status"
                       sort={sort}

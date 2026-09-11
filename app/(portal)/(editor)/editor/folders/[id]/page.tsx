@@ -415,7 +415,7 @@ export default async function EditorFolderPage({
                       className="w-28"
                     />
                     <TableSortableTh
-                      label="Статус виконання"
+                      label="Етап виконання"
                       column="status"
                       sort={sort}
                       defaults={editorSortDefaults}

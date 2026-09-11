@@ -234,7 +234,7 @@ export default async function ManagerPage({
                   <Suspense
                     fallback={
                       <TableSortableTh
-                        label="Статус"
+                        label="Етап виконання"
                         column="status"
                         sort={sort}
                         defaults={managerSortDefaults}
@@ -246,7 +246,7 @@ export default async function ManagerPage({
                     }
                   >
                     <RoleWorkspaceColumnFilterTh
-                      label="Статус"
+                      label="Етап виконання"
                       column="status"
                       filterParam="status"
                       sort={sort}

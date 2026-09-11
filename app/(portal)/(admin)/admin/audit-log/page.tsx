@@ -173,18 +173,7 @@ export default async function AdminAuditLogPage({
 
   return (
     <section className="space-y-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-semibold">Audit Log — історія змін</h1>
-          <p className="mt-1 text-base text-muted-foreground">
-            Кожна зміна статусу або поля фіксується з AgentID та Timestamp. Показано {entries.length} з{" "}
-            {total}.
-          </p>
-        </div>
-        <Link href="/admin" className="text-base font-medium text-sky-800 hover:underline">
-          ← До робочого столу адміна
-        </Link>
-      </div>
+      <h1 className="text-3xl font-semibold">Audit Log — історія змін</h1>
 
       <Card>
         <CardHeader>

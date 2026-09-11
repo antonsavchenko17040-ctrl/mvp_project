@@ -73,7 +73,7 @@ export default async function AdminPage({
 
   return (
     <section className="space-y-5">
-      <h1 className="text-3xl font-semibold">Робочий стіл адміністратора</h1>
+      <h1 className="text-3xl font-semibold">Список аудитів</h1>
 
       {listError ? (
         <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
@@ -148,10 +148,6 @@ export default async function AdminPage({
           <CardTitle>Папки аудиту</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="mb-4 text-base text-muted-foreground">
-            Натисніть на рядок папки, щоб відкрити критичні операції з рекомендаціями для цього звіту. Також можна додати рекомендацію або видалити
-            папку разом із усіма рекомендаціями (каскадно).
-          </p>
           <div className={dataTableWrapClassName()}>
             <table className={dataTableClassName("min-w-[720px]")}>
               <thead className={dataTable.thead}>
