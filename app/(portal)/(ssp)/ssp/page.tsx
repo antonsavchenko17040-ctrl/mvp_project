@@ -38,7 +38,7 @@ import {
   statusRank,
   type TableSortState,
 } from "@/lib/table-sort";
-import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
+import { dataTable, dataTableClassName, dataTableCols, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
 const sspSortKeys = ["number", "folder", "deadline", "significance", "status"] as const;
@@ -178,7 +178,7 @@ export default async function SspPage({
           </div>
 
           <div className={dataTableWrapClassName()}>
-            <table className={dataTableClassName("min-w-[1240px]")}>
+            <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <TableSortableTh
@@ -188,7 +188,7 @@ export default async function SspPage({
                     defaults={sspSortDefaults}
                     pathname="/ssp"
                     preserveParams={preserveParams}
-                    className="w-12"
+                    className={dataTableCols.num}
                     align="center"
                   />
                   <TableSortableTh
@@ -198,12 +198,12 @@ export default async function SspPage({
                     defaults={sspSortDefaults}
                     pathname="/ssp"
                     preserveParams={preserveParams}
-                    className="w-40"
+                    className={dataTableCols.folder}
                   />
-                  <th className={cn(dataTable.th, "min-w-[11rem]")}>
+                  <th className={cn(dataTable.th, dataTableCols.text)}>
                     Недоліки, проблеми та порушення (точки зростання)
                   </th>
-                  <th className={cn(dataTable.th, "min-w-[11rem]")}>Надані аудиторські рекомендації</th>
+                  <th className={cn(dataTable.th, dataTableCols.text)}>Надані аудиторські рекомендації</th>
                   <Suspense
                     fallback={
                       <TableSortableTh
@@ -213,7 +213,8 @@ export default async function SspPage({
                         defaults={sspSortDefaults}
                         pathname="/ssp"
                         preserveParams={preserveParams}
-                        className="w-40 min-w-[10rem]"
+                        className={dataTableCols.deadline}
+                        align="center"
                       />
                     }
                   >
@@ -225,7 +226,8 @@ export default async function SspPage({
                       defaults={sspSortDefaults}
                       pathname="/ssp"
                       preserveParams={preserveParams}
-                      className="w-40 min-w-[10rem]"
+                      className={dataTableCols.deadline}
+                      align="center"
                     />
                   </Suspense>
                   <TableSortableTh
@@ -235,7 +237,8 @@ export default async function SspPage({
                     defaults={sspSortDefaults}
                     pathname="/ssp"
                     preserveParams={preserveParams}
-                    className="w-[8.5rem] min-w-[8.5rem]"
+                    className={dataTableCols.significance}
+                    align="center"
                   />
                   <Suspense
                     fallback={
@@ -246,7 +249,7 @@ export default async function SspPage({
                         defaults={sspSortDefaults}
                         pathname="/ssp"
                         preserveParams={preserveParams}
-                        className="w-40 min-w-[10rem]"
+                        className={dataTableCols.status}
                         align="center"
                       />
                     }
@@ -259,7 +262,7 @@ export default async function SspPage({
                       defaults={sspSortDefaults}
                       pathname="/ssp"
                       preserveParams={preserveParams}
-                      className="w-40 min-w-[10rem]"
+                      className={dataTableCols.status}
                       align="center"
                     />
                   </Suspense>
@@ -281,27 +284,28 @@ export default async function SspPage({
                       href={`/ssp/recommendations/${item.id}`}
                       highlighted={highlightId === item.id}
                     >
-                      <EditorRecommendationTableCell className="w-12 text-center" align="center">
+                      <EditorRecommendationTableCell className={dataTableCols.num} align="center">
                         {item.sequenceNumber}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className="w-40">
+                      <EditorRecommendationTableCell className={dataTableCols.folder}>
                         {item.auditFolder.title}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className="min-w-[11rem]">
+                      <EditorRecommendationTableCell className={dataTableCols.text}>
                         {item.deficiency}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className="min-w-[11rem]">
+                      <EditorRecommendationTableCell className={dataTableCols.text}>
                         {item.recommendationText}
                       </EditorRecommendationTableCell>
                       <EditorRecommendationTableCell
-                        className={cn("w-32", deadlineUrgencyCellClass(item.urgency))}
+                        className={cn(dataTableCols.deadline, deadlineUrgencyCellClass(item.urgency))}
+                        align="center"
                       >
                         {formatRecommendationDate(item.deadline)}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className="w-[8.5rem] min-w-[8.5rem]">
+                      <EditorRecommendationTableCell className={dataTableCols.significance} align="center">
                         {item.observationSignificance}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className="w-36" align="center">
+                      <EditorRecommendationTableCell className={dataTableCols.status} align="center">
                         <div className="flex justify-center">
                           <RecommendationStatusBadge
                             status={item.status}

@@ -114,7 +114,7 @@ export function EditorFolderActions({ currentYear, error = null, errorRow = "" }
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
         <DialogContent className="gap-5 p-5 sm:max-w-md sm:p-6" overlayClassName="bg-black/45 backdrop-blur-[1px]">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Імпорт папки</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">Імпорт папки аудиту</DialogTitle>
           </DialogHeader>
           <form action={importAuditFolderFromXlsx} className="space-y-4" encType="multipart/form-data">
             <div className="space-y-1.5">

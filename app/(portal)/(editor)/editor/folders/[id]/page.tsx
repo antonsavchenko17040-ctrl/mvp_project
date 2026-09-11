@@ -33,7 +33,7 @@ import {
   statusRank,
   type TableSortState,
 } from "@/lib/table-sort";
-import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
+import { dataTable, dataTableClassName, dataTableCols, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 import { normalizeObservationSignificance } from "@/lib/observation-significance";
 
@@ -307,7 +307,7 @@ export default async function EditorFolderPage({
             </div>
 
             <div className={dataTableWrapClassName()}>
-              <table className={dataTableClassName("min-w-[960px]")}>
+              <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
                 <thead className={dataTable.thead}>
                   <tr className={dataTable.headRow}>
                     <TableSortableTh
@@ -317,13 +317,13 @@ export default async function EditorFolderPage({
                       defaults={editorSortDefaults}
                       pathname={folderPath}
                       preserveParams={preserveParams}
-                      className="w-12"
+                      className={dataTableCols.num}
                       align="center"
                     />
-                    <th className={cn(dataTable.th, "min-w-[11rem]")}>
+                    <th className={cn(dataTable.th, dataTableCols.text)}>
                       Недоліки, проблеми та порушення (точки зростання)
                     </th>
-                    <th className={cn(dataTable.th, "min-w-[11rem]")}>Надані аудиторські рекомендації</th>
+                    <th className={cn(dataTable.th, dataTableCols.text)}>Надані аудиторські рекомендації</th>
                     <TableSortableTh
                       label="Значущість"
                       column="significance"
@@ -331,7 +331,8 @@ export default async function EditorFolderPage({
                       defaults={editorSortDefaults}
                       pathname={folderPath}
                       preserveParams={preserveParams}
-                      className="w-28"
+                      className={dataTableCols.significance}
+                      align="center"
                     />
                     <Suspense
                       fallback={
@@ -342,7 +343,7 @@ export default async function EditorFolderPage({
                           defaults={editorSortDefaults}
                           pathname={folderPath}
                           preserveParams={preserveParams}
-                          className="w-40"
+                          className={dataTableCols.status}
                           align="center"
                         />
                       }
@@ -356,7 +357,7 @@ export default async function EditorFolderPage({
                         pathname={folderPath}
                         preserveParams={preserveParams}
                         options={EDITOR_FOLDER_STATUS_FILTERS}
-                        className="w-40"
+                        className={dataTableCols.status}
                         align="center"
                       />
                     </Suspense>
@@ -367,7 +368,7 @@ export default async function EditorFolderPage({
                       defaults={editorSortDefaults}
                       pathname={folderPath}
                       preserveParams={preserveParams}
-                      className="w-40"
+                      className={dataTableCols.ssp}
                       align="center"
                     />
                   </tr>
@@ -391,19 +392,22 @@ export default async function EditorFolderPage({
                             : `/editor/folders/${folder.id}/recommendations/${item.id}`
                         }
                       >
-                        <EditorRecommendationTableCell className="w-12 p-3 text-center" align="center">
+                        <EditorRecommendationTableCell className={cn(dataTableCols.num, "p-3")} align="center">
                           {item.sequenceNumber}
                         </EditorRecommendationTableCell>
-                        <EditorRecommendationTableCell className="min-w-[11rem] p-3">
+                        <EditorRecommendationTableCell className={cn(dataTableCols.text, "p-3")}>
                           {item.deficiency}
                         </EditorRecommendationTableCell>
-                        <EditorRecommendationTableCell className="min-w-[11rem] p-3">
+                        <EditorRecommendationTableCell className={cn(dataTableCols.text, "p-3")}>
                           {item.recommendationText}
                         </EditorRecommendationTableCell>
-                        <EditorRecommendationTableCell className="w-28 p-3">
+                        <EditorRecommendationTableCell
+                          className={cn(dataTableCols.significance, "p-3")}
+                          align="center"
+                        >
                           {normalizeObservationSignificance(item.observationSignificance) || "—"}
                         </EditorRecommendationTableCell>
-                        <EditorRecommendationTableCell className="w-40 p-3" align="center">
+                        <EditorRecommendationTableCell className={cn(dataTableCols.status, "p-3")} align="center">
                           <div className="flex justify-center">
                             <RecommendationStatusBadge
                               status={item.status}
@@ -411,7 +415,7 @@ export default async function EditorFolderPage({
                             />
                           </div>
                         </EditorRecommendationTableCell>
-                        <EditorRecommendationTableCell className="w-40 p-3" align="center">
+                        <EditorRecommendationTableCell className={cn(dataTableCols.ssp, "p-3")} align="center">
                           {item.sspUnit}
                         </EditorRecommendationTableCell>
                       </EditorRecommendationTableRow>
