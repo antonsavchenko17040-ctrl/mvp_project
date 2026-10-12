@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatRolesList } from "@/lib/auth/roles";
 import type { UserRole } from "@/lib/types";
-import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
+import { dataTable, dataTableClassName, dataTableCols, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
 function matchesNameQuery(user: { fullName: string | null }, query: string) {
@@ -197,7 +197,7 @@ export function DepartmentUsersTable({
       </CardHeader>
       <CardContent>
         <div className={dataTableWrapClassName()}>
-          <table className={dataTableClassName("min-w-[960px]")}>
+          <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
             <tbody>
               {!hasRows ? (
                 <tr className={dataTable.bodyRow}>

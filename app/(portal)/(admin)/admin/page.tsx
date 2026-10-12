@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { canArchiveFolderByRecommendations } from "@/lib/audit-folder-archive";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
+import { dataTable, dataTableClassName, dataTableCols, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
@@ -89,7 +89,7 @@ export default async function AdminPage({
         </CardHeader>
         <CardContent>
           <div className={dataTableWrapClassName()}>
-            <table className={dataTableClassName("min-w-[720px]")}>
+            <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <th className={dataTable.th}>Назва</th>

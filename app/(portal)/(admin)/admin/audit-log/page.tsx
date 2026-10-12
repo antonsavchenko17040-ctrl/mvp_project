@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
+import { dataTable, dataTableClassName, dataTableCols, dataTableWrapClassName } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 50;
@@ -236,7 +236,7 @@ export default async function AdminAuditLogPage({
       </Card>
 
       <div className={dataTableWrapClassName()}>
-        <table className={dataTableClassName("min-w-[1100px]")}>
+        <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
           <thead className={dataTable.thead}>
             <tr className={dataTable.headRow}>
               <th className={dataTable.th}>AgentID</th>
