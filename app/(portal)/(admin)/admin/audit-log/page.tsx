@@ -63,66 +63,53 @@ function AuditLogEntityCell({
 }) {
   const typeLabel = entityTypeLabels[entry.entityType] ?? entry.entityType;
   const recommendationId = resolveRecommendationId(entry);
+  const auditFolderId = resolveAuditFolderId(entry);
   const sequenceNumber = recommendationId
     ? sequenceByRecommendationId.get(recommendationId)
     : undefined;
-  const auditFolderId = resolveAuditFolderId(entry);
+  const recommendationExists = Boolean(
+    recommendationId && sequenceByRecommendationId.has(recommendationId),
+  );
+  const folderExists = Boolean(auditFolderId && existingAuditFolderIds.has(auditFolderId));
 
-  if (entry.entityType === "recommendation" && recommendationId) {
-    return (
-      <>
-        <div className="font-medium">
-          {typeLabel}
-          {sequenceNumber != null ? ` №${sequenceNumber}` : ""}
-        </div>
-        <div
-          className="mt-0.5 truncate font-mono text-xs text-muted-foreground"
-          title={recommendationId}
-        >
-          id: {recommendationId}
-        </div>
-        {sequenceNumber != null ? (
-          <Link
-            href={`/admin/recommendations/${recommendationId}`}
-            className="text-xs text-sky-800 hover:underline"
-          >
-            Відкрити рекомендацію
-          </Link>
-        ) : null}
-      </>
-    );
-  }
-
-  if (entry.entityType === "audit_folder" && auditFolderId) {
-    const folderExists = existingAuditFolderIds.has(auditFolderId);
-    return (
-      <>
-        <div className="font-medium">{typeLabel}</div>
-        <div
-          className="mt-0.5 truncate font-mono text-xs text-muted-foreground"
-          title={auditFolderId}
-        >
-          id: {auditFolderId}
-        </div>
-        {folderExists ? (
-          <Link
-            href={`/admin/folders/${auditFolderId}`}
-            className="text-xs text-sky-800 hover:underline"
-          >
-            Відкрити папку аудиту
-          </Link>
-        ) : null}
-      </>
-    );
-  }
+  const displayId =
+    entry.entityType === "recommendation" && recommendationId
+      ? recommendationId
+      : entry.entityType === "audit_folder" && auditFolderId
+        ? auditFolderId
+        : entry.entityId;
 
   return (
     <>
-      <div>{typeLabel}</div>
-      {entry.entityId ? (
-        <div className="truncate font-mono text-xs text-muted-foreground" title={entry.entityId}>
-          id: {entry.entityId}
+      <div className="font-medium">
+        {typeLabel}
+        {entry.entityType === "recommendation" && sequenceNumber != null
+          ? ` №${sequenceNumber}`
+          : ""}
+      </div>
+      {displayId ? (
+        <div
+          className="mt-0.5 truncate font-mono text-xs text-muted-foreground"
+          title={displayId}
+        >
+          id: {displayId}
         </div>
+      ) : null}
+      {recommendationExists ? (
+        <Link
+          href={`/admin/recommendations/${recommendationId}`}
+          className="mt-0.5 block text-xs text-sky-800 hover:underline"
+        >
+          Відкрити рекомендацію
+        </Link>
+      ) : null}
+      {folderExists ? (
+        <Link
+          href={`/admin/folders/${auditFolderId}`}
+          className="mt-0.5 block text-xs text-sky-800 hover:underline"
+        >
+          Відкрити папку аудиту
+        </Link>
       ) : null}
     </>
   );
