@@ -19,13 +19,13 @@ export const dataTable = {
  * Однакові ключі → однакова ширина в усіх робочих просторах.
  */
 export const dataTableCols = {
-  /** Мінімальна ширина таблиці рекомендацій (рольові списки / папка). */
-  recommendationTableMin: "min-w-[1240px]",
+  /** Єдина мінімальна ширина таблиць рекомендацій у всіх робочих просторах. */
+  recommendationTableMin: "min-w-[1280px]",
   num: "w-12",
   folder: "w-40",
   text: "min-w-[11rem]",
   deadline: "w-40 min-w-[10rem]",
-  significance: "w-[8.5rem] min-w-[8.5rem]",
+  significance: "w-[10rem] min-w-[10rem]",
   status: "w-40 min-w-[10rem]",
   ssp: "w-40",
   actions: "w-28",
