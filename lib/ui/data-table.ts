@@ -19,18 +19,11 @@ export const dataTable = {
  * Однакові ключі → однакова ширина в усіх робочих просторах.
  */
 export const dataTableCols = {
-  /** Єдина мінімальна ширина таблиць рекомендацій у всіх робочих просторах. */
+  /**
+   * Єдина мінімальна ширина таблиць рекомендацій (еталон — простір Редактора).
+   * w-full з dataTable.table + цей min-w — однакова поведінка в усіх робочих просторах.
+   */
   recommendationTableMin: "min-w-[1280px]",
-  /**
-   * Контейнер сторінок Відповідального / Керівника / Аналітика.
-   * Однакова максимальна ширина — таблиця не розтягується по-різному між ролями.
-   */
-  roleWorkspaceContainer: "mx-auto w-full max-w-[1280px]",
-  /**
-   * Таблиці Відповідального / Керівника / Аналітика (еталон — Керівник).
-   * Фіксована ширина + table-fixed — однакові пропорції колонок.
-   */
-  roleWorkspaceTable: "w-[1280px] min-w-[1280px] max-w-[1280px] table-fixed",
   num: "w-12",
   folder: "w-40",
   text: "min-w-[11rem]",
@@ -39,6 +32,13 @@ export const dataTableCols = {
   status: "w-40 min-w-[10rem]",
   ssp: "w-40",
   actions: "w-28",
+} as const;
+
+/** Картка зі списком рекомендацій — як у папці Редактора. */
+export const roleWorkspaceListCard = {
+  card: "relative w-full gap-0 overflow-hidden rounded-3xl border border-black/10 bg-white py-0 pb-4 shadow-sm ring-0",
+  content: "space-y-4 pt-4 sm:pt-5",
+  searchWrap: "rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:p-3.5",
 } as const;
 
 export function dataTableWrapClassName(className?: string) {
