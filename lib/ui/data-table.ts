@@ -34,11 +34,18 @@ export const dataTableCols = {
   actions: "w-28",
 } as const;
 
-/** Картка зі списком рекомендацій — як у папці Редактора. */
+/**
+ * Картка списку Відповідальний / Керівник / Аналітик.
+ * Еталон зовнішніх розмірів — поточний вигляд Відповідального:
+ * однакова ширина контейнера й таблиці, стабільні відступи, table-fixed.
+ */
 export const roleWorkspaceListCard = {
-  card: "relative w-full gap-0 overflow-hidden rounded-3xl border border-black/10 bg-white py-0 pb-4 shadow-sm ring-0",
-  content: "space-y-4 pt-4 sm:pt-5",
-  searchWrap: "rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:p-3.5",
+  card: "relative w-full min-w-0 max-w-full gap-0 overflow-hidden rounded-3xl border border-black/10 bg-white py-0 pb-4 shadow-sm ring-0",
+  content: "w-full min-w-0 space-y-4 px-4 pt-4 sm:pt-5",
+  searchWrap: "w-full min-w-0 rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:p-3.5",
+  tableWrap: "w-full min-w-0 max-w-full overflow-x-auto rounded-3xl border border-black",
+  /** Та сама min-ширина, що recommendationTableMin, + table-fixed щоб вміст не роздував таблицю. */
+  table: "w-full min-w-[1280px] table-fixed border-collapse text-sm",
 } as const;
 
 export function dataTableWrapClassName(className?: string) {

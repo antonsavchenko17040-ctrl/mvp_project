@@ -40,9 +40,7 @@ import {
 } from "@/lib/table-sort";
 import {
   dataTable,
-  dataTableClassName,
   dataTableCols,
-  dataTableWrapClassName,
   roleWorkspaceListCard,
 } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
@@ -183,8 +181,8 @@ export default async function SspPage({
             </Suspense>
           </div>
 
-          <div className={dataTableWrapClassName()}>
-            <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
+          <div className={roleWorkspaceListCard.tableWrap}>
+            <table className={roleWorkspaceListCard.table}>
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <TableSortableTh
