@@ -60,7 +60,7 @@ export default async function PortalLayout({ children }: { children: React.React
             </div>
           </DismissibleDetails>
         </header>
-        <main className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-auto p-5 xl:p-7 2xl:px-10 2xl:py-9">
+        <main className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-auto p-5 xl:p-7 2xl:px-10 2xl:py-9 [scrollbar-gutter:stable]">
           <div className="mx-auto w-full min-w-0 max-w-full">{children}</div>
         </main>
       </div>
