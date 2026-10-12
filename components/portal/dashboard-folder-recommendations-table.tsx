@@ -9,7 +9,12 @@ import {
   dashboardFolderSortDefaults,
   type DashboardFolderSortKey,
 } from "@/lib/dashboard/folder-table-sort";
-import { dataTable, dataTableClassName, dataTableWrapClassName } from "@/lib/ui/data-table";
+import {
+  dataTable,
+  dataTableClassName,
+  dataTableCols,
+  dataTableWrapClassName,
+} from "@/lib/ui/data-table";
 import { type TableSortState, applySortParams } from "@/lib/table-sort";
 import { cn } from "@/lib/utils";
 
@@ -69,7 +74,7 @@ export function DashboardFolderRecommendationsTable({
 
   return (
     <div className={dataTableWrapClassName()}>
-      <table className={dataTableClassName("min-w-[640px] table-fixed")}>
+      <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
         <thead className={dataTable.thead}>
           <tr className={dataTable.headRow}>
             <TableSortableTh
@@ -79,11 +84,11 @@ export function DashboardFolderRecommendationsTable({
               defaults={dashboardFolderSortDefaults}
               pathname={folderHref}
               preserveParams={preserveParams}
-              className="w-12"
+              className={dataTableCols.num}
               align="center"
             />
-            <th className={cn(dataTable.th, "w-[32%]")}>Рекомендація</th>
-            <th className={cn(dataTable.th, "w-[30%]")}>Заходи</th>
+            <th className={cn(dataTable.th, dataTableCols.text)}>Рекомендація</th>
+            <th className={cn(dataTable.th, dataTableCols.text)}>Заходи</th>
             <TableSortableTh
               label="Підрозділ"
               column="sspUnit"
@@ -91,7 +96,7 @@ export function DashboardFolderRecommendationsTable({
               defaults={dashboardFolderSortDefaults}
               pathname={folderHref}
               preserveParams={preserveParams}
-              className="w-[16%]"
+              className={dataTableCols.ssp}
             />
             <TableSortableTh
               label="Стан виконання"
@@ -100,7 +105,8 @@ export function DashboardFolderRecommendationsTable({
               defaults={dashboardFolderSortDefaults}
               pathname={folderHref}
               preserveParams={preserveParams}
-              className="w-[18%]"
+              className={dataTableCols.status}
+              align="center"
             />
           </tr>
         </thead>
@@ -110,20 +116,23 @@ export function DashboardFolderRecommendationsTable({
               key={item.id}
               href={`${recommendationHrefPrefix}/${item.id}${detailQuery()}`}
             >
-              <EditorRecommendationTableCell className="w-12 text-center text-sm tabular-nums" align="center">
+              <EditorRecommendationTableCell
+                className={cn(dataTableCols.num, "text-sm tabular-nums")}
+                align="center"
+              >
                 {item.sequenceNumber}
               </EditorRecommendationTableCell>
-              <EditorRecommendationTableCell className="min-w-0">
+              <EditorRecommendationTableCell className={dataTableCols.text}>
                 <p className={cn(clampText, "w-full min-w-0")}>{item.recommendationText}</p>
               </EditorRecommendationTableCell>
-              <EditorRecommendationTableCell>
+              <EditorRecommendationTableCell className={dataTableCols.text}>
                 <p className={clampText}>{item.measuresDescription ?? "—"}</p>
               </EditorRecommendationTableCell>
-              <EditorRecommendationTableCell>
+              <EditorRecommendationTableCell className={dataTableCols.ssp}>
                 <p className={clampText}>{item.sspUnit}</p>
               </EditorRecommendationTableCell>
-              <EditorRecommendationTableCell>
-                <div className="flex items-center">
+              <EditorRecommendationTableCell className={dataTableCols.status} align="center">
+                <div className="flex items-center justify-center">
                   {item.progressReport || item.executionIndicator.trim() ? (
                     <RecommendationExecutionStatusBadge
                       progressReport={item.progressReport}
