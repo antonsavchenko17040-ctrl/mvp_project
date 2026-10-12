@@ -21,6 +21,11 @@ export const dataTable = {
 export const dataTableCols = {
   /** Єдина мінімальна ширина таблиць рекомендацій у всіх робочих просторах. */
   recommendationTableMin: "min-w-[1280px]",
+  /**
+   * Таблиці Відповідального / Керівника / Аналітика (еталон — Керівник).
+   * table-fixed тримає однакові пропорції колонок незалежно від вмісту.
+   */
+  roleWorkspaceTable: "min-w-[1280px] table-fixed",
   num: "w-12",
   folder: "w-40",
   text: "min-w-[11rem]",

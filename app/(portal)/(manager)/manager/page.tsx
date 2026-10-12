@@ -172,7 +172,7 @@ export default async function ManagerPage({
           </div>
 
           <div className={dataTableWrapClassName()}>
-            <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
+            <table className={dataTableClassName(dataTableCols.roleWorkspaceTable)}>
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <TableSortableTh

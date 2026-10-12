@@ -172,7 +172,7 @@ export default async function AnalystPage({
           </div>
 
           <div className={dataTableWrapClassName()}>
-            <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
+            <table className={dataTableClassName(dataTableCols.roleWorkspaceTable)}>
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <TableSortableTh
@@ -225,7 +225,7 @@ export default async function AnalystPage({
                     />
                   </Suspense>
                   <TableSortableTh
-                    label="Значущість спостереження"
+                    label={"Значущість\nспостереження"}
                     column="significance"
                     sort={sort}
                     defaults={analystSortDefaults}
