@@ -37,22 +37,36 @@ function resolveRecommendationId(entry: {
   return "";
 }
 
+function resolveAuditFolderId(entry: {
+  entityType: string;
+  entityId: string;
+  auditFolderId: string | null;
+}): string {
+  if (entry.auditFolderId) return entry.auditFolderId;
+  if (entry.entityType === "audit_folder" && entry.entityId) return entry.entityId;
+  return "";
+}
+
 function AuditLogEntityCell({
   entry,
   sequenceByRecommendationId,
+  existingAuditFolderIds,
 }: {
   entry: {
     entityType: string;
     entityId: string;
     recommendationId: string | null;
+    auditFolderId: string | null;
   };
   sequenceByRecommendationId: Map<string, number>;
+  existingAuditFolderIds: Set<string>;
 }) {
   const typeLabel = entityTypeLabels[entry.entityType] ?? entry.entityType;
   const recommendationId = resolveRecommendationId(entry);
   const sequenceNumber = recommendationId
     ? sequenceByRecommendationId.get(recommendationId)
     : undefined;
+  const auditFolderId = resolveAuditFolderId(entry);
 
   if (entry.entityType === "recommendation" && recommendationId) {
     return (
@@ -73,6 +87,29 @@ function AuditLogEntityCell({
             className="text-xs text-sky-800 hover:underline"
           >
             Відкрити рекомендацію
+          </Link>
+        ) : null}
+      </>
+    );
+  }
+
+  if (entry.entityType === "audit_folder" && auditFolderId) {
+    const folderExists = existingAuditFolderIds.has(auditFolderId);
+    return (
+      <>
+        <div className="font-medium">{typeLabel}</div>
+        <div
+          className="mt-0.5 truncate font-mono text-xs text-muted-foreground"
+          title={auditFolderId}
+        >
+          id: {auditFolderId}
+        </div>
+        {folderExists ? (
+          <Link
+            href={`/admin/folders/${auditFolderId}`}
+            className="text-xs text-sky-800 hover:underline"
+          >
+            Відкрити папку аудиту
           </Link>
         ) : null}
       </>
@@ -140,18 +177,27 @@ export default async function AdminAuditLogPage({
   const recommendationIds = [
     ...new Set(entries.map(resolveRecommendationId).filter(Boolean)),
   ];
+  const auditFolderIds = [...new Set(entries.map(resolveAuditFolderId).filter(Boolean))];
 
-  const recommendations =
+  const [recommendations, auditFolders] = await Promise.all([
     recommendationIds.length > 0
-      ? await db.recommendation.findMany({
+      ? db.recommendation.findMany({
           where: { id: { in: recommendationIds } },
           select: { id: true, sequenceNumber: true },
         })
-      : [];
+      : Promise.resolve([]),
+    auditFolderIds.length > 0
+      ? db.auditFolder.findMany({
+          where: { id: { in: auditFolderIds } },
+          select: { id: true },
+        })
+      : Promise.resolve([]),
+  ]);
 
   const sequenceByRecommendationId = new Map(
     recommendations.map((item) => [item.id, item.sequenceNumber]),
   );
+  const existingAuditFolderIds = new Set(auditFolders.map((item) => item.id));
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -279,6 +325,7 @@ export default async function AdminAuditLogPage({
                     <AuditLogEntityCell
                       entry={entry}
                       sequenceByRecommendationId={sequenceByRecommendationId}
+                      existingAuditFolderIds={existingAuditFolderIds}
                     />
                   </td>
                   <td className={cn(dataTable.cell, "max-w-md break-words")}>
