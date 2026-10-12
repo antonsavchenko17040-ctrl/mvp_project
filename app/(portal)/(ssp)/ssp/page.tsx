@@ -38,7 +38,13 @@ import {
   statusRank,
   type TableSortState,
 } from "@/lib/table-sort";
-import { dataTable, dataTableClassName, dataTableCols, dataTableWrapClassName } from "@/lib/ui/data-table";
+import {
+  dataTable,
+  dataTableClassName,
+  dataTableCols,
+  dataTableWrapClassName,
+  roleWorkspaceListCard,
+} from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
 const sspSortKeys = ["number", "folder", "deadline", "significance", "status"] as const;
@@ -157,14 +163,14 @@ export default async function SspPage({
   };
 
   return (
-    <section className={cn(dataTableCols.roleWorkspaceContainer, "space-y-5")}>
+    <section className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-5xl font-semibold">Простір Відповідального</h1>
       </div>
 
-      <Card className="relative w-full gap-0 overflow-hidden rounded-lg border border-black/20 bg-white py-0 pb-3 shadow-sm ring-0">
-        <CardContent className="space-y-3 pt-3 sm:pt-4">
-          <div className="rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:p-3.5">
+      <Card className={roleWorkspaceListCard.card}>
+        <CardContent className={roleWorkspaceListCard.content}>
+          <div className={roleWorkspaceListCard.searchWrap}>
             <Suspense
               fallback={
                 <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
@@ -178,7 +184,7 @@ export default async function SspPage({
           </div>
 
           <div className={dataTableWrapClassName()}>
-            <table className={dataTableClassName(dataTableCols.roleWorkspaceTable)}>
+            <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
                   <TableSortableTh

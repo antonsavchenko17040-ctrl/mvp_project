@@ -33,7 +33,13 @@ import {
   statusRank,
   type TableSortState,
 } from "@/lib/table-sort";
-import { dataTable, dataTableClassName, dataTableCols, dataTableWrapClassName } from "@/lib/ui/data-table";
+import {
+  dataTable,
+  dataTableClassName,
+  dataTableCols,
+  dataTableWrapClassName,
+  roleWorkspaceListCard,
+} from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 import { normalizeObservationSignificance } from "@/lib/observation-significance";
 
@@ -202,8 +208,8 @@ export default async function EditorFolderPage({
           ) : null}
         </div>
 
-        <Card className="relative w-full gap-0 overflow-hidden rounded-3xl border border-black/10 bg-white py-0 pb-4 shadow-sm ring-0">
-          <CardContent className="space-y-4 pt-4 sm:pt-5">
+        <Card className={roleWorkspaceListCard.card}>
+          <CardContent className={roleWorkspaceListCard.content}>
             {query.ok === "archived" ? (
               <p className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-base text-emerald-900">
                 Папку архівовано. Подальші зміни рекомендацій недоступні для редактора та відповідального.
@@ -257,7 +263,7 @@ export default async function EditorFolderPage({
               </p>
             ) : null}
 
-            <div className="rounded-2xl border border-black/10 bg-[#f8f8f8] p-3 sm:p-3.5">
+            <div className={roleWorkspaceListCard.searchWrap}>
               <Suspense
                 fallback={
                   <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
