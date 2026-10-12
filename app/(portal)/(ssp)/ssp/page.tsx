@@ -157,7 +157,7 @@ export default async function SspPage({
   };
 
   return (
-    <section className="space-y-5">
+    <section className={cn(dataTableCols.roleWorkspaceContainer, "space-y-5")}>
       <div className="flex items-center justify-between">
         <h1 className="text-5xl font-semibold">Простір Відповідального</h1>
       </div>
