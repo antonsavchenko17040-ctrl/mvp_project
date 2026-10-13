@@ -321,9 +321,13 @@ export default async function AdminEditRecommendationPage({
             >
               <SspUnitMultiSelect
                 id="ssp_unit"
-                name="ssp_unit"
                 departments={activeDepartments}
                 defaultValue={recommendation.sspUnit}
+                defaultSelectedIds={activeDepartments
+                  .filter((department) =>
+                    parseSspUnits(recommendation.sspUnit).includes(department.name),
+                  )
+                  .map((department) => department.id)}
                 extraOptions={parseSspUnits(recommendation.sspUnit)}
               />
             </AdminSupplementableField>

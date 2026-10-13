@@ -12,6 +12,7 @@ import {
   isAppendFieldKey,
   type SupplementFieldKey,
 } from "@/lib/editor/recommendation-supplements";
+import { parseSspUnits } from "@/lib/ssp-units";
 
 const inputClass =
   "h-11 w-full rounded-md border border-input bg-background px-3 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
@@ -85,6 +86,9 @@ export function EditorFieldSupplementControls({
             name="content"
             departments={departments}
             defaultValue={currentValueHint}
+            defaultSelectedIds={departments
+              .filter((department) => parseSspUnits(currentValueHint).includes(department.name))
+              .map((department) => department.id)}
           />
           {currentValueHint ? (
             <p className="mt-1 text-xs text-muted-foreground">Поточне: {currentValueHint}</p>

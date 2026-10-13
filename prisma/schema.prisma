@@ -65,12 +65,13 @@ model Session {
 }
 
 model Department {
-  id        String             @id @default(cuid())
-  name      String             @unique
-  isActive  Boolean            @default(true)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-  members   DepartmentMember[]
+  id                   String                        @id @default(cuid())
+  name                 String                        @unique
+  isActive             Boolean                       @default(true)
+  createdAt            DateTime                      @default(now())
+  updatedAt            DateTime                      @updatedAt
+  members              DepartmentMember[]
+  recommendationLinks  RecommendationSspDepartment[]
 }
 
 model DepartmentMember {
@@ -113,6 +114,7 @@ model Recommendation {
   expectedResult      String
   vkElement           String               @default("")
   observationSignificance String           @default("")
+  /** Денормалізований рядок назв для UI/експорту; джерело істини — sspDepartments. */
   sspUnit             String
   deadline            DateTime
   informingDeadline   DateTime?
@@ -134,12 +136,26 @@ model Recommendation {
   auditFolder         AuditFolder          @relation(fields: [auditFolderId], references: [id], onDelete: Cascade)
   assignee            Profile?             @relation("Assignee", fields: [assigneeUserId], references: [id], onDelete: SetNull)
   fieldSupplements    RecommendationFieldSupplement[]
+  sspDepartments      RecommendationSspDepartment[]
 
   @@index([status])
   @@index([deadline])
   @@index([sspUnit])
   @@index([auditFolderId])
   @@index([isActive])
+}
+
+/** Відповідальні підрозділи (ССП) рекомендації — many-to-many за departmentId. */
+model RecommendationSspDepartment {
+  id               String         @id @default(cuid())
+  recommendationId String
+  departmentId     String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  department       Department     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@unique([recommendationId, departmentId])
+  @@index([recommendationId])
+  @@index([departmentId])
 }
 
 /**

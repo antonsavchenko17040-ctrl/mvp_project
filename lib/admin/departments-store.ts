@@ -97,7 +97,12 @@ export async function renameDepartment(
 
   const previousName = department.name;
   const affected = await db.recommendation.findMany({
-    where: sspUnitVisibilityWhere([previousName]),
+    where: {
+      OR: [
+        { sspDepartments: { some: { departmentId } } },
+        sspUnitVisibilityWhere([previousName]),
+      ],
+    },
     select: { id: true, sspUnit: true },
   });
 

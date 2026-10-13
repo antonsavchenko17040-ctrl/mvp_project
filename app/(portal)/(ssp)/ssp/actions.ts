@@ -58,7 +58,7 @@ export async function saveSspDraft(formData: FormData) {
       auditFolder: { select: { archivedAt: true } },
     },
   });
-  if (!existing || !(await isRecommendationVisibleToSspMember(existing.sspUnit, profile.id))) {
+  if (!existing || !(await isRecommendationVisibleToSspMember(id, profile.id))) {
     throw new Error("Рекомендацію не знайдено або доступ заборонено.");
   }
 
@@ -169,7 +169,7 @@ export async function submitForReview(formData: FormData) {
       auditFolder: { select: { archivedAt: true } },
     },
   });
-  if (!existing || !(await isRecommendationVisibleToSspMember(existing.sspUnit, profile.id))) {
+  if (!existing || !(await isRecommendationVisibleToSspMember(id, profile.id))) {
     throw new Error("Рекомендацію не знайдено або доступ заборонено.");
   }
 
@@ -242,7 +242,7 @@ export async function supplementSspRecommendationField(formData: FormData) {
 
   if (
     !recommendation ||
-    !(await isRecommendationVisibleToSspMember(recommendation.sspUnit, profile.id))
+    !(await isRecommendationVisibleToSspMember(recommendationId, profile.id))
   ) {
     redirect(`${redirectPath}?error=recommendation_not_found`);
   }
