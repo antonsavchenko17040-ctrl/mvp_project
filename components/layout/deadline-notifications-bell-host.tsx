@@ -42,7 +42,7 @@ export function DeadlineNotificationsBellHost({ items }: DeadlineNotificationsBe
     [pathname, items],
   );
 
-  if (scopedItems.length === 0) return null;
   if (shouldHideDeadlineNotifications(pathname)) return null;
+  if (!pathname.startsWith("/ssp") && !pathname.startsWith("/manager")) return null;
   return <DeadlineNotificationsBell items={scopedItems} />;
 }
