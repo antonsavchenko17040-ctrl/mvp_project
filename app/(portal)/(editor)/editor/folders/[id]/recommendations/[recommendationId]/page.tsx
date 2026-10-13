@@ -263,22 +263,22 @@ export default async function EditorRecommendationDetailPage({
             />
           </EditorSupplementableField>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <EditorSupplementableField
-              {...fieldProps}
+          <EditorSupplementableField
+            {...fieldProps}
+            fieldKey="sspUnit"
+            label="Відповідальний підрозділ"
+            htmlFor="ssp_unit"
+            currentValueHint={recommendation.sspUnit}
+          >
+            <EditorAppendFieldDisplay
+              id="ssp_unit"
               fieldKey="sspUnit"
-              label="Відповідальний підрозділ"
-              htmlFor="ssp_unit"
-              currentValueHint={recommendation.sspUnit}
-            >
-              <EditorAppendFieldDisplay
-                id="ssp_unit"
-                fieldKey="sspUnit"
-                currentValue={recommendation.sspUnit}
-                supplements={supplements}
-              />
-            </EditorSupplementableField>
+              currentValue={recommendation.sspUnit}
+              supplements={supplements}
+            />
+          </EditorSupplementableField>
 
+          <div className="grid gap-6 md:grid-cols-2">
             <EditorSupplementableField
               {...fieldProps}
               fieldKey="deadline"

@@ -11,6 +11,7 @@ import { EditorRecommendationTableRow } from "@/components/editor/editor-recomme
 import { ReportFolderBackLink } from "@/components/report-folder-back-link";
 import { ReportFolderHeaderCard } from "@/components/report-folder-header-card";
 import { RoleWorkspaceColumnFilterTh } from "@/components/role-workspace-column-filter-th";
+import { SspUnitsDisplay } from "@/components/ssp-units-display";
 import { TableSortableTh } from "@/components/table-sortable-th";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -422,7 +423,7 @@ export default async function EditorFolderPage({
                           </div>
                         </EditorRecommendationTableCell>
                         <EditorRecommendationTableCell className={cn(dataTableCols.ssp, "p-3")} align="center">
-                          <span className="whitespace-normal break-words">{item.sspUnit}</span>
+                          <SspUnitsDisplay value={item.sspUnit} align="center" />
                         </EditorRecommendationTableCell>
                       </EditorRecommendationTableRow>
                     ))

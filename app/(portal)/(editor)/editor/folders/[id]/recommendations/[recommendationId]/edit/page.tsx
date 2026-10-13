@@ -224,17 +224,17 @@ export default async function EditorRecommendationEditPage({
               />
             </RecommendationFieldBlock>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
-                <SspUnitMultiSelect
-                  id="ssp_unit"
-                  name="ssp_unit"
-                  departments={activeDepartments}
-                  defaultValue={selectedSspUnits}
-                  extraOptions={selectedSspUnits}
-                />
-              </RecommendationFieldBlock>
+            <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
+              <SspUnitMultiSelect
+                id="ssp_unit"
+                name="ssp_unit"
+                departments={activeDepartments}
+                defaultValue={selectedSspUnits}
+                extraOptions={selectedSspUnits}
+              />
+            </RecommendationFieldBlock>
 
+            <div className="grid gap-6 md:grid-cols-2">
               <RecommendationFieldBlock label="Термін виконання" htmlFor="deadline">
                 <Input
                   id="deadline"

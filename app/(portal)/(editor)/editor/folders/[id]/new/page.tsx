@@ -152,15 +152,15 @@ export default async function NewRecommendationPage({
               />
             </RecommendationFieldBlock>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
-                <SspUnitMultiSelect
-                  id="ssp_unit"
-                  name="ssp_unit"
-                  departments={activeDepartments}
-                />
-              </RecommendationFieldBlock>
+            <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
+              <SspUnitMultiSelect
+                id="ssp_unit"
+                name="ssp_unit"
+                departments={activeDepartments}
+              />
+            </RecommendationFieldBlock>
 
+            <div className="grid gap-6 md:grid-cols-2">
               <EditorNewRecommendationDateFields />
             </div>
 

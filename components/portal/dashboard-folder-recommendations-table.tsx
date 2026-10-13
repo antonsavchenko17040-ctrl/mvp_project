@@ -3,6 +3,7 @@
 import { EditorRecommendationTableCell } from "@/components/editor/editor-recommendation-table-cell";
 import { EditorRecommendationTableRow } from "@/components/editor/editor-recommendation-table-row";
 import { RecommendationExecutionStatusBadge } from "@/components/recommendation-execution-status-badge";
+import { SspUnitsDisplay } from "@/components/ssp-units-display";
 import { TableSortableTh } from "@/components/table-sortable-th";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -129,7 +130,7 @@ export function DashboardFolderRecommendationsTable({
                 <p className={clampText}>{item.measuresDescription ?? "—"}</p>
               </EditorRecommendationTableCell>
               <EditorRecommendationTableCell className={dataTableCols.ssp}>
-                <p className={cn(clampText, "whitespace-normal break-words")}>{item.sspUnit}</p>
+                <SspUnitsDisplay value={item.sspUnit} />
               </EditorRecommendationTableCell>
               <EditorRecommendationTableCell className={dataTableCols.status} align="center">
                 <div className="flex items-center justify-center">

@@ -214,15 +214,15 @@ export default async function ManagerRecommendationDetailPage({
             currentValue={recommendation.expectedResult}
           />
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <FieldWithSupplements
-              fieldKey="sspUnit"
-              supplements={supplements}
-              label="Відповідальний підрозділ"
-              htmlFor="ssp_unit"
-              currentValue={recommendation.sspUnit}
-            />
+          <FieldWithSupplements
+            fieldKey="sspUnit"
+            supplements={supplements}
+            label="Відповідальний підрозділ"
+            htmlFor="ssp_unit"
+            currentValue={recommendation.sspUnit}
+          />
 
+          <div className="grid gap-6 md:grid-cols-2">
             <FieldWithSupplements
               fieldKey="deadline"
               supplements={supplements}

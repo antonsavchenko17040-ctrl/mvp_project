@@ -1,7 +1,10 @@
 import { RecommendationStatus, type Prisma } from "@prisma/client";
 
 import { getDepartments } from "@/lib/admin/departments-store";
-import { sspUnitVisibilityWhere } from "@/lib/ssp-units";
+import {
+  recommendationMatchesSspDepartments,
+  sspUnitVisibilityWhere,
+} from "@/lib/ssp-units";
 
 const SSP_VISIBLE_STATUSES = [
   RecommendationStatus.in_progress,
@@ -11,16 +14,21 @@ const SSP_VISIBLE_STATUSES = [
   RecommendationStatus.published,
 ] as const;
 
+/** Активні підрозділи, у яких користувач є членом (для видимості ССП). */
+export async function sspMemberDepartmentNames(profileId: string): Promise<string[]> {
+  const departments = await getDepartments();
+  return departments
+    .filter((d) => d.isActive && d.memberIds.includes(profileId))
+    .map((d) => d.name);
+}
+
 /**
  * Умови, за якими рекомендація видима відповідальному:
- * рекомендації підрозділів, у яких користувач є членом (`sspUnit`, одне або кілька значень).
+ * рекомендації будь-якого з підрозділів користувача (`sspUnit` — одне або кілька значень).
  * Чернетка ССП (`ssp_draft`) — додатково лише якщо призначена на цього користувача.
  */
 export async function sspRecommendationAccessOr(profileId: string): Promise<Prisma.RecommendationWhereInput[]> {
-  const departments = await getDepartments();
-  const deptNames = departments
-    .filter((d) => d.isActive && d.memberIds.includes(profileId))
-    .map((d) => d.name);
+  const deptNames = await sspMemberDepartmentNames(profileId);
 
   if (deptNames.length === 0) {
     return [{ id: { in: [] } }];
@@ -42,6 +50,15 @@ export async function sspRecommendationAccessOr(profileId: string): Promise<Pris
       ],
     },
   ];
+}
+
+/** Точна перевірка: серед призначених ССП є підрозділ користувача. */
+export async function isRecommendationVisibleToSspMember(
+  sspUnit: string | null | undefined,
+  profileId: string,
+): Promise<boolean> {
+  const deptNames = await sspMemberDepartmentNames(profileId);
+  return recommendationMatchesSspDepartments(sspUnit, deptNames);
 }
 
 export async function recommendationsVisibleToSspWhere(
