@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EditorNewRecommendationDateFields } from "@/components/editor/editor-new-recommendation-date-fields";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
+import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -18,7 +19,7 @@ import { createRecommendation } from "../../../actions";
 const createErrorMessages: Record<string, string> = {
   folder_not_found: "Папку не знайдено або доступ відсутній.",
   assignee_not_found: "Оберіть дійсного користувача з роллю ССП.",
-  invalid_department: "Оберіть дійсний активний підрозділ зі списку.",
+  invalid_department: "Оберіть хоча б один дійсний активний підрозділ / ССП зі списку.",
   invalid_deadline: "Вкажіть коректний термін виконання.",
   invalid_informing_deadline: "Вкажіть коректний строк інформування.",
   deadline_before_today: "Термін виконання не може бути ранішим за поточну дату.",
@@ -152,26 +153,12 @@ export default async function NewRecommendationPage({
             </RecommendationFieldBlock>
 
             <div className="grid gap-6 md:grid-cols-3">
-              <RecommendationFieldBlock label="Відповідальний підрозділ" htmlFor="ssp_unit">
-                <select
+              <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
+                <SspUnitMultiSelect
                   id="ssp_unit"
                   name="ssp_unit"
-                  className={cn(
-                    "h-11 w-full rounded-md border border-input bg-background px-3 text-base",
-                    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                  )}
-                  required
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    — Оберіть підрозділ —
-                  </option>
-                  {activeDepartments.map((department) => (
-                    <option key={department.id} value={department.name}>
-                      {department.name}
-                    </option>
-                  ))}
-                </select>
+                  departments={activeDepartments}
+                />
               </RecommendationFieldBlock>
 
               <EditorNewRecommendationDateFields />

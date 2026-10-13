@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
+import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,14 +80,15 @@ export function EditorFieldSupplementControls({
         </RecommendationFieldBlock>
       ) : fieldKey === "sspUnit" ? (
         <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>
-          <select id={contentId} name="content" className={inputClass} required>
-            <option value="">— Оберіть підрозділ —</option>
-            {departments.map((department) => (
-              <option key={department.id} value={department.name}>
-                {department.name}
-              </option>
-            ))}
-          </select>
+          <SspUnitMultiSelect
+            id={contentId}
+            name="content"
+            departments={departments}
+            defaultValue={currentValueHint}
+          />
+          {currentValueHint ? (
+            <p className="mt-1 text-xs text-muted-foreground">Поточне: {currentValueHint}</p>
+          ) : null}
         </RecommendationFieldBlock>
       ) : fieldKey === "deadline" || fieldKey === "informingDeadline" ? (
         <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>

@@ -1,6 +1,7 @@
 import { RecommendationStatus, type Prisma } from "@prisma/client";
 
 import { getDepartments } from "@/lib/admin/departments-store";
+import { sspUnitVisibilityWhere } from "@/lib/ssp-units";
 
 const SSP_VISIBLE_STATUSES = [
   RecommendationStatus.in_progress,
@@ -12,7 +13,7 @@ const SSP_VISIBLE_STATUSES = [
 
 /**
  * Умови, за якими рекомендація видима відповідальному:
- * лише рекомендації підрозділів, у яких користувач є членом (`sspUnit`).
+ * рекомендації підрозділів, у яких користувач є членом (`sspUnit`, одне або кілька значень).
  * Чернетка ССП (`ssp_draft`) — додатково лише якщо призначена на цього користувача.
  */
 export async function sspRecommendationAccessOr(profileId: string): Promise<Prisma.RecommendationWhereInput[]> {
@@ -27,12 +28,16 @@ export async function sspRecommendationAccessOr(profileId: string): Promise<Pris
 
   return [
     {
-      sspUnit: { in: deptNames },
-      OR: [
-        { status: { in: [...SSP_VISIBLE_STATUSES] } },
+      AND: [
+        sspUnitVisibilityWhere(deptNames),
         {
-          status: RecommendationStatus.ssp_draft,
-          assigneeUserId: profileId,
+          OR: [
+            { status: { in: [...SSP_VISIBLE_STATUSES] } },
+            {
+              status: RecommendationStatus.ssp_draft,
+              assigneeUserId: profileId,
+            },
+          ],
         },
       ],
     },

@@ -15,6 +15,7 @@ import { RecommendationFieldBlock } from "@/components/editor/recommendation-fie
 import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
 import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
+import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { uk } from "@/lib/i18n/uk";
 import { SSP_PROGRESS_REPORT_OPTIONS } from "@/lib/recommendation-execution-status";
+import { parseSspUnits } from "@/lib/ssp-units";
 import type { RecommendationStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -314,24 +316,17 @@ export default async function AdminEditRecommendationPage({
               <AdminSupplementableField
                 {...supplementProps}
                 fieldKey="sspUnit"
-                label="Відповідальний підрозділ"
+                label="Відповідальний підрозділ / ССП"
                 htmlFor="ssp_unit"
                 currentValue={recommendation.sspUnit}
               >
-                <select
+                <SspUnitMultiSelect
                   id="ssp_unit"
                   name="ssp_unit"
-                  className={selectClassName}
-                  required
+                  departments={activeDepartments}
                   defaultValue={recommendation.sspUnit}
-                >
-                  <option value="">— Оберіть підрозділ —</option>
-                  {activeDepartments.map((department) => (
-                    <option key={department.id} value={department.name}>
-                      {department.name}
-                    </option>
-                  ))}
-                </select>
+                  extraOptions={parseSspUnits(recommendation.sspUnit)}
+                />
               </AdminSupplementableField>
 
               <AdminSupplementableField

@@ -10,6 +10,7 @@ import {
 import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-field-display";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
 import type { FieldSupplementItem } from "@/components/editor/recommendation-field-supplement-history";
+import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,14 +69,12 @@ function ContentInput({
   }
   if (fieldKey === "sspUnit") {
     return (
-      <select id={contentId} name="content" className={inputClass} required defaultValue={defaultValue ?? ""}>
-        <option value="">— Оберіть підрозділ —</option>
-        {departments.map((department) => (
-          <option key={department.id} value={department.name}>
-            {department.name}
-          </option>
-        ))}
-      </select>
+      <SspUnitMultiSelect
+        id={contentId}
+        name="content"
+        departments={departments}
+        defaultValue={defaultValue}
+      />
     );
   }
   if (fieldKey === "progressReport") {

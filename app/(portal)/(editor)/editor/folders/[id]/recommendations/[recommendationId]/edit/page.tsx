@@ -6,20 +6,20 @@ import { RecommendationFieldBlock } from "@/components/editor/recommendation-fie
 import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
 import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
+import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  findDepartmentByName,
   getDepartments,
-  normalizeImportedDepartmentName,
   resolveDepartmentNameFromImport,
 } from "@/lib/admin/departments-store";
 import { observationSignificanceSelectValue } from "@/lib/observation-significance";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
+import { formatSspUnits, parseSspUnits } from "@/lib/ssp-units";
 
 import {
   deleteRecommendation,
@@ -91,15 +91,15 @@ export default async function EditorRecommendationEditPage({
     redirect(`/editor/folders/${folder.id}/recommendations/${recommendation.id}`);
   }
 
-  const importedSspUnit = normalizeImportedDepartmentName(recommendation.sspUnit);
-  // Якщо підрозділ уже є в імпортованих даних — гарантуємо, що він є в довіднику й у dropdown.
-  const resolvedImportedSspUnit = importedSspUnit
-    ? await resolveDepartmentNameFromImport(importedSspUnit)
-    : "";
-  if (
-    resolvedImportedSspUnit &&
-    resolvedImportedSspUnit !== recommendation.sspUnit
-  ) {
+  // Нормалізуємо один або кілька імпортованих підрозділів у довіднику.
+  const importedUnits = parseSspUnits(recommendation.sspUnit);
+  const resolvedUnits: string[] = [];
+  for (const unit of importedUnits) {
+    const resolved = await resolveDepartmentNameFromImport(unit);
+    if (resolved) resolvedUnits.push(resolved);
+  }
+  const resolvedImportedSspUnit = formatSspUnits(resolvedUnits);
+  if (resolvedImportedSspUnit && resolvedImportedSspUnit !== recommendation.sspUnit) {
     await db.recommendation.update({
       where: { id: recommendation.id },
       data: { sspUnit: resolvedImportedSspUnit },
@@ -108,9 +108,7 @@ export default async function EditorRecommendationEditPage({
   }
 
   const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
-  const selectedSspUnit =
-    findDepartmentByName(activeDepartments, recommendation.sspUnit)?.name ??
-    (resolvedImportedSspUnit || "");
+  const selectedSspUnits = parseSspUnits(recommendation.sspUnit);
   const redirectPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}/edit`;
 
   const errorKey = query.error ?? "";
@@ -227,25 +225,14 @@ export default async function EditorRecommendationEditPage({
             </RecommendationFieldBlock>
 
             <div className="grid gap-6 md:grid-cols-3">
-              <RecommendationFieldBlock label="Відповідальний підрозділ" htmlFor="ssp_unit">
-                <select
+              <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
+                <SspUnitMultiSelect
                   id="ssp_unit"
                   name="ssp_unit"
-                  className={editSelectClass}
-                  defaultValue={selectedSspUnit}
-                  required
-                >
-                  <option value="">— Оберіть підрозділ —</option>
-                  {selectedSspUnit &&
-                  !activeDepartments.some((department) => department.name === selectedSspUnit) ? (
-                    <option value={selectedSspUnit}>{selectedSspUnit}</option>
-                  ) : null}
-                  {activeDepartments.map((department) => (
-                    <option key={department.id} value={department.name}>
-                      {department.name}
-                    </option>
-                  ))}
-                </select>
+                  departments={activeDepartments}
+                  defaultValue={selectedSspUnits}
+                  extraOptions={selectedSspUnits}
+                />
               </RecommendationFieldBlock>
 
               <RecommendationFieldBlock label="Термін виконання" htmlFor="deadline">

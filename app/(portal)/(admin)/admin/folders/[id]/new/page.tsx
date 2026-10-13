@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
+import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -80,7 +81,7 @@ export default async function AdminNewRecommendationPage({
           ) : null}
           {query.error === "invalid_department" ? (
             <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
-              Оберіть дійсний активний підрозділ зі списку.
+              Оберіть хоча б один дійсний активний підрозділ / ССП зі списку.
             </p>
           ) : null}
 
@@ -158,26 +159,12 @@ export default async function AdminNewRecommendationPage({
             </RecommendationFieldBlock>
 
             <div className="grid gap-6 md:grid-cols-3">
-              <RecommendationFieldBlock label="Відповідальний підрозділ" htmlFor="ssp_unit">
-                <select
+              <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
+                <SspUnitMultiSelect
                   id="ssp_unit"
                   name="ssp_unit"
-                  className={cn(
-                    "h-11 w-full rounded-md border border-input bg-background px-3 text-base",
-                    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-                  )}
-                  required
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    — Оберіть підрозділ —
-                  </option>
-                  {activeDepartments.map((department) => (
-                    <option key={department.id} value={department.name}>
-                      {department.name}
-                    </option>
-                  ))}
-                </select>
+                  departments={activeDepartments}
+                />
               </RecommendationFieldBlock>
 
               <RecommendationFieldBlock label="Термін виконання" htmlFor="deadline">

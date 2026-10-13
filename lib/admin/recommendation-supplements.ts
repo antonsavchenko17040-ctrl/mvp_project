@@ -14,6 +14,7 @@ import {
   SSP_SUPPLEMENT_FIELD_LABELS,
   type SspSupplementFieldKey,
 } from "@/lib/ssp/recommendation-supplements";
+import { parseSspUnits, resolveSspUnitsFromNames } from "@/lib/ssp-units";
 
 export type AdminSupplementFieldKey = SupplementFieldKey | SspSupplementFieldKey;
 
@@ -81,10 +82,11 @@ export function recommendationFieldUpdateFromSupplementValue(
     return { data: { observationSignificance: value } };
   }
   if (fieldKey === "sspUnit") {
-    if (!departments.some((d) => d.name === value)) {
+    const resolved = resolveSspUnitsFromNames(parseSspUnits(value), departments);
+    if (!resolved) {
       return { error: "invalid_department" };
     }
-    return { data: { sspUnit: value } };
+    return { data: { sspUnit: resolved } };
   }
   if (fieldKey === "deadline") {
     const next = new Date(value);

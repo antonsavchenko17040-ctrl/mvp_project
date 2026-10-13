@@ -25,6 +25,7 @@ import {
   removeDepartmentMember,
   renameDepartment,
 } from "@/lib/admin/departments-store";
+import { formatSspUnits, parseSspUnits, resolveSspUnitsFromForm } from "@/lib/ssp-units";
 import { canArchiveFolderByRecommendations, isFolderArchived } from "@/lib/audit-folder-archive";
 import { buildObjectDifference, buildUpdateSummary, statusLabelUk, writeAuditLog } from "@/lib/audit-log";
 import { clearTempPassword, setTempPassword } from "@/lib/auth/temp-password-store";
@@ -269,9 +270,9 @@ export async function adminUpdateRecommendation(formData: FormData) {
     }
   }
 
-  const sspUnit = String(formData.get("ssp_unit") ?? "").trim();
   const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
-  if (!activeDepartments.some((d) => d.name === sspUnit)) {
+  const sspUnit = resolveSspUnitsFromForm(formData, activeDepartments);
+  if (!sspUnit) {
     redirect(`/admin/recommendations/${recommendationId}?error=invalid_department`);
   }
 
@@ -521,7 +522,7 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
           executionIndicator: row.executionIndicator,
           expectedResult: row.expectedResult,
           observationSignificance: row.observationSignificance,
-          sspUnit: row.sspUnit,
+          sspUnit: formatSspUnits(parseSspUnits(row.sspUnit)),
           deadline: row.deadline!,
           informingDeadline: row.informingDeadline,
           progressReport: row.progressReport,
@@ -647,7 +648,6 @@ export async function adminCreateRecommendation(formData: FormData) {
   const auditFolderId = String(formData.get("audit_folder_id") ?? "");
   const assigneeUserIdRaw = String(formData.get("assignee_user_id") ?? "").trim();
   const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
-  const sspUnit = String(formData.get("ssp_unit") ?? "");
   const observationSignificance = normalizeObservationSignificance(String(formData.get("observation_significance") ?? ""));
   const redirectPath = String(formData.get("redirect_path") ?? "/admin");
   const informingDeadlineRaw = String(formData.get("informing_deadline") ?? "").trim();
@@ -676,7 +676,8 @@ export async function adminCreateRecommendation(formData: FormData) {
   }
 
   const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
-  if (!activeDepartments.some((department) => department.name === sspUnit)) {
+  const sspUnit = resolveSspUnitsFromForm(formData, activeDepartments);
+  if (!sspUnit) {
     redirect(`${redirectPath}?error=invalid_department`);
   }
 
@@ -1160,7 +1161,6 @@ export async function adminSupplementRecommendationField(formData: FormData) {
     formData.get("redirect_path") ?? adminRecommendationRedirect(recommendationId),
   );
   const fieldKeyRaw = String(formData.get("field_key") ?? "").trim();
-  const content = String(formData.get("content") ?? "").trim();
   const changeReason = String(formData.get("change_reason") ?? "").trim();
   const changeDateRaw = String(formData.get("change_date") ?? "").trim();
 
@@ -1172,7 +1172,6 @@ export async function adminSupplementRecommendationField(formData: FormData) {
     redirect(`${redirectPath}?error=invalid_field`);
   }
   const fieldKey = fieldKeyRaw;
-  if (!content) redirect(`${redirectPath}?error=supplement_empty`);
   if (!changeReason) redirect(`${redirectPath}?error=change_reason_required`);
 
   const changeDate = changeDateRaw ? new Date(changeDateRaw) : new Date();
@@ -1185,6 +1184,15 @@ export async function adminSupplementRecommendationField(formData: FormData) {
     fieldKey,
   );
   const departments = (await getDepartments()).filter((d) => d.isActive);
+  const content =
+    fieldKey === "sspUnit"
+      ? (resolveSspUnitsFromForm(formData, departments, "content") ?? "")
+      : String(formData.get("content") ?? "").trim();
+  if (!content) {
+    redirect(
+      `${redirectPath}?error=${fieldKey === "sspUnit" ? "invalid_department" : "supplement_empty"}`,
+    );
+  }
 
   if (isAdminAppendFieldKey(fieldKey)) {
     const currentValue = previousContent === "—" ? "" : previousContent;
@@ -1261,11 +1269,9 @@ export async function adminUpdateRecommendationSupplement(formData: FormData) {
   const redirectPath = String(
     formData.get("redirect_path") ?? adminRecommendationRedirect(recommendationId),
   );
-  const content = String(formData.get("content") ?? "").trim();
   const changeReason = String(formData.get("change_reason") ?? "").trim();
   const changeDateRaw = String(formData.get("change_date") ?? "").trim();
 
-  if (!content) redirect(`${redirectPath}?error=supplement_empty`);
   if (!changeReason) redirect(`${redirectPath}?error=change_reason_required`);
   const changeDate = changeDateRaw ? new Date(changeDateRaw) : new Date();
   if (Number.isNaN(changeDate.getTime())) {
@@ -1285,9 +1291,18 @@ export async function adminUpdateRecommendationSupplement(formData: FormData) {
     redirect(`${redirectPath}?error=invalid_field`);
   }
   const fieldKey = existing.fieldKey;
+  const departments = (await getDepartments()).filter((d) => d.isActive);
+  const content =
+    fieldKey === "sspUnit"
+      ? (resolveSspUnitsFromForm(formData, departments, "content") ?? "")
+      : String(formData.get("content") ?? "").trim();
+  if (!content) {
+    redirect(
+      `${redirectPath}?error=${fieldKey === "sspUnit" ? "invalid_department" : "supplement_empty"}`,
+    );
+  }
 
   if (isAdminReplaceFieldKey(fieldKey)) {
-    const departments = (await getDepartments()).filter((d) => d.isActive);
     const update = recommendationFieldUpdateFromSupplementValue(fieldKey, content, departments);
     if (update.error) redirect(`${redirectPath}?error=${update.error}`);
   }
