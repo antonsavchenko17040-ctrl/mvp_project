@@ -25,7 +25,13 @@ import {
   removeDepartmentMember,
   renameDepartment,
 } from "@/lib/admin/departments-store";
-import { formatSspUnits, parseSspUnits, resolveSspUnitsFromForm } from "@/lib/ssp-units";
+import {
+  resolveDepartmentsByNames,
+  resolveSspAssignmentFromForm,
+  syncRecommendationSspDepartments,
+  type ResolvedSspAssignment,
+} from "@/lib/recommendation-ssp-departments";
+import { formatSspUnits, parseSspUnits } from "@/lib/ssp-units";
 import { canArchiveFolderByRecommendations, isFolderArchived } from "@/lib/audit-folder-archive";
 import { buildObjectDifference, buildUpdateSummary, statusLabelUk, writeAuditLog } from "@/lib/audit-log";
 import { clearTempPassword, setTempPassword } from "@/lib/auth/temp-password-store";
@@ -271,8 +277,8 @@ export async function adminUpdateRecommendation(formData: FormData) {
   }
 
   const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
-  const sspUnit = resolveSspUnitsFromForm(formData, activeDepartments);
-  if (!sspUnit) {
+  const sspAssignment = resolveSspAssignmentFromForm(formData, activeDepartments);
+  if (!sspAssignment) {
     redirect(`/admin/recommendations/${recommendationId}?error=invalid_department`);
   }
 
@@ -298,7 +304,7 @@ export async function adminUpdateRecommendation(formData: FormData) {
     recommendationText: String(formData.get("recommendation_text") ?? ""),
     executionIndicator: String(formData.get("execution_indicator") ?? ""),
     expectedResult: String(formData.get("expected_result") ?? ""),
-    sspUnit,
+    sspUnit: sspAssignment.sspUnit,
     deadline,
     informingDeadline,
     status: statusRaw as RecommendationStatus,
@@ -313,9 +319,17 @@ export async function adminUpdateRecommendation(formData: FormData) {
     analystComment: optionalText(formData.get("analyst_comment")),
   };
 
-  await db.recommendation.update({
-    where: { id: recommendationId },
-    data: nextValues,
+  await db.$transaction(async (tx) => {
+    await tx.recommendation.update({
+      where: { id: recommendationId },
+      data: nextValues,
+    });
+    await syncRecommendationSspDepartments(
+      tx,
+      recommendationId,
+      sspAssignment.ids,
+      sspAssignment.sspUnit,
+    );
   });
 
   const difference = buildObjectDifference(
@@ -511,7 +525,16 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
       },
     });
 
+    const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
     for (const row of parsed.recommendations) {
+      const names = parseSspUnits(row.sspUnit);
+      const sspAssignment =
+        resolveDepartmentsByNames(names, activeDepartments) ??
+        ({
+          ids: [] as string[],
+          names,
+          sspUnit: formatSspUnits(names),
+        } satisfies ResolvedSspAssignment);
       const recommendation = await tx.recommendation.create({
         data: {
           auditFolderId: createdFolder.id,
@@ -522,7 +545,7 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
           executionIndicator: row.executionIndicator,
           expectedResult: row.expectedResult,
           observationSignificance: row.observationSignificance,
-          sspUnit: formatSspUnits(parseSspUnits(row.sspUnit)),
+          sspUnit: sspAssignment.sspUnit,
           deadline: row.deadline!,
           informingDeadline: row.informingDeadline,
           progressReport: row.progressReport,
@@ -532,6 +555,13 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
           supportingDocuments: row.supportingDocuments,
           sspNotes: row.sspNotes,
           status: row.status,
+          ...(sspAssignment.ids.length > 0
+            ? {
+                sspDepartments: {
+                  create: sspAssignment.ids.map((departmentId) => ({ departmentId })),
+                },
+              }
+            : {}),
         },
       });
 
@@ -676,8 +706,8 @@ export async function adminCreateRecommendation(formData: FormData) {
   }
 
   const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
-  const sspUnit = resolveSspUnitsFromForm(formData, activeDepartments);
-  if (!sspUnit) {
+  const sspAssignment = resolveSspAssignmentFromForm(formData, activeDepartments);
+  if (!sspAssignment) {
     redirect(`${redirectPath}?error=invalid_department`);
   }
 
@@ -695,11 +725,14 @@ export async function adminCreateRecommendation(formData: FormData) {
       expectedResult: String(formData.get("expected_result") ?? ""),
       vkElement: String(formData.get("vk_element") ?? ""),
       observationSignificance,
-      sspUnit,
+      sspUnit: sspAssignment.sspUnit,
       deadline: new Date(String(formData.get("deadline") ?? "")),
       informingDeadline,
       status,
       assigneeUserId,
+      sspDepartments: {
+        create: sspAssignment.ids.map((departmentId) => ({ departmentId })),
+      },
     },
     select: { id: true },
   });
@@ -1146,9 +1179,24 @@ async function applyRebuiltFieldValue(
   if (update.error || !update.data) {
     return update.error ?? "invalid_field";
   }
-  await db.recommendation.update({
-    where: { id: recommendationId },
-    data: update.data,
+  const updateData = update.data;
+  await db.$transaction(async (tx) => {
+    await tx.recommendation.update({
+      where: { id: recommendationId },
+      data: updateData,
+    });
+    if (fieldKey === "sspUnit") {
+      const sspUnit = String((updateData as { sspUnit?: string }).sspUnit ?? nextValue);
+      const assignment = resolveDepartmentsByNames(parseSspUnits(sspUnit), departments);
+      if (assignment) {
+        await syncRecommendationSspDepartments(
+          tx,
+          recommendationId,
+          assignment.ids,
+          assignment.sspUnit,
+        );
+      }
+    }
   });
   return null;
 }
@@ -1184,11 +1232,18 @@ export async function adminSupplementRecommendationField(formData: FormData) {
     fieldKey,
   );
   const departments = (await getDepartments()).filter((d) => d.isActive);
+  const sspAssignment =
+    fieldKey === "sspUnit"
+      ? resolveSspAssignmentFromForm(formData, departments, {
+          idField: "ssp_department_ids",
+          nameField: "content",
+        })
+      : null;
   const content =
     fieldKey === "sspUnit"
-      ? (resolveSspUnitsFromForm(formData, departments, "content") ?? "")
+      ? (sspAssignment?.sspUnit ?? "")
       : String(formData.get("content") ?? "").trim();
-  if (!content) {
+  if (!content || (fieldKey === "sspUnit" && !sspAssignment)) {
     redirect(
       `${redirectPath}?error=${fieldKey === "sspUnit" ? "invalid_department" : "supplement_empty"}`,
     );
@@ -1224,8 +1279,9 @@ export async function adminSupplementRecommendationField(formData: FormData) {
     if (update.error || !update.data) {
       redirect(`${redirectPath}?error=${update.error ?? "invalid_field"}`);
     }
-    await db.$transaction([
-      db.recommendationFieldSupplement.create({
+    const updateData = update.data;
+    await db.$transaction(async (tx) => {
+      await tx.recommendationFieldSupplement.create({
         data: {
           recommendationId,
           fieldKey,
@@ -1235,9 +1291,17 @@ export async function adminSupplementRecommendationField(formData: FormData) {
           changeDate,
           createdById: actor.id,
         },
-      }),
-      db.recommendation.update({ where: { id: recommendationId }, data: update.data }),
-    ]);
+      });
+      await tx.recommendation.update({ where: { id: recommendationId }, data: updateData });
+      if (fieldKey === "sspUnit" && sspAssignment) {
+        await syncRecommendationSspDepartments(
+          tx,
+          recommendationId,
+          sspAssignment.ids,
+          sspAssignment.sspUnit,
+        );
+      }
+    });
   }
 
   await writeAuditLog({
@@ -1292,11 +1356,18 @@ export async function adminUpdateRecommendationSupplement(formData: FormData) {
   }
   const fieldKey = existing.fieldKey;
   const departments = (await getDepartments()).filter((d) => d.isActive);
+  const sspAssignment =
+    fieldKey === "sspUnit"
+      ? resolveSspAssignmentFromForm(formData, departments, {
+          idField: "ssp_department_ids",
+          nameField: "content",
+        })
+      : null;
   const content =
     fieldKey === "sspUnit"
-      ? (resolveSspUnitsFromForm(formData, departments, "content") ?? "")
+      ? (sspAssignment?.sspUnit ?? "")
       : String(formData.get("content") ?? "").trim();
-  if (!content) {
+  if (!content || (fieldKey === "sspUnit" && !sspAssignment)) {
     redirect(
       `${redirectPath}?error=${fieldKey === "sspUnit" ? "invalid_department" : "supplement_empty"}`,
     );

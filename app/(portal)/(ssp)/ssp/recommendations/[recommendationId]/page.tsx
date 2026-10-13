@@ -139,7 +139,7 @@ export default async function SspRecommendationDetailPage({
   });
   if (
     !recommendation ||
-    !(await isRecommendationVisibleToSspMember(recommendation.sspUnit, profile.id))
+    !(await isRecommendationVisibleToSspMember(recommendation.id, profile.id))
   ) {
     notFound();
   }

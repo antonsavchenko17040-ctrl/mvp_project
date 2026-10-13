@@ -19,6 +19,10 @@ import { observationSignificanceSelectValue } from "@/lib/observation-significan
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
+import {
+  resolveDepartmentsByNames,
+  syncRecommendationSspDepartments,
+} from "@/lib/recommendation-ssp-departments";
 import { formatSspUnits, parseSspUnits } from "@/lib/ssp-units";
 
 import {
@@ -91,7 +95,9 @@ export default async function EditorRecommendationEditPage({
     redirect(`/editor/folders/${folder.id}/recommendations/${recommendation.id}`);
   }
 
-  // Нормалізуємо один або кілька імпортованих підрозділів у довіднику.
+  const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
+
+  // Нормалізуємо один або кілька імпортованих підрозділів у довіднику + join-таблицю.
   const importedUnits = parseSspUnits(recommendation.sspUnit);
   const resolvedUnits: string[] = [];
   for (const unit of importedUnits) {
@@ -99,15 +105,31 @@ export default async function EditorRecommendationEditPage({
     if (resolved) resolvedUnits.push(resolved);
   }
   const resolvedImportedSspUnit = formatSspUnits(resolvedUnits);
-  if (resolvedImportedSspUnit && resolvedImportedSspUnit !== recommendation.sspUnit) {
-    await db.recommendation.update({
-      where: { id: recommendation.id },
-      data: { sspUnit: resolvedImportedSspUnit },
-    });
-    recommendation.sspUnit = resolvedImportedSspUnit;
+  if (resolvedImportedSspUnit) {
+    const assignment = resolveDepartmentsByNames(resolvedUnits, activeDepartments);
+    if (
+      assignment &&
+      (resolvedImportedSspUnit !== recommendation.sspUnit ||
+        (await db.recommendationSspDepartment.count({
+          where: { recommendationId: recommendation.id },
+        })) !== assignment.ids.length)
+    ) {
+      await syncRecommendationSspDepartments(
+        db,
+        recommendation.id,
+        assignment.ids,
+        assignment.sspUnit,
+      );
+      recommendation.sspUnit = assignment.sspUnit;
+    } else if (resolvedImportedSspUnit !== recommendation.sspUnit) {
+      await db.recommendation.update({
+        where: { id: recommendation.id },
+        data: { sspUnit: resolvedImportedSspUnit },
+      });
+      recommendation.sspUnit = resolvedImportedSspUnit;
+    }
   }
 
-  const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
   const selectedSspUnits = parseSspUnits(recommendation.sspUnit);
   const redirectPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}/edit`;
 
@@ -227,9 +249,11 @@ export default async function EditorRecommendationEditPage({
             <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
               <SspUnitMultiSelect
                 id="ssp_unit"
-                name="ssp_unit"
                 departments={activeDepartments}
                 defaultValue={selectedSspUnits}
+                defaultSelectedIds={activeDepartments
+                  .filter((department) => selectedSspUnits.includes(department.name))
+                  .map((department) => department.id)}
                 extraOptions={selectedSspUnits}
               />
             </RecommendationFieldBlock>

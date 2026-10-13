@@ -3,11 +3,7 @@ import {
   daysUntilDeadline,
   type DeadlineReminderItem,
 } from "@/lib/deadline-reminder-ui";
-import {
-  recommendationsVisibleToSspWhere,
-  sspMemberDepartmentNames,
-} from "@/lib/ssp/recommendation-access";
-import { recommendationMatchesSspDepartments } from "@/lib/ssp-units";
+import { recommendationsVisibleToSspWhere } from "@/lib/ssp/recommendation-access";
 import type { UserRole } from "@/lib/types";
 
 export type { DeadlineReminderItem, DeadlineUrgencyBand } from "@/lib/deadline-reminder-ui";
@@ -121,8 +117,7 @@ export async function getDeadlineRemindersForProfile(input: {
   const sspPromise = isSsp
     ? (async () => {
         const visibility = await recommendationsVisibleToSspWhere(input.profileId);
-        const memberDepartments = await sspMemberDepartmentNames(input.profileId);
-        const rows = await db.recommendation.findMany({
+        return db.recommendation.findMany({
           where: {
             AND: [visibility, baseWhere, { status: "in_progress" }],
           },
@@ -130,9 +125,6 @@ export async function getDeadlineRemindersForProfile(input: {
           orderBy: [{ deadline: "asc" }, { sequenceNumber: "asc" }],
           take: 80,
         });
-        return rows.filter((row) =>
-          recommendationMatchesSspDepartments(row.sspUnit, memberDepartments),
-        );
       })()
     : Promise.resolve([]);
 

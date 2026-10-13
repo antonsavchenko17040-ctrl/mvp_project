@@ -161,7 +161,6 @@ export default async function AdminNewRecommendationPage({
             <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
               <SspUnitMultiSelect
                 id="ssp_unit"
-                name="ssp_unit"
                 departments={activeDepartments}
               />
             </RecommendationFieldBlock>
