@@ -3,6 +3,7 @@ import {
   executionStatusSourceText,
   resolveExecutionStatusLabel,
 } from "@/lib/recommendation-execution-status";
+import { parseSspUnits } from "@/lib/ssp-units";
 
 /** Стани для dropdown «Стан» у папці бібліотеки звітів. */
 export const reportsFolderStatusFilters = [
@@ -78,10 +79,11 @@ export function uniqueSspUnits(units: string[]): string[] {
   const seen = new Set<string>();
   const result: string[] = [];
   for (const raw of units) {
-    const value = raw.replace(/\s+/g, " ").trim();
-    if (!value || seen.has(value)) continue;
-    seen.add(value);
-    result.push(value);
+    for (const value of parseSspUnits(raw)) {
+      if (!value || seen.has(value)) continue;
+      seen.add(value);
+      result.push(value);
+    }
   }
   return result.sort((a, b) => a.localeCompare(b, "uk"));
 }

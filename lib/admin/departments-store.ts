@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { renameSspUnitToken, sspUnitVisibilityWhere } from "@/lib/ssp-units";
 
 export interface DepartmentRecord {
   id: string;
@@ -95,15 +96,24 @@ export async function renameDepartment(
   if (exists) return "duplicate";
 
   const previousName = department.name;
+  const affected = await db.recommendation.findMany({
+    where: sspUnitVisibilityWhere([previousName]),
+    select: { id: true, sspUnit: true },
+  });
+
   await db.$transaction([
     db.department.update({
       where: { id: departmentId },
       data: { name: trimmedName },
     }),
-    db.recommendation.updateMany({
-      where: { sspUnit: previousName },
-      data: { sspUnit: trimmedName },
-    }),
+    ...affected.map((recommendation) =>
+      db.recommendation.update({
+        where: { id: recommendation.id },
+        data: {
+          sspUnit: renameSspUnitToken(recommendation.sspUnit, previousName, trimmedName),
+        },
+      }),
+    ),
   ]);
 
   return "ok";

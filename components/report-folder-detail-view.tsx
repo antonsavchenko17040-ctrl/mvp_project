@@ -31,6 +31,7 @@ import {
   recommendationMatchesReportsFolderStatus,
   uniqueSspUnits,
 } from "@/lib/reports-folder-filters";
+import { parseSspUnits } from "@/lib/ssp-units";
 import {
   isExecutionPubliclyVisible,
   publicExecutionStatusFields,
@@ -114,8 +115,8 @@ export async function ReportFolderDetailView({
   const filteredByFilters = recs.filter((item) => {
     if (isLibrary) {
       if (selectedSsp) {
-        const unit = item.sspUnit.replace(/\s+/g, " ").trim();
-        if (unit !== selectedSsp) return false;
+        const units = parseSspUnits(item.sspUnit);
+        if (!units.includes(selectedSsp)) return false;
       }
       if (!recommendationMatchesReportsFolderStatus(item, statusFilter)) return false;
     } else if (!recommendationMatchesExecutionListFilter(item, executionFilter)) {

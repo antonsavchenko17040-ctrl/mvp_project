@@ -422,7 +422,7 @@ export default async function EditorFolderPage({
                           </div>
                         </EditorRecommendationTableCell>
                         <EditorRecommendationTableCell className={cn(dataTableCols.ssp, "p-3")} align="center">
-                          {item.sspUnit}
+                          <span className="whitespace-normal break-words">{item.sspUnit}</span>
                         </EditorRecommendationTableCell>
                       </EditorRecommendationTableRow>
                     ))

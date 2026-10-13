@@ -4,10 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
-  findDepartmentByName,
   getDepartments,
   resolveDepartmentNameFromImport,
 } from "@/lib/admin/departments-store";
+import {
+  formatSspUnits,
+  parseSspUnits,
+  resolveSspUnitsFromForm,
+} from "@/lib/ssp-units";
 import {
   isObservationSignificanceSelected,
   normalizeObservationSignificance,
@@ -93,7 +97,6 @@ export async function createRecommendation(formData: FormData) {
   const auditFolderId = String(formData.get("audit_folder_id") ?? "");
   const assigneeUserIdRaw = String(formData.get("assignee_user_id") ?? "").trim();
   const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
-  const sspUnit = String(formData.get("ssp_unit") ?? "");
   const observationSignificance = normalizeObservationSignificance(String(formData.get("observation_significance") ?? ""));
   const redirectPath = String(formData.get("redirect_path") ?? "/editor");
   const deadline = parseDateOnlyInput(String(formData.get("deadline") ?? ""));
@@ -137,11 +140,10 @@ export async function createRecommendation(formData: FormData) {
     }
   }
   const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
-  const matchedDepartment = findDepartmentByName(activeDepartments, sspUnit);
-  if (!matchedDepartment) {
+  const resolvedSspUnit = resolveSspUnitsFromForm(formData, activeDepartments);
+  if (!resolvedSspUnit) {
     redirect(`${redirectPath}?error=invalid_department`);
   }
-  const resolvedSspUnit = matchedDepartment.name;
 
   const intent = String(formData.get("intent") ?? "draft");
   if (intent === "assign" && !isObservationSignificanceSelected(observationSignificance)) {
@@ -234,8 +236,6 @@ export async function startExecution(formData: FormData) {
   // зберігаємо всі поля, інакше правки редактора втрачаються.
   const assigneeUserIdRaw = String(formData.get("assignee_user_id") ?? "").trim();
   const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
-  const sspUnitRaw = String(formData.get("ssp_unit") ?? "").trim();
-  const sspUnit = sspUnitRaw || recommendation.sspUnit.trim();
   const observationSignificance = normalizeObservationSignificance(String(formData.get("observation_significance") ?? ""));
   if (!isObservationSignificanceSelected(observationSignificance)) {
     redirect(`${errorBase}?error=significance_required`);
@@ -250,6 +250,16 @@ export async function startExecution(formData: FormData) {
     redirect(`${errorBase}?error=invalid_informing_deadline`);
   }
 
+  const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
+  const resolvedSspUnit =
+    resolveSspUnitsFromForm(formData, activeDepartments) ??
+    (parseSspUnits(recommendation.sspUnit).length > 0
+      ? formatSspUnits(parseSspUnits(recommendation.sspUnit))
+      : null);
+  if (!resolvedSspUnit) {
+    redirect(`${errorBase}?error=invalid_department`);
+  }
+
   const nextValues = {
     vkElement: String(formData.get("vk_element") ?? ""),
     observationSignificance,
@@ -257,7 +267,7 @@ export async function startExecution(formData: FormData) {
     recommendationText: String(formData.get("recommendation_text") ?? ""),
     executionIndicator: String(formData.get("execution_indicator") ?? ""),
     expectedResult: String(formData.get("expected_result") ?? ""),
-    sspUnit,
+    sspUnit: resolvedSspUnit,
     deadline,
     informingDeadline,
     assigneeUserId,
@@ -276,13 +286,6 @@ export async function startExecution(formData: FormData) {
       redirect(`${errorBase}?error=assignee_not_found`);
     }
   }
-
-  const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
-  const matchedDepartment = findDepartmentByName(activeDepartments, nextValues.sspUnit);
-  if (!matchedDepartment) {
-    redirect(`${errorBase}?error=invalid_department`);
-  }
-  nextValues.sspUnit = matchedDepartment.name;
 
   const fieldDifference = buildObjectDifference(
     {
@@ -374,10 +377,14 @@ export async function updateRecommendation(formData: FormData) {
 
   const assigneeUserIdRaw = String(formData.get("assignee_user_id") ?? "").trim();
   const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
-  const sspUnit = String(formData.get("ssp_unit") ?? "");
   const observationSignificance = normalizeObservationSignificance(String(formData.get("observation_significance") ?? ""));
   const informingDeadlineRaw = String(formData.get("informing_deadline") ?? "").trim();
   const informingDeadline = informingDeadlineRaw === "" ? null : new Date(informingDeadlineRaw);
+  const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
+  const resolvedSspUnit = resolveSspUnitsFromForm(formData, activeDepartments);
+  if (!resolvedSspUnit) {
+    redirect(`${redirectPath}?error=invalid_department`);
+  }
   const nextValues = {
     vkElement: String(formData.get("vk_element") ?? ""),
     observationSignificance,
@@ -385,7 +392,7 @@ export async function updateRecommendation(formData: FormData) {
     recommendationText: String(formData.get("recommendation_text") ?? ""),
     executionIndicator: String(formData.get("execution_indicator") ?? ""),
     expectedResult: String(formData.get("expected_result") ?? ""),
-    sspUnit,
+    sspUnit: resolvedSspUnit,
     deadline: new Date(String(formData.get("deadline") ?? "")),
     informingDeadline,
     assigneeUserId,
@@ -404,12 +411,6 @@ export async function updateRecommendation(formData: FormData) {
       redirect(`${redirectPath}?error=assignee_not_found`);
     }
   }
-  const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
-  const matchedDepartment = findDepartmentByName(activeDepartments, sspUnit);
-  if (!matchedDepartment) {
-    redirect(`${redirectPath}?error=invalid_department`);
-  }
-  nextValues.sspUnit = matchedDepartment.name;
 
   await db.recommendation.update({
     where: { id: recommendation.id },
@@ -460,7 +461,6 @@ export async function supplementRecommendationField(formData: FormData) {
   const recommendationId = String(formData.get("recommendation_id") ?? "");
   const redirectPath = String(formData.get("redirect_path") ?? "/editor");
   const fieldKeyRaw = String(formData.get("field_key") ?? "").trim();
-  const content = String(formData.get("content") ?? "").trim();
   const changeReason = String(formData.get("change_reason") ?? "").trim();
   const changeDateRaw = String(formData.get("change_date") ?? "").trim();
 
@@ -494,9 +494,6 @@ export async function supplementRecommendationField(formData: FormData) {
   }
   const fieldKey = fieldKeyRaw;
 
-  if (!content) {
-    redirect(`${redirectPath}?error=supplement_empty`);
-  }
   if (!changeReason) {
     redirect(`${redirectPath}?error=change_reason_required`);
   }
@@ -507,6 +504,13 @@ export async function supplementRecommendationField(formData: FormData) {
   }
 
   const activeDepartments = (await getDepartments()).filter((department) => department.isActive);
+  const content =
+    fieldKey === "sspUnit"
+      ? (resolveSspUnitsFromForm(formData, activeDepartments, "content") ?? "")
+      : String(formData.get("content") ?? "").trim();
+  if (!content) {
+    redirect(`${redirectPath}?error=${fieldKey === "sspUnit" ? "invalid_department" : "supplement_empty"}`);
+  }
   let previousContent = "";
 
   if (isAppendFieldKey(fieldKey)) {
@@ -553,10 +557,6 @@ export async function supplementRecommendationField(formData: FormData) {
       previousContent = recommendation.observationSignificance;
       updateData.observationSignificance = content;
     } else if (fieldKey === "sspUnit") {
-      const validDepartment = activeDepartments.some((department) => department.name === content);
-      if (!validDepartment) {
-        redirect(`${redirectPath}?error=invalid_department`);
-      }
       if (content === recommendation.sspUnit) {
         redirect(`${redirectPath}?error=supplement_unchanged`);
       }
@@ -785,7 +785,14 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
   for (const row of parsed.recommendations) {
     const key = row.sspUnit;
     if (!sspUnitByImportKey.has(key)) {
-      sspUnitByImportKey.set(key, await resolveDepartmentNameFromImport(row.sspUnit));
+      const units = parseSspUnits(row.sspUnit);
+      const tokens = units.length > 0 ? units : [row.sspUnit];
+      const resolved: string[] = [];
+      for (const token of tokens) {
+        const name = await resolveDepartmentNameFromImport(token);
+        if (name) resolved.push(name);
+      }
+      sspUnitByImportKey.set(key, formatSspUnits(resolved));
     }
   }
 

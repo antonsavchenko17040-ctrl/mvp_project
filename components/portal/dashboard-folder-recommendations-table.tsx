@@ -129,7 +129,7 @@ export function DashboardFolderRecommendationsTable({
                 <p className={clampText}>{item.measuresDescription ?? "—"}</p>
               </EditorRecommendationTableCell>
               <EditorRecommendationTableCell className={dataTableCols.ssp}>
-                <p className={clampText}>{item.sspUnit}</p>
+                <p className={cn(clampText, "whitespace-normal break-words")}>{item.sspUnit}</p>
               </EditorRecommendationTableCell>
               <EditorRecommendationTableCell className={dataTableCols.status} align="center">
                 <div className="flex items-center justify-center">
