@@ -3,7 +3,11 @@ import {
   daysUntilDeadline,
   type DeadlineReminderItem,
 } from "@/lib/deadline-reminder-ui";
-import { recommendationsVisibleToSspWhere } from "@/lib/ssp/recommendation-access";
+import {
+  recommendationsVisibleToSspWhere,
+  sspMemberDepartmentNames,
+} from "@/lib/ssp/recommendation-access";
+import { recommendationMatchesSspDepartments } from "@/lib/ssp-units";
 import type { UserRole } from "@/lib/types";
 
 export type { DeadlineReminderItem, DeadlineUrgencyBand } from "@/lib/deadline-reminder-ui";
@@ -50,6 +54,7 @@ type ReminderRow = {
   id: string;
   sequenceNumber: number;
   deadline: Date;
+  sspUnit?: string;
   auditFolder: { title: string; archivedAt: Date | null };
 };
 
@@ -93,6 +98,7 @@ const reminderSelect = {
   id: true,
   sequenceNumber: true,
   deadline: true,
+  sspUnit: true,
   auditFolder: { select: { title: true, archivedAt: true } },
 } as const;
 
@@ -115,14 +121,18 @@ export async function getDeadlineRemindersForProfile(input: {
   const sspPromise = isSsp
     ? (async () => {
         const visibility = await recommendationsVisibleToSspWhere(input.profileId);
-        return db.recommendation.findMany({
+        const memberDepartments = await sspMemberDepartmentNames(input.profileId);
+        const rows = await db.recommendation.findMany({
           where: {
             AND: [visibility, baseWhere, { status: "in_progress" }],
           },
           select: reminderSelect,
           orderBy: [{ deadline: "asc" }, { sequenceNumber: "asc" }],
-          take: 50,
+          take: 80,
         });
+        return rows.filter((row) =>
+          recommendationMatchesSspDepartments(row.sspUnit, memberDepartments),
+        );
       })()
     : Promise.resolve([]);
 
@@ -141,7 +151,7 @@ export async function getDeadlineRemindersForProfile(input: {
 
   // Якщо користувач має кілька ролей — пріоритет посилання: ssp → manager.
   const byId = new Map<string, DeadlineReminderItem>();
-  for (const item of toReminderItems(sspRows, "ssp")) byId.set(item.id, item);
+  for (const item of toReminderItems(sspRows.slice(0, 50), "ssp")) byId.set(item.id, item);
   for (const item of toReminderItems(managerRows, "manager")) {
     if (!byId.has(item.id)) byId.set(item.id, item);
   }

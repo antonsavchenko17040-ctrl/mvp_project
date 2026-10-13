@@ -9,7 +9,11 @@ import { actingRoleForSsp } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/session";
 import { canTransition } from "@/lib/domain/recommendation-state-machine";
 import { db } from "@/lib/db";
-import { sspEditableRecommendationByIdWhere, sspRecommendationByIdWhere } from "@/lib/ssp/recommendation-access";
+import {
+  isRecommendationVisibleToSspMember,
+  sspEditableRecommendationByIdWhere,
+  sspRecommendationByIdWhere,
+} from "@/lib/ssp/recommendation-access";
 import {
   parseSspRecommendationFormFields,
   sspFieldsToDbData,
@@ -42,6 +46,7 @@ export async function saveSspDraft(formData: FormData) {
   const existing = await db.recommendation.findFirst({
     where: editableWhere,
     select: {
+      sspUnit: true,
       auditFolderId: true,
       status: true,
       progressReport: true,
@@ -53,7 +58,7 @@ export async function saveSspDraft(formData: FormData) {
       auditFolder: { select: { archivedAt: true } },
     },
   });
-  if (!existing) {
+  if (!existing || !(await isRecommendationVisibleToSspMember(existing.sspUnit, profile.id))) {
     throw new Error("Рекомендацію не знайдено або доступ заборонено.");
   }
 
@@ -157,13 +162,14 @@ export async function submitForReview(formData: FormData) {
   const existing = await db.recommendation.findFirst({
     where: editableWhere,
     select: {
+      sspUnit: true,
       auditFolderId: true,
       status: true,
       assigneeUserId: true,
       auditFolder: { select: { archivedAt: true } },
     },
   });
-  if (!existing) {
+  if (!existing || !(await isRecommendationVisibleToSspMember(existing.sspUnit, profile.id))) {
     throw new Error("Рекомендацію не знайдено або доступ заборонено.");
   }
 
@@ -234,7 +240,10 @@ export async function supplementSspRecommendationField(formData: FormData) {
     include: { auditFolder: { select: { archivedAt: true } } },
   });
 
-  if (!recommendation) {
+  if (
+    !recommendation ||
+    !(await isRecommendationVisibleToSspMember(recommendation.sspUnit, profile.id))
+  ) {
     redirect(`${redirectPath}?error=recommendation_not_found`);
   }
 

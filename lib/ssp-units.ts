@@ -27,7 +27,7 @@ export function parseSspUnits(value: string | null | undefined): string[] {
   return result;
 }
 
-/** Канонічний рядок для збереження / відображення (відсортовано). */
+/** Канонічний рядок для збереження (відсортовано, роздільник ` | `). */
 export function formatSspUnits(names: string[]): string {
   const seen = new Set<string>();
   const unique: string[] = [];
@@ -44,6 +44,23 @@ export function formatSspUnits(names: string[]): string {
   return unique.join(SSP_UNIT_SEPARATOR);
 }
 
+/** Повний текст для UI: кожна назва ССП з нового рядка. */
+export function formatSspUnitsMultiline(value: string | null | undefined): string {
+  return parseSspUnits(value).join("\n");
+}
+
+/** Чи рекомендація призначена хоча б одному з підрозділів користувача. */
+export function recommendationMatchesSspDepartments(
+  sspUnit: string | null | undefined,
+  departmentNames: string[],
+): boolean {
+  if (departmentNames.length === 0) return false;
+  const assigned = parseSspUnits(sspUnit);
+  if (assigned.length === 0) return false;
+  const allowed = new Set(departmentNames);
+  return assigned.some((name) => allowed.has(name));
+}
+
 /** Чи входить підрозділ до списку відповідальних у `sspUnit`. */
 export function sspUnitIncludesDepartment(
   sspUnit: string | null | undefined,
@@ -56,7 +73,8 @@ export function sspUnitIncludesDepartment(
 
 /**
  * Prisma-умова: рекомендація призначена хоча б одному з підрозділів.
- * Підтримує як одне значення, так і «A | B».
+ * Підтримує одне значення та список «A | B | C» (будь-яка позиція).
+ * Точну відповідність токенів додатково перевіряйте через `recommendationMatchesSspDepartments`.
  */
 export function sspUnitVisibilityWhere(
   departmentNames: string[],
@@ -66,15 +84,17 @@ export function sspUnitVisibilityWhere(
   }
 
   return {
-    OR: departmentNames.flatMap((name) => {
-      const escaped = name;
-      return [
-        { sspUnit: escaped },
-        { sspUnit: { startsWith: `${escaped}${SSP_UNIT_SEPARATOR}` } },
-        { sspUnit: { endsWith: `${SSP_UNIT_SEPARATOR}${escaped}` } },
-        { sspUnit: { contains: `${SSP_UNIT_SEPARATOR}${escaped}${SSP_UNIT_SEPARATOR}` } },
-      ];
-    }),
+    OR: departmentNames.flatMap((name) => [
+      { sspUnit: name },
+      { sspUnit: { startsWith: `${name}${SSP_UNIT_SEPARATOR}` } },
+      { sspUnit: { endsWith: `${SSP_UNIT_SEPARATOR}${name}` } },
+      { sspUnit: { contains: `${SSP_UNIT_SEPARATOR}${name}${SSP_UNIT_SEPARATOR}` } },
+      // Запасний варіант, якщо в збереженому рядку трохи інші пробіли навколо `|`.
+      { sspUnit: { contains: `| ${name} |` } },
+      { sspUnit: { contains: `|${name}|` } },
+      { sspUnit: { startsWith: `${name} |` } },
+      { sspUnit: { endsWith: `| ${name}` } },
+    ]),
   };
 }
 

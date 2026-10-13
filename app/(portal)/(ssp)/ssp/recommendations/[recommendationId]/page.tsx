@@ -15,7 +15,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import type { SupplementFieldKey } from "@/lib/editor/recommendation-supplements";
-import { sspRecommendationByIdWhere } from "@/lib/ssp/recommendation-access";
+import {
+  isRecommendationVisibleToSspMember,
+  sspRecommendationByIdWhere,
+} from "@/lib/ssp/recommendation-access";
 import {
   canSspSupplementRecommendation,
   formatSspStoredDate,
@@ -134,7 +137,12 @@ export default async function SspRecommendationDetailPage({
       },
     },
   });
-  if (!recommendation) notFound();
+  if (
+    !recommendation ||
+    !(await isRecommendationVisibleToSspMember(recommendation.sspUnit, profile.id))
+  ) {
+    notFound();
+  }
 
   const deadlineLabel = formatDate(recommendation.deadline);
 
@@ -279,15 +287,15 @@ export default async function SspRecommendationDetailPage({
             currentValue={recommendation.expectedResult}
           />
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <EditorFieldWithSupplements
-              fieldKey="sspUnit"
-              supplements={supplements}
-              label="Відповідальний підрозділ"
-              htmlFor="ssp_unit"
-              currentValue={recommendation.sspUnit}
-            />
+          <EditorFieldWithSupplements
+            fieldKey="sspUnit"
+            supplements={supplements}
+            label="Відповідальний підрозділ"
+            htmlFor="ssp_unit"
+            currentValue={recommendation.sspUnit}
+          />
 
+          <div className="grid gap-6 md:grid-cols-2">
             <EditorFieldWithSupplements
               fieldKey="deadline"
               supplements={supplements}

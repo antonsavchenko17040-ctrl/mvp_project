@@ -23,8 +23,12 @@ import {
   parseRoleWorkspaceStatusFilter,
   sspStatusFilterCondition,
 } from "@/lib/role-workspace-list-filters";
-import { recommendationsVisibleToSspWhere } from "@/lib/ssp/recommendation-access";
+import {
+  recommendationsVisibleToSspWhere,
+  sspMemberDepartmentNames,
+} from "@/lib/ssp/recommendation-access";
 import { sspWorkspaceStatusLabel } from "@/lib/ssp/ssp-status-label";
+import { recommendationMatchesSspDepartments } from "@/lib/ssp-units";
 import { recommendationSequenceOrderBy } from "@/lib/recommendation-sequence";
 import {
   matchesRoleWorkspaceSearch,
@@ -72,11 +76,12 @@ export default async function SspPage({
   const highlightId = (query.highlight ?? "").trim();
 
   const visibilityWhere = await recommendationsVisibleToSspWhere(profile.id);
+  const memberDepartments = await sspMemberDepartmentNames(profile.id);
   const statusCondition = sspStatusFilterCondition(activeFilter);
   const where =
     statusCondition == null ? visibilityWhere : { AND: [visibilityWhere, statusCondition] };
 
-  const data = await db.recommendation.findMany({
+  const rawData = await db.recommendation.findMany({
     where,
     select: {
       id: true,
@@ -87,6 +92,7 @@ export default async function SspPage({
       recommendationText: true,
       executionIndicator: true,
       expectedResult: true,
+      sspUnit: true,
       status: true,
       deadline: true,
       informingDeadline: true,
@@ -100,6 +106,11 @@ export default async function SspPage({
     },
     orderBy: recommendationSequenceOrderBy,
   });
+
+  // Точний матч по всіх призначених ССП (не лише першому / цілому рядку).
+  const data = rawData.filter((item) =>
+    recommendationMatchesSspDepartments(item.sspUnit, memberDepartments),
+  );
 
   const withDeadlineMeta = data.map((item) => {
     const daysLeft = daysUntilDeadline(item.deadline);

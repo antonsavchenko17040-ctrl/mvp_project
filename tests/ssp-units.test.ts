@@ -3,7 +3,9 @@ import { describe, it } from "node:test";
 
 import {
   formatSspUnits,
+  formatSspUnitsMultiline,
   parseSspUnits,
+  recommendationMatchesSspDepartments,
   renameSspUnitToken,
   sspUnitIncludesDepartment,
   sspUnitVisibilityWhere,
@@ -22,6 +24,18 @@ describe("ssp-units", () => {
     assert.deepEqual(parseSspUnits("А | Б"), ["А", "Б"]);
     assert.deepEqual(parseSspUnits("А|Б"), ["А", "Б"]);
     assert.equal(sspUnitIncludesDepartment("А | Б", "Б"), true);
+  });
+
+  it("formats multiline display without truncating long names", () => {
+    const longA = "Відділ цифрової трансформації та інноваційного розвитку";
+    const longB = "IT Департамент";
+    const stored = formatSspUnits([longA, longB]);
+    const lines = formatSspUnitsMultiline(stored).split("\n");
+    assert.deepEqual(new Set(lines), new Set([longA, longB]));
+    assert.ok(lines.every((line) => line === longA || line === longB));
+    assert.equal(recommendationMatchesSspDepartments(stored, [longA]), true);
+    assert.equal(recommendationMatchesSspDepartments(stored, [longB]), true);
+    assert.equal(recommendationMatchesSspDepartments(stored, ["Інший"]), false);
   });
 
   it("renames one token inside a multi value", () => {

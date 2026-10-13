@@ -10,10 +10,11 @@ import {
   isSspReplaceFieldKey,
   type SspSupplementFieldKey,
 } from "@/lib/ssp/recommendation-supplements";
+import { formatSspUnitsMultiline } from "@/lib/ssp-units";
 import { cn } from "@/lib/utils";
 
 const readBoxClassName =
-  "min-h-[120px] cursor-default whitespace-pre-wrap rounded-md border border-input bg-muted/20 px-3 py-2 text-base leading-normal text-foreground";
+  "min-h-[120px] cursor-default whitespace-pre-wrap break-words rounded-md border border-input bg-muted/20 px-3 py-2 text-base leading-normal text-foreground";
 
 type DisplayFieldKey = SupplementFieldKey | SspSupplementFieldKey;
 
@@ -38,6 +39,9 @@ function formatDisplayChunk(fieldKey: DisplayFieldKey, content: string): string 
     fieldKey === "actualImplementationDate"
   ) {
     return formatSupplementDay(text);
+  }
+  if (fieldKey === "sspUnit") {
+    return formatSspUnitsMultiline(text) || "—";
   }
   return text;
 }
@@ -107,9 +111,11 @@ export function EditorAppendFieldDisplay({
   const content = buildDisplayContent(fieldKey, currentValue, supplements);
 
   if (!content) {
+    const fallback =
+      fieldKey === "sspUnit" ? formatSspUnitsMultiline(currentValue) || "—" : currentValue || "—";
     return (
       <div id={id} className={cn(readBoxClassName, className)}>
-        {currentValue || "—"}
+        {fallback}
       </div>
     );
   }

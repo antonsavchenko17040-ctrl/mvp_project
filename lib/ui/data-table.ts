@@ -30,7 +30,8 @@ export const dataTableCols = {
   deadline: "w-40 min-w-[10rem]",
   significance: "w-[10rem] min-w-[10rem]",
   status: "w-40 min-w-[10rem]",
-  ssp: "w-40",
+  /** Ширша колонка: повні назви одного або кількох ССП у кілька рядків. */
+  ssp: "min-w-[16rem] w-64",
   actions: "w-28",
 } as const;
 

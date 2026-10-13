@@ -312,23 +312,23 @@ export default async function AdminEditRecommendationPage({
               />
             </AdminSupplementableField>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              <AdminSupplementableField
-                {...supplementProps}
-                fieldKey="sspUnit"
-                label="Відповідальний підрозділ / ССП"
-                htmlFor="ssp_unit"
-                currentValue={recommendation.sspUnit}
-              >
-                <SspUnitMultiSelect
-                  id="ssp_unit"
-                  name="ssp_unit"
-                  departments={activeDepartments}
-                  defaultValue={recommendation.sspUnit}
-                  extraOptions={parseSspUnits(recommendation.sspUnit)}
-                />
-              </AdminSupplementableField>
+            <AdminSupplementableField
+              {...supplementProps}
+              fieldKey="sspUnit"
+              label="Відповідальний підрозділ / ССП"
+              htmlFor="ssp_unit"
+              currentValue={recommendation.sspUnit}
+            >
+              <SspUnitMultiSelect
+                id="ssp_unit"
+                name="ssp_unit"
+                departments={activeDepartments}
+                defaultValue={recommendation.sspUnit}
+                extraOptions={parseSspUnits(recommendation.sspUnit)}
+              />
+            </AdminSupplementableField>
 
+            <div className="grid gap-6 md:grid-cols-2">
               <AdminSupplementableField
                 {...supplementProps}
                 fieldKey="deadline"
