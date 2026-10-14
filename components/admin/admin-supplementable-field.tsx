@@ -14,6 +14,7 @@ import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { UkDateInput } from "@/components/ui/uk-date-input";
 import {
   isAdminAppendFieldKey,
   type AdminSupplementFieldKey,
@@ -41,6 +42,8 @@ type AdminSupplementableFieldProps = {
   departments?: DepartmentOption[];
   /** Поля основної форми адміна (input / select / textarea). */
   children: React.ReactNode;
+  required?: boolean;
+  optional?: boolean;
 };
 
 function ContentInput({
@@ -96,12 +99,11 @@ function ContentInput({
   ) {
     return (
       <>
-        <Input
+        <UkDateInput
           id={contentId}
           name="content"
-          type="date"
-          required
-          className={inputClass}
+          required={fieldKey !== "actualImplementationDate"}
+          className="max-w-md"
           defaultValue={defaultValue ?? ""}
         />
         {currentValueHint ? (
@@ -143,6 +145,8 @@ export function AdminSupplementableField({
   defaultChangeDate,
   departments = [],
   children,
+  required = false,
+  optional = false,
 }: AdminSupplementableFieldProps) {
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -154,7 +158,12 @@ export function AdminSupplementableField({
 
   return (
     <div className="space-y-2">
-      <RecommendationFieldBlock label={label} htmlFor={hasSupplements ? `${htmlFor}_display` : htmlFor}>
+      <RecommendationFieldBlock
+        label={label}
+        htmlFor={hasSupplements ? `${htmlFor}_display` : htmlFor}
+        required={required}
+        optional={optional}
+      >
         {hasSupplements ? (
           <EditorAppendFieldDisplay
             id={`${htmlFor}_display`}
@@ -195,6 +204,7 @@ export function AdminSupplementableField({
                         <RecommendationFieldBlock
                           label={isAppend ? "Доповнення" : "Значення"}
                           htmlFor={contentId}
+                          required
                         >
                           <ContentInput
                             fieldKey={fieldKey}
@@ -204,7 +214,7 @@ export function AdminSupplementableField({
                           />
                         </RecommendationFieldBlock>
                         <div className="grid gap-3 sm:grid-cols-2">
-                          <RecommendationFieldBlock label="Причина внесення змін" htmlFor={reasonId}>
+                          <RecommendationFieldBlock label="Причина внесення змін" htmlFor={reasonId} required>
                             <Textarea
                               id={reasonId}
                               name="change_reason"
@@ -213,13 +223,12 @@ export function AdminSupplementableField({
                               defaultValue={item.changeReason}
                             />
                           </RecommendationFieldBlock>
-                          <RecommendationFieldBlock label="Дата внесення змін" htmlFor={dateId}>
-                            <Input
+                          <RecommendationFieldBlock label="Дата внесення змін" htmlFor={dateId} required>
+                            <UkDateInput
                               id={dateId}
                               name="change_date"
-                              type="date"
                               required
-                              className={inputClass}
+                              className="max-w-md"
                               defaultValue={dateValue}
                             />
                           </RecommendationFieldBlock>
@@ -286,6 +295,7 @@ export function AdminSupplementableField({
           <RecommendationFieldBlock
             label={isAppend ? "Доповнення" : "Нове значення"}
             htmlFor={`admin_supplement_content_${fieldKey}`}
+            required
           >
             <ContentInput
               fieldKey={fieldKey}
@@ -298,6 +308,7 @@ export function AdminSupplementableField({
             <RecommendationFieldBlock
               label="Причина внесення змін"
               htmlFor={`admin_supplement_reason_${fieldKey}`}
+              required
             >
               <Textarea
                 id={`admin_supplement_reason_${fieldKey}`}
@@ -309,14 +320,14 @@ export function AdminSupplementableField({
             <RecommendationFieldBlock
               label="Дата внесення змін"
               htmlFor={`admin_supplement_date_${fieldKey}`}
+              required
             >
-              <Input
+              <UkDateInput
                 id={`admin_supplement_date_${fieldKey}`}
                 name="change_date"
-                type="date"
                 required
                 defaultValue={defaultChangeDate}
-                className={inputClass}
+                className="max-w-md"
               />
             </RecommendationFieldBlock>
           </div>

@@ -1,3 +1,4 @@
+import { parseDateOnlyInput } from "@/lib/dates";
 import {
   isAppendFieldKey,
   isReplaceFieldKey,
@@ -89,13 +90,13 @@ export function recommendationFieldUpdateFromSupplementValue(
     return { data: { sspUnit: resolved } };
   }
   if (fieldKey === "deadline") {
-    const next = new Date(value);
-    if (Number.isNaN(next.getTime())) return { error: "invalid_deadline" };
+    const next = parseDateOnlyInput(value);
+    if (!next) return { error: "invalid_deadline" };
     return { data: { deadline: next } };
   }
   if (fieldKey === "informingDeadline") {
-    const next = new Date(value);
-    if (Number.isNaN(next.getTime())) return { error: "invalid_informing_deadline" };
+    const next = parseDateOnlyInput(value);
+    if (!next) return { error: "invalid_informing_deadline" };
     return { data: { informingDeadline: next } };
   }
   if (fieldKey === "progressReport") {
@@ -104,8 +105,8 @@ export function recommendationFieldUpdateFromSupplementValue(
   }
   if (fieldKey === "actualImplementationDate") {
     if (!value) return { data: { actualImplementationDate: null } };
-    const next = new Date(value);
-    if (Number.isNaN(next.getTime())) return { error: "invalid_implementation_date" };
+    const next = parseDateOnlyInput(value);
+    if (!next) return { error: "invalid_implementation_date" };
     return { data: { actualImplementationDate: next } };
   }
 

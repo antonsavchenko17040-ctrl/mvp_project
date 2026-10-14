@@ -24,6 +24,7 @@ import {
 import { canArchiveFolderByRecommendations, isFolderArchived } from "@/lib/audit-folder-archive";
 import { buildObjectDifference, buildUpdateSummary, statusLabelUk, writeAuditLog } from "@/lib/audit-log";
 import { requireRole } from "@/lib/auth/session";
+import { parseDateOnlyInput, startOfLocalToday } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { type SupplementFieldKey, SUPPLEMENT_FIELD_LABELS, isAppendFieldKey, isReplaceFieldKey, isSupplementFieldKey } from "@/lib/editor/recommendation-supplements";
 import {
@@ -40,30 +41,6 @@ function formatStoredDate(value: Date | null | undefined): string {
   const m = String(value.getMonth() + 1).padStart(2, "0");
   const day = String(value.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
-}
-
-/** Дата з поля `type="date"` (YYYY-MM-DD) у локальному календарі. */
-function parseDateOnlyInput(raw: string): Date | null {
-  const trimmed = raw.trim();
-  if (!trimmed) return null;
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
-  if (!match) return null;
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const date = new Date(year, month - 1, day);
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
-    return null;
-  }
-  return date;
-}
-
-function startOfLocalToday(now = new Date()): Date {
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
 export async function createAuditFolder(formData: FormData) {

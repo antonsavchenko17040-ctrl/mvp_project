@@ -8,9 +8,9 @@ import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-fiel
 import type { FieldSupplementItem } from "@/components/editor/recommendation-field-supplement-history";
 import { SspSupplementableField } from "@/components/ssp/ssp-supplementable-field";
 import { buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { UkDateInput } from "@/components/ui/uk-date-input";
 import { SSP_PROGRESS_REPORT_OPTIONS } from "@/lib/recommendation-execution-status";
 import { isSupportingDocumentsRequired } from "@/lib/ssp/recommendation-form-validation";
 import { cn } from "@/lib/utils";
@@ -83,6 +83,7 @@ export function SspRecommendationEditForm({
         label="Стан впровадження рекомендацій"
         htmlFor="progress_report"
         currentValue={progressReport ?? ""}
+        required
       >
         <select
           id="progress_report"
@@ -109,15 +110,14 @@ export function SspRecommendationEditForm({
         htmlFor="actual_implementation_date"
         currentValue={actualImplementationDate ?? ""}
         currentValueHint={actualImplementationDate ?? undefined}
+        optional
       >
-        <Input
+        <UkDateInput
           id="actual_implementation_date"
           name="actual_implementation_date"
           form={FORM_ID}
-          type="date"
           defaultValue={actualImplementationDate ?? ""}
-          required
-          className="h-11 w-full text-base md:max-w-xs"
+          className="md:max-w-xs"
         />
       </SspSupplementableField>
 
@@ -127,6 +127,7 @@ export function SspRecommendationEditForm({
         label="Заходи з впровадження рекомендацій"
         htmlFor="measures_description"
         currentValue={measuresDescription ?? ""}
+        required
       >
         <Textarea
           id="measures_description"
@@ -141,9 +142,10 @@ export function SspRecommendationEditForm({
       <SspSupplementableField
         {...fieldProps}
         fieldKey="expectedAchievement"
-        label="Досягнення очікуваного"
+        label="Досягнення очікуваного результату"
         htmlFor="expected_achievement"
         currentValue={expectedAchievement ?? ""}
+        optional
       >
         <Textarea
           id="expected_achievement"
@@ -165,6 +167,16 @@ export function SspRecommendationEditForm({
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
               <Label htmlFor="supporting_documents" className="text-base font-medium">
                 Підтверджуючі документи
+                {supportingRequired ? (
+                  <span className="ml-1 font-semibold text-destructive" title="Обов’язкове поле">
+                    *
+                    <span className="sr-only"> (обов’язкове)</span>
+                  </span>
+                ) : (
+                  <span className="ml-1.5 text-sm font-normal text-muted-foreground">
+                    (необов’язково)
+                  </span>
+                )}
               </Label>
               <span className="group relative inline-flex shrink-0">
                 <button
@@ -224,6 +236,7 @@ export function SspRecommendationEditForm({
         label="Примітки"
         htmlFor="ssp_notes"
         currentValue={sspNotes ?? ""}
+        required
       >
         <Textarea
           id="ssp_notes"
@@ -252,12 +265,9 @@ export function SspRecommendationEditForm({
         >
           Зберегти в чернетку
         </button>
-        <Link
-  href="/ssp"
-  className={buttonVariants({ variant: "outline" })}
->
-  Скасувати
-</Link>
+        <Link href="/ssp" className={buttonVariants({ variant: "outline" })}>
+          Скасувати
+        </Link>
       </div>
     </div>
   );

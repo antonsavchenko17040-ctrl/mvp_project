@@ -274,7 +274,7 @@ export async function ReportRecommendationDetailView({
               <FieldWithSupplements
                 fieldKey="expectedAchievement"
                 supplements={supplements}
-                label="Досягнення очікуваного"
+                label="Досягнення очікуваного результату"
                 htmlFor="expected_achievement"
                 currentValue={recommendation.expectedAchievement ?? ""}
               />

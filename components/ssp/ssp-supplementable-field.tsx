@@ -18,6 +18,8 @@ type SspSupplementableFieldProps = {
   children?: React.ReactNode;
   /** Якщо false — без форми доповнення (папка архівована). */
   allowSupplements?: boolean;
+  required?: boolean;
+  optional?: boolean;
 };
 
 export function SspSupplementableField({
@@ -33,12 +35,19 @@ export function SspSupplementableField({
   mode,
   children,
   allowSupplements = true,
+  required = false,
+  optional = false,
 }: SspSupplementableFieldProps) {
   const hasSupplements = supplements.some((item) => item.fieldKey === fieldKey);
 
   return (
     <div className="space-y-0">
-      <RecommendationFieldBlock label={label} htmlFor={htmlFor}>
+      <RecommendationFieldBlock
+        label={label}
+        htmlFor={htmlFor}
+        required={required}
+        optional={optional}
+      >
         {mode === "edit" ? (
           children
         ) : (

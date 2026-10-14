@@ -77,7 +77,7 @@ export function SspRecommendationReadonlyFields({
       <SspSupplementableField
         {...fieldProps}
         fieldKey="expectedAchievement"
-        label="Досягнення очікуваного"
+        label="Досягнення очікуваного результату"
         htmlFor="expected_achievement_ro"
         currentValue={expectedAchievement ?? ""}
       />

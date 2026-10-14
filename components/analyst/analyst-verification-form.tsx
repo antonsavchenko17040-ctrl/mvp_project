@@ -35,7 +35,11 @@ export function AnalystVerificationForm({
       <form action={sendToRevision} className="flex w-full flex-col items-start gap-4">
         <input type="hidden" name="recommendation_id" value={recommendationId} />
         <input type="hidden" name="current_status" value={currentStatus} />
-        <RecommendationFieldBlock label="Коментар аналітика" htmlFor={`comment-${recommendationId}`}>
+        <RecommendationFieldBlock
+          label="Коментар аналітика"
+          htmlFor={`comment-${recommendationId}`}
+          optional
+        >
           <div className="space-y-2">
             <Input
               id={`comment-${recommendationId}`}

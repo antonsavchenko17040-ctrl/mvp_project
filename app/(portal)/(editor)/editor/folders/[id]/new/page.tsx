@@ -83,7 +83,7 @@ export default async function NewRecommendationPage({
             <input type="hidden" name="audit_folder_id" value={folder.id} />
             <input type="hidden" name="redirect_path" value={basePath} />
 
-            <RecommendationFieldBlock label="Елемент ВК" htmlFor="vk_element">
+            <RecommendationFieldBlock label="Елемент ВК" htmlFor="vk_element" required>
               <Input
                 id="vk_element"
                 name="vk_element"
@@ -93,7 +93,7 @@ export default async function NewRecommendationPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Недоліки, проблеми та порушення (точки зростання)" htmlFor="deficiency">
+            <RecommendationFieldBlock label="Недоліки, проблеми та порушення (точки зростання)" htmlFor="deficiency" required>
               <Textarea
                 id="deficiency"
                 name="deficiency"
@@ -103,7 +103,7 @@ export default async function NewRecommendationPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Значущість спостереження" htmlFor="observation_significance">
+            <RecommendationFieldBlock label="Значущість спостереження" htmlFor="observation_significance" required>
               <select
                 id="observation_significance"
                 name="observation_significance"
@@ -122,7 +122,7 @@ export default async function NewRecommendationPage({
               </select>
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Надані аудиторські рекомендації" htmlFor="recommendation_text">
+            <RecommendationFieldBlock label="Надані аудиторські рекомендації" htmlFor="recommendation_text" required>
               <Textarea
                 id="recommendation_text"
                 name="recommendation_text"
@@ -132,7 +132,7 @@ export default async function NewRecommendationPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Індикатор виконання рекомендацій (захід / документ)" htmlFor="execution_indicator">
+            <RecommendationFieldBlock label="Індикатор виконання рекомендацій (захід / документ)" htmlFor="execution_indicator" required>
               <Textarea
                 id="execution_indicator"
                 name="execution_indicator"
@@ -142,7 +142,7 @@ export default async function NewRecommendationPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Очікуваний результат від впровадження рекомендацій" htmlFor="expected_result">
+            <RecommendationFieldBlock label="Очікуваний результат від впровадження рекомендацій" htmlFor="expected_result" required>
               <Textarea
                 id="expected_result"
                 name="expected_result"
@@ -152,7 +152,7 @@ export default async function NewRecommendationPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
+            <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit" optional>
               <SspUnitMultiSelect
                 id="ssp_unit"
                 departments={activeDepartments}

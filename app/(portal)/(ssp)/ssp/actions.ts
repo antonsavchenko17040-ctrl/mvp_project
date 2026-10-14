@@ -7,6 +7,7 @@ import { isFolderArchived } from "@/lib/audit-folder-archive";
 import { buildObjectDifference, buildUpdateSummary, statusLabelUk, writeAuditLog } from "@/lib/audit-log";
 import { actingRoleForSsp } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/session";
+import { parseDateOnlyInput } from "@/lib/dates";
 import { canTransition } from "@/lib/domain/recommendation-state-machine";
 import { db } from "@/lib/db";
 import {
@@ -262,15 +263,15 @@ export async function supplementSspRecommendationField(formData: FormData) {
   }
   const fieldKey = fieldKeyRaw;
 
-  if (!content) {
+  if (!content && fieldKeyRaw !== "actualImplementationDate") {
     redirect(`${redirectPath}?error=supplement_empty`);
   }
   if (!changeReason) {
     redirect(`${redirectPath}?error=change_reason_required`);
   }
 
-  const changeDate = changeDateRaw ? new Date(changeDateRaw) : new Date();
-  if (Number.isNaN(changeDate.getTime())) {
+  const changeDate = changeDateRaw ? parseDateOnlyInput(changeDateRaw) : new Date();
+  if (!changeDate || Number.isNaN(changeDate.getTime())) {
     redirect(`${redirectPath}?error=invalid_change_date`);
   }
 
@@ -332,12 +333,12 @@ export async function supplementSspRecommendationField(formData: FormData) {
         }),
       ]);
     } else if (fieldKey === "actualImplementationDate") {
-      const nextDate = new Date(content);
-      if (Number.isNaN(nextDate.getTime())) {
+      const nextDate = content ? parseDateOnlyInput(content) : null;
+      if (content && !nextDate) {
         redirect(`${redirectPath}?error=invalid_implementation_date`);
       }
       const current = formatSspStoredDate(recommendation.actualImplementationDate);
-      if (content === current) {
+      if ((content || "") === current) {
         redirect(`${redirectPath}?error=supplement_unchanged`);
       }
       previousContent = current || "—";
@@ -346,7 +347,7 @@ export async function supplementSspRecommendationField(formData: FormData) {
           data: {
             recommendationId: recommendation.id,
             fieldKey,
-            content,
+            content: content || "—",
             previousContent,
             changeReason,
             changeDate,

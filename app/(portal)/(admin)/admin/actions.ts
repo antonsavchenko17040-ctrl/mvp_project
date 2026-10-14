@@ -37,6 +37,7 @@ import { buildObjectDifference, buildUpdateSummary, statusLabelUk, writeAuditLog
 import { clearTempPassword, setTempPassword } from "@/lib/auth/temp-password-store";
 import { actingRoleForAnalyst, actingRoleForManager } from "@/lib/auth/roles";
 import { requireRole } from "@/lib/auth/session";
+import { parseDateOnlyInput } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { canTransition } from "@/lib/domain/recommendation-state-machine";
 import {
@@ -282,18 +283,17 @@ export async function adminUpdateRecommendation(formData: FormData) {
     redirect(`/admin/recommendations/${recommendationId}?error=invalid_department`);
   }
 
-  const deadline = new Date(String(formData.get("deadline") ?? ""));
-  if (Number.isNaN(deadline.getTime())) {
+  const deadline = parseDateOnlyInput(String(formData.get("deadline") ?? ""));
+  if (!deadline) {
     redirect(`/admin/recommendations/${recommendationId}?error=invalid_deadline`);
   }
-  const informingDeadline = new Date(String(formData.get("informing_deadline") ?? ""));
-  if (Number.isNaN(informingDeadline.getTime())) {
+  const informingDeadline = parseDateOnlyInput(String(formData.get("informing_deadline") ?? ""));
+  if (!informingDeadline) {
     redirect(`/admin/recommendations/${recommendationId}?error=invalid_informing_deadline`);
   }
   const actualImplementationDateRaw = String(formData.get("actual_implementation_date") ?? "").trim();
-  const actualImplementationDate =
-    actualImplementationDateRaw === "" ? null : new Date(actualImplementationDateRaw);
-  if (actualImplementationDate && Number.isNaN(actualImplementationDate.getTime())) {
+  const actualImplementationDate = parseDateOnlyInput(actualImplementationDateRaw);
+  if (actualImplementationDateRaw && !actualImplementationDate) {
     redirect(`/admin/recommendations/${recommendationId}?error=invalid_implementation_date`);
   }
 
@@ -444,9 +444,13 @@ export async function hardDeleteAuditFolder(formData: FormData) {
 export async function adminCreateAuditFolder(formData: FormData) {
   const profile = await requireRole(["admin"]);
   const title = String(formData.get("title") ?? "").trim();
-  const year = Number(formData.get("year") ?? new Date().getFullYear());
-  if (!title || Number.isNaN(year)) {
+  const currentYear = new Date().getFullYear();
+  const year = Number(formData.get("year") ?? currentYear);
+  if (!title) {
     redirect("/admin?error=invalid_folder");
+  }
+  if (!Number.isFinite(year) || year < 2000 || year > currentYear) {
+    redirect("/admin?error=invalid_year");
   }
 
   const folder = await db.auditFolder.create({
@@ -472,6 +476,59 @@ export async function adminCreateAuditFolder(formData: FormData) {
   revalidatePath("/public/dashboard");
   revalidatePath("/public/reports");
   redirect("/admin?ok=folder_created");
+}
+
+export async function adminRenameAuditFolder(formData: FormData) {
+  const profile = await requireRole(["admin"]);
+  const auditFolderId = String(formData.get("audit_folder_id") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const returnTo = String(formData.get("return_to") ?? "/admin").trim() || "/admin";
+
+  if (!title) {
+    redirect(`${returnTo}${returnTo.includes("?") ? "&" : "?"}error=invalid_folder_title`);
+  }
+
+  const folder = await db.auditFolder.findFirst({
+    where: { id: auditFolderId },
+    select: { id: true, title: true },
+  });
+  if (!folder) {
+    redirect("/admin?error=folder_not_found");
+  }
+
+  if (folder.title !== title) {
+    await db.auditFolder.update({
+      where: { id: folder.id },
+      data: { title },
+    });
+    await writeAuditLog({
+      actor: profile,
+      actorRole: "admin",
+      action: "audit_folder.renamed",
+      entityType: "audit_folder",
+      entityId: folder.id,
+      auditFolderId: folder.id,
+      summary: `Перейменовано папку аудиту «${folder.title}» → «${title}»`,
+      difference: { title: { from: folder.title, to: title } },
+    });
+  }
+
+  revalidatePath("/admin");
+  revalidatePath(`/admin/folders/${folder.id}`);
+  revalidatePath("/editor");
+  revalidatePath("/public/dashboard");
+  revalidatePath("/public/reports");
+  revalidatePath("/dashboard");
+  revalidatePath("/reports");
+  revalidatePath("/reports/active");
+  revalidatePath("/reports/completed");
+  revalidatePath(`/public/folders/${folder.id}`);
+  revalidatePath(`/dashboard/folders/${folder.id}`);
+  revalidatePath(`/reports/folders/${folder.id}`);
+  revalidatePath(`/public/reports/folders/${folder.id}`);
+
+  const separator = returnTo.includes("?") ? "&" : "?";
+  redirect(`${returnTo}${separator}ok=folder_renamed`);
 }
 
 export async function adminImportAuditFolderFromXlsx(formData: FormData) {
@@ -512,9 +569,7 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
     }
   }
 
-  if (!isFullyFilledImportedFolder(parsed.recommendations)) {
-    redirect("/admin?error=import_editor_only");
-  }
+  const fullyFilled = isFullyFilledImportedFolder(parsed.recommendations);
 
   const folder = await db.$transaction(async (tx) => {
     const createdFolder = await tx.auditFolder.create({
@@ -590,12 +645,14 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
     entityType: "audit_folder",
     entityId: folder.id,
     auditFolderId: folder.id,
-    summary: `Імпортовано повністю заповнену папку аудиту «${parsed.title}» (${parsed.recommendations.length} рекомендацій)`,
+    summary: fullyFilled
+      ? `Імпортовано повністю заповнену папку аудиту «${parsed.title}» (${parsed.recommendations.length} рекомендацій)`
+      : `Імпортовано неповний звіт «${parsed.title}» (${parsed.recommendations.length} рекомендацій)`,
     difference: {
       title: parsed.title,
       year,
       recommendationsCount: parsed.recommendations.length,
-      fullyFilled: true,
+      fullyFilled,
     },
   });
 
@@ -680,8 +737,15 @@ export async function adminCreateRecommendation(formData: FormData) {
   const assigneeUserId = assigneeUserIdRaw === "" ? null : assigneeUserIdRaw;
   const observationSignificance = normalizeObservationSignificance(String(formData.get("observation_significance") ?? ""));
   const redirectPath = String(formData.get("redirect_path") ?? "/admin");
+  const deadline = parseDateOnlyInput(String(formData.get("deadline") ?? ""));
+  if (!deadline) {
+    redirect(`${redirectPath}?error=invalid_deadline`);
+  }
   const informingDeadlineRaw = String(formData.get("informing_deadline") ?? "").trim();
-  const informingDeadline = informingDeadlineRaw === "" ? null : new Date(informingDeadlineRaw);
+  const informingDeadline = parseDateOnlyInput(informingDeadlineRaw);
+  if (informingDeadlineRaw && !informingDeadline) {
+    redirect(`${redirectPath}?error=invalid_informing_deadline`);
+  }
 
   const folder = await db.auditFolder.findFirst({
     where: { id: auditFolderId },
@@ -726,7 +790,7 @@ export async function adminCreateRecommendation(formData: FormData) {
       vkElement: String(formData.get("vk_element") ?? ""),
       observationSignificance,
       sspUnit: sspAssignment.sspUnit,
-      deadline: new Date(String(formData.get("deadline") ?? "")),
+      deadline,
       informingDeadline,
       status,
       assigneeUserId,

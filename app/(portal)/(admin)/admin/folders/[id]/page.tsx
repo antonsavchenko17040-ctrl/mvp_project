@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { AdminRecommendationRow } from "@/components/admin/admin-recommendation-row";
+import { AdminRenameFolderButton } from "@/components/admin/admin-rename-folder-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/session";
@@ -18,14 +19,17 @@ const folderPageErrors: Record<string, string> = {
   recommendation_not_found: "Рекомендацію не знайдено.",
   already_archived: "Папку вже завершено.",
   cannot_archive_incomplete: "Завершити можна лише папку, де всі активні рекомендації виконані.",
+  invalid_folder_title: "Вкажіть коректну назву папки.",
 };
 
 const folderPageOk: Record<string, string> = {
   recommendation_created: "Рекомендацію створено.",
   published: "Рекомендацію верифіковано.",
   deactivated: "Рекомендацію деактивовано.",
-  imported: "Повністю заповнений звіт імпортовано. Завершіть його вручну, коли будете готові.",
+  imported:
+    "Звіт імпортовано. Неповні звіти не вважаються завершеними автоматично — архівуйте вручну, коли будете готові.",
   archived: "Папку аудиту завершено.",
+  folder_renamed: "Назву папки аудиту оновлено.",
 };
 
 export default async function AdminAuditFolderCriticalOpsPage({
@@ -76,11 +80,18 @@ export default async function AdminAuditFolderCriticalOpsPage({
         </Link>
       </div>
 
-      <div>
-        <h1 className="text-3xl font-semibold">Критичні операції з рекомендаціями</h1>
-        <p className="mt-1 text-base text-muted-foreground">
-          Звіт: «{folder.title}» ({folder.year})
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-semibold">Критичні операції з рекомендаціями</h1>
+          <p className="mt-1 text-base text-muted-foreground">
+            Звіт: «{folder.title}» ({folder.year})
+          </p>
+        </div>
+        <AdminRenameFolderButton
+          folderId={folder.id}
+          title={folder.title}
+          returnTo={`/admin/folders/${folder.id}`}
+        />
       </div>
 
       {pageError ? (

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { UkDateInput } from "@/components/ui/uk-date-input";
 import { Textarea } from "@/components/ui/textarea";
 import { supplementSspRecommendationField } from "@/app/(portal)/(ssp)/ssp/actions";
 import { SSP_PROGRESS_REPORT_OPTIONS } from "@/lib/recommendation-execution-status";
@@ -64,7 +65,7 @@ export function SspFieldSupplementControls({
       </p>
 
       {fieldKey === "progressReport" ? (
-        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>
+        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId} required>
           <select id={contentId} name="content" className={inputClass} required>
             <option value="">— Оберіть стан —</option>
             {SSP_PROGRESS_REPORT_OPTIONS.map((status) => (
@@ -78,34 +79,33 @@ export function SspFieldSupplementControls({
           ) : null}
         </RecommendationFieldBlock>
       ) : fieldKey === "actualImplementationDate" ? (
-        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>
-          <Input id={contentId} name="content" type="date" required className={inputClass} />
+        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId} optional>
+          <UkDateInput id={contentId} name="content" className="max-w-md" />
           {currentValueHint ? (
             <p className="mt-1 text-xs text-muted-foreground">Поточне: {currentValueHint}</p>
           ) : null}
         </RecommendationFieldBlock>
       ) : isAppend ? (
-        <RecommendationFieldBlock label="Доповнення" htmlFor={contentId}>
+        <RecommendationFieldBlock label="Доповнення" htmlFor={contentId} required>
           <Textarea id={contentId} name="content" required className={textareaClass} />
         </RecommendationFieldBlock>
       ) : (
-        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>
+        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId} required>
           <Input id={contentId} name="content" required className={inputClass} />
         </RecommendationFieldBlock>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <RecommendationFieldBlock label="Причина внесення змін" htmlFor={reasonId}>
+        <RecommendationFieldBlock label="Причина внесення змін" htmlFor={reasonId} required>
           <Textarea id={reasonId} name="change_reason" required className={textareaClass} />
         </RecommendationFieldBlock>
-        <RecommendationFieldBlock label="Дата внесення змін" htmlFor={dateId}>
-          <Input
+        <RecommendationFieldBlock label="Дата внесення змін" htmlFor={dateId} required>
+          <UkDateInput
             id={dateId}
             name="change_date"
-            type="date"
             required
             defaultValue={defaultChangeDate}
-            className={inputClass}
+            className="max-w-md"
           />
         </RecommendationFieldBlock>
       </div>

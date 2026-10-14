@@ -1,3 +1,4 @@
+import { parseDateOnlyInput } from "@/lib/dates";
 import { EXECUTION_STATUS_LABELS } from "@/lib/recommendation-execution-status";
 
 export type SspRecommendationFormFields = {
@@ -11,8 +12,18 @@ export type SspRecommendationFormFields = {
 
 export function parseSspRecommendationFormFields(formData: FormData): SspRecommendationFormFields {
   const actualImplementationDateRaw = String(formData.get("actual_implementation_date") ?? "").trim();
-  const actualImplementationDate =
-    actualImplementationDateRaw === "" ? null : new Date(actualImplementationDateRaw);
+  const actualImplementationDate = parseDateOnlyInput(actualImplementationDateRaw);
+  if (actualImplementationDateRaw && !actualImplementationDate) {
+    // Невалідний рядок дати — окремий маркер через Invalid Date для downstream-перевірок.
+    return {
+      progressReport: String(formData.get("progress_report") ?? "").trim(),
+      measuresDescription: String(formData.get("measures_description") ?? "").trim(),
+      actualImplementationDate: new Date(Number.NaN),
+      expectedAchievement: String(formData.get("expected_achievement") ?? "").trim(),
+      supportingDocuments: String(formData.get("supporting_documents") ?? "").trim(),
+      sspNotes: String(formData.get("ssp_notes") ?? "").trim(),
+    };
+  }
 
   return {
     progressReport: String(formData.get("progress_report") ?? "").trim(),
@@ -36,10 +47,8 @@ export function validateSspSubmitFields(fields: SspRecommendationFormFields): st
   if (!fields.measuresDescription) {
     return "Заповніть заходи з впровадження рекомендацій.";
   }
-  if (!fields.actualImplementationDate) {
-    return "Вкажіть фактичну дату впровадження.";
-  }
-  if (Number.isNaN(fields.actualImplementationDate.getTime())) {
+  // Фактична дата впровадження та досягнення очікуваного результату — необов’язкові.
+  if (fields.actualImplementationDate && Number.isNaN(fields.actualImplementationDate.getTime())) {
     return "Фактична дата впровадження вказана некоректно.";
   }
   if (!fields.sspNotes) {

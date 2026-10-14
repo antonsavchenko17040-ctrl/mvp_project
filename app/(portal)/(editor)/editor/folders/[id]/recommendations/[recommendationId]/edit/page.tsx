@@ -10,6 +10,7 @@ import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { UkDateInput } from "@/components/ui/uk-date-input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   getDepartments,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/admin/departments-store";
 import { observationSignificanceSelectValue } from "@/lib/observation-significance";
 import { requireRole } from "@/lib/auth/session";
+import { formatDateOnlyInput } from "@/lib/dates";
 import { db } from "@/lib/db";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
 import {
@@ -180,7 +182,7 @@ export default async function EditorRecommendationEditPage({
             <input type="hidden" name="return_path" value={redirectPath} />
             <input type="hidden" name="assignee_user_id" value={recommendation.assigneeUserId ?? ""} />
 
-            <RecommendationFieldBlock label="Елемент ВК" htmlFor="vk_element">
+            <RecommendationFieldBlock label="Елемент ВК" htmlFor="vk_element" required>
               <Input
                 id="vk_element"
                 name="vk_element"
@@ -190,7 +192,7 @@ export default async function EditorRecommendationEditPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Значущість спостереження" htmlFor="observation_significance">
+            <RecommendationFieldBlock label="Значущість спостереження" htmlFor="observation_significance" required>
               <select
                 id="observation_significance"
                 name="observation_significance"
@@ -206,7 +208,7 @@ export default async function EditorRecommendationEditPage({
               </select>
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Недоліки, проблеми та порушення (точки зростання)" htmlFor="deficiency">
+            <RecommendationFieldBlock label="Недоліки, проблеми та порушення (точки зростання)" htmlFor="deficiency" required>
               <Textarea
                 id="deficiency"
                 name="deficiency"
@@ -216,7 +218,7 @@ export default async function EditorRecommendationEditPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Надані аудиторські рекомендації" htmlFor="recommendation_text">
+            <RecommendationFieldBlock label="Надані аудиторські рекомендації" htmlFor="recommendation_text" required>
               <Textarea
                 id="recommendation_text"
                 name="recommendation_text"
@@ -226,7 +228,7 @@ export default async function EditorRecommendationEditPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Індикатор виконання рекомендацій (захід / документ)" htmlFor="execution_indicator">
+            <RecommendationFieldBlock label="Індикатор виконання рекомендацій (захід / документ)" htmlFor="execution_indicator" required>
               <Textarea
                 id="execution_indicator"
                 name="execution_indicator"
@@ -236,7 +238,7 @@ export default async function EditorRecommendationEditPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Очікуваний результат від впровадження рекомендацій" htmlFor="expected_result">
+            <RecommendationFieldBlock label="Очікуваний результат від впровадження рекомендацій" htmlFor="expected_result" required>
               <Textarea
                 id="expected_result"
                 name="expected_result"
@@ -246,7 +248,7 @@ export default async function EditorRecommendationEditPage({
               />
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit">
+            <RecommendationFieldBlock label="Відповідальний підрозділ / ССП" htmlFor="ssp_unit" optional>
               <SspUnitMultiSelect
                 id="ssp_unit"
                 departments={activeDepartments}
@@ -259,29 +261,25 @@ export default async function EditorRecommendationEditPage({
             </RecommendationFieldBlock>
 
             <div className="grid gap-6 md:grid-cols-2">
-              <RecommendationFieldBlock label="Термін виконання" htmlFor="deadline">
-                <Input
+              <RecommendationFieldBlock label="Термін виконання" htmlFor="deadline" required>
+                <UkDateInput
                   id="deadline"
                   name="deadline"
-                  type="date"
-                  defaultValue={new Date(recommendation.deadline).toISOString().slice(0, 10)}
+                  defaultValue={formatDateOnlyInput(new Date(recommendation.deadline))}
                   required
-                  className={editSelectClass}
                 />
               </RecommendationFieldBlock>
 
-              <RecommendationFieldBlock label="Строк інформування" htmlFor="informing_deadline">
-                <Input
+              <RecommendationFieldBlock label="Строк інформування" htmlFor="informing_deadline" required>
+                <UkDateInput
                   id="informing_deadline"
                   name="informing_deadline"
-                  type="date"
                   defaultValue={
                     recommendation.informingDeadline
-                      ? new Date(recommendation.informingDeadline).toISOString().slice(0, 10)
+                      ? formatDateOnlyInput(new Date(recommendation.informingDeadline))
                       : ""
                   }
                   required
-                  className={editSelectClass}
                 />
               </RecommendationFieldBlock>
             </div>

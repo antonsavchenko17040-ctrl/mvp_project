@@ -1,5 +1,6 @@
 import { AdminAuditFolderActions } from "@/components/admin/admin-audit-folder-actions";
 import { AdminAuditFolderRow } from "@/components/admin/admin-audit-folder-row";
+import { AdminRenameFolderButton } from "@/components/admin/admin-rename-folder-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { canArchiveFolderByRecommendations } from "@/lib/audit-folder-archive";
@@ -17,7 +18,9 @@ import {
 const adminListErrors: Record<string, string> = {
   missing_recommendation: "Не вказано рекомендацію.",
   recommendation_not_found: "Рекомендацію не знайдено.",
-  invalid_folder: "Вкажіть коректну назву та рік папки.",
+  invalid_folder: "Вкажіть коректну назву папки.",
+  invalid_year: "Рік папки аудиту не може бути більшим за поточний. Майбутній рік зберегти не можна.",
+  invalid_folder_title: "Вкажіть коректну назву папки.",
   folder_not_found: "Папку аудиту не знайдено.",
   import_no_file: "Оберіть файл XLSX для імпорту.",
   import_invalid_format: "Підтримується лише формат .xlsx.",
@@ -26,17 +29,18 @@ const adminListErrors: Record<string, string> = {
   import_no_rows: "У файлі не знайдено рядків з рекомендаціями.",
   import_empty_workbook: "Файл не містить аркушів.",
   import_invalid_deadline: "Некоректний термін виконання у файлі.",
-  import_editor_only: "Неповністю заповнені звіти завантажує редактор.",
   already_archived: "Папку вже завершено.",
   cannot_archive_incomplete: "Завершити можна лише папку, де всі активні рекомендації виконані.",
 };
 
 const adminListOk: Record<string, string> = {
   folder_created: "Папку аудиту створено.",
+  folder_renamed: "Назву папки аудиту оновлено.",
   recommendation_created: "Рекомендацію створено.",
   published: "Рекомендацію верифіковано.",
   deactivated: "Рекомендацію деактивовано.",
-  imported: "Повністю заповнений звіт імпортовано. Завершіть його вручну, коли будете готові.",
+  imported:
+    "Звіт імпортовано. Неповні звіти не вважаються завершеними автоматично — архівуйте вручну, коли будете готові.",
   archived: "Папку аудиту завершено.",
 };
 
@@ -132,6 +136,11 @@ export default async function AdminPage({
                         archivedAt={folder.archivedAt}
                         actions={
                           <div className="flex flex-wrap gap-2">
+                            <AdminRenameFolderButton
+                              folderId={folder.id}
+                              title={folder.title}
+                              returnTo="/admin"
+                            />
                             <Link
                               href={`/admin/folders/${folder.id}/new`}
                               className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-background px-3 text-base font-medium hover:bg-muted"

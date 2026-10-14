@@ -278,7 +278,7 @@ export default async function ManagerRecommendationDetailPage({
           <FieldWithSupplements
             fieldKey="expectedAchievement"
             supplements={supplements}
-            label="Досягнення очікуваного"
+            label="Досягнення очікуваного результату"
             htmlFor="expected_achievement"
             currentValue={recommendation.expectedAchievement ?? ""}
           />
