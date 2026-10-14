@@ -1,20 +1,27 @@
-import { DATA_TABLE_CELL_TEXT, dataTable } from "@/lib/ui/data-table";
+import {
+  dataTableCellClass,
+  dataTableCellTextClass,
+  type DataTableDensity,
+} from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
 export function EditorRecommendationTableCell({
   children,
   className,
   align = "left",
+  density = "default",
 }: {
   children: React.ReactNode;
   className?: string;
   align?: "left" | "center";
+  /** `compact` — 3 рядки (Відповідальний / Керівник / Аналітик). */
+  density?: DataTableDensity;
 }) {
   const content =
     typeof children === "string" || typeof children === "number" ? (
       <p
         className={cn(
-          DATA_TABLE_CELL_TEXT,
+          dataTableCellTextClass(density),
           align === "center" && "text-center",
         )}
       >
@@ -27,7 +34,7 @@ export function EditorRecommendationTableCell({
   return (
     <td
       className={cn(
-        dataTable.cell,
+        dataTableCellClass(density),
         align === "center" && "text-center",
         className,
       )}
