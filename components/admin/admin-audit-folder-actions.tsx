@@ -157,14 +157,19 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
                   *
                 </span>
               </Label>
-              <Input
+              <select
                 id="admin-import-year"
                 name="year"
-                type="number"
-                defaultValue={currentYear}
                 required
-                className="h-10"
-              />
+                defaultValue={currentYear}
+                className={yearSelectClassName}
+              >
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
             <p className="text-xs text-muted-foreground">
               Можна завантажувати повні та неповні звіти. Неповний звіт не вважається завершеним
@@ -177,7 +182,10 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
               <p className="text-sm text-red-600">Підтримується лише формат .xlsx.</p>
             ) : null}
             {error === "import_invalid_year" ? (
-              <p className="text-sm text-red-600">Вкажіть коректний рік звіту.</p>
+              <p className="text-sm text-red-600">
+                Рік імпортованої папки не може бути більшим за поточний ({currentYear}). Майбутній рік
+                зберегти не можна.
+              </p>
             ) : null}
             {error === "import_parse_failed" ? (
               <p className="text-sm text-red-600">Не вдалося прочитати файл. Перевірте формат таблиці.</p>

@@ -24,7 +24,8 @@ const adminListErrors: Record<string, string> = {
   folder_not_found: "Папку аудиту не знайдено.",
   import_no_file: "Оберіть файл XLSX для імпорту.",
   import_invalid_format: "Підтримується лише формат .xlsx.",
-  import_invalid_year: "Вкажіть коректний рік звіту.",
+  import_invalid_year:
+    "Рік імпортованої папки не може бути більшим за поточний. Майбутній рік зберегти не можна.",
   import_parse_failed: "Не вдалося прочитати файл. Перевірте формат таблиці.",
   import_no_rows: "У файлі не знайдено рядків з рекомендаціями.",
   import_empty_workbook: "Файл не містить аркушів.",
