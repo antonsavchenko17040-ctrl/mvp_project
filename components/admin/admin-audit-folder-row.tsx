@@ -66,7 +66,9 @@ export function AdminAuditFolderRow({
             Завершено
           </span>
         ) : null}
-        <span className={cn(isArchived && "inline-block pt-4")}>{title}</span>
+        <span className={cn("line-clamp-6 break-words", isArchived && "inline-block pt-4")}>
+          {title}
+        </span>
       </td>
       <td className={cn(dataTable.cell, "w-20 min-w-20 whitespace-nowrap")}>{year}</td>
       <td className={dataTable.cell}>

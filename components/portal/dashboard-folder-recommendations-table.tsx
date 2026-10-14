@@ -11,6 +11,7 @@ import {
   type DashboardFolderSortKey,
 } from "@/lib/dashboard/folder-table-sort";
 import {
+  DATA_TABLE_CELL_TEXT,
   dataTable,
   dataTableClassName,
   dataTableCols,
@@ -19,7 +20,7 @@ import {
 import { type TableSortState, applySortParams } from "@/lib/table-sort";
 import { cn } from "@/lib/utils";
 
-const clampText = "m-0 break-words text-left text-sm leading-snug text-foreground line-clamp-3";
+const clampText = cn(DATA_TABLE_CELL_TEXT, "text-left");
 
 export type { DashboardFolderSortKey } from "@/lib/dashboard/folder-table-sort";
 export { dashboardFolderSortDefaults, dashboardFolderSortKeys } from "@/lib/dashboard/folder-table-sort";

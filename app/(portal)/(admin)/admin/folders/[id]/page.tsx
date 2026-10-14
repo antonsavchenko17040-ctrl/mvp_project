@@ -124,7 +124,7 @@ export default async function AdminAuditFolderCriticalOpsPage({
                 </thead>
                 <tbody>
                   {recommendations.length === 0 ? (
-                    <tr className={dataTable.bodyRow}>
+                    <tr className={dataTable.bodyRowFluid}>
                       <td className={dataTable.emptyCell} colSpan={6}>
                         У цій папці ще немає рекомендацій.
                       </td>

@@ -382,7 +382,7 @@ export default async function EditorFolderPage({
                 </thead>
                 <tbody>
                   {filteredRecommendations.length === 0 ? (
-                    <tr className={dataTable.bodyRow}>
+                    <tr className={dataTable.bodyRowFluid}>
                       <td colSpan={6} className={dataTable.emptyCell}>
                         {searchQuery
                           ? "За вашим запитом рекомендацій не знайдено."
@@ -399,22 +399,22 @@ export default async function EditorFolderPage({
                             : `/editor/folders/${folder.id}/recommendations/${item.id}`
                         }
                       >
-                        <EditorRecommendationTableCell className={cn(dataTableCols.num, "p-3")} align="center">
+                        <EditorRecommendationTableCell className={dataTableCols.num} align="center">
                           {item.sequenceNumber}
                         </EditorRecommendationTableCell>
-                        <EditorRecommendationTableCell className={cn(dataTableCols.text, "p-3")}>
+                        <EditorRecommendationTableCell className={dataTableCols.text}>
                           {item.deficiency}
                         </EditorRecommendationTableCell>
-                        <EditorRecommendationTableCell className={cn(dataTableCols.text, "p-3")}>
+                        <EditorRecommendationTableCell className={dataTableCols.text}>
                           {item.recommendationText}
                         </EditorRecommendationTableCell>
                         <EditorRecommendationTableCell
-                          className={cn(dataTableCols.significance, "p-3")}
+                          className={dataTableCols.significance}
                           align="center"
                         >
                           {normalizeObservationSignificance(item.observationSignificance) || "—"}
                         </EditorRecommendationTableCell>
-                        <EditorRecommendationTableCell className={cn(dataTableCols.status, "p-3")} align="center">
+                        <EditorRecommendationTableCell className={dataTableCols.status} align="center">
                           <div className="flex justify-center">
                             <RecommendationStatusBadge
                               status={item.status}
@@ -422,7 +422,7 @@ export default async function EditorFolderPage({
                             />
                           </div>
                         </EditorRecommendationTableCell>
-                        <EditorRecommendationTableCell className={cn(dataTableCols.ssp, "p-3")} align="center">
+                        <EditorRecommendationTableCell className={dataTableCols.ssp} align="center">
                           <SspUnitsDisplay value={item.sspUnit} align="center" />
                         </EditorRecommendationTableCell>
                       </EditorRecommendationTableRow>

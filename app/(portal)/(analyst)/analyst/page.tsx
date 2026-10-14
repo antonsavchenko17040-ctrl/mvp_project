@@ -268,7 +268,7 @@ export default async function AnalystPage({
               </thead>
               <tbody>
                 {filteredData.length === 0 ? (
-                  <tr className={dataTable.bodyRow}>
+                  <tr className={dataTable.bodyRowFluid}>
                     <td colSpan={7} className={dataTable.emptyCell}>
                       {searchQuery
                         ? "За вашим запитом рекомендацій не знайдено."

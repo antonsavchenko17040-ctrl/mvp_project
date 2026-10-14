@@ -1,3 +1,4 @@
+import { DATA_TABLE_CELL_TEXT, dataTable } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
 export function EditorRecommendationTableCell({
@@ -13,7 +14,7 @@ export function EditorRecommendationTableCell({
     typeof children === "string" || typeof children === "number" ? (
       <p
         className={cn(
-          "m-0 line-clamp-3 break-words text-sm leading-snug text-foreground",
+          DATA_TABLE_CELL_TEXT,
           align === "center" && "text-center",
         )}
       >
@@ -26,13 +27,20 @@ export function EditorRecommendationTableCell({
   return (
     <td
       className={cn(
-        "p-3 align-middle",
+        dataTable.cell,
         align === "center" && "text-center",
         className,
       )}
       style={{ verticalAlign: "middle" }}
     >
-      {content}
+      <div
+        className={cn(
+          "flex h-full max-h-full min-h-0 w-full items-center overflow-hidden",
+          align === "center" && "justify-center text-center",
+        )}
+      >
+        <div className="min-h-0 w-full overflow-hidden">{content}</div>
+      </div>
     </td>
   );
 }

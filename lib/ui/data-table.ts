@@ -1,5 +1,16 @@
 import { cn } from "@/lib/utils";
 
+/**
+ * Фіксована висота рядка data-таблиць порталу.
+ * Орієнтир: до 6 рядків `text-sm` / `leading-snug` + вертикальний `p-3`
+ * (як рядок з кількома повними назвами ССП).
+ */
+export const DATA_TABLE_ROW_HEIGHT = "h-[8.75rem]";
+export const DATA_TABLE_ROW_MAX_HEIGHT = "max-h-[8.75rem]";
+/** Обмеження тексту всередині комірки: не більше 6 рядків, без розтягування рядка. */
+export const DATA_TABLE_CELL_TEXT =
+  "m-0 break-words text-sm leading-snug text-foreground line-clamp-6";
+
 /** Єдиний дизайн data-таблиць (еталон — робоча область редактора). */
 export const dataTable = {
   wrap: "overflow-x-auto rounded-3xl border border-black",
@@ -8,10 +19,20 @@ export const dataTable = {
   headRow: "border-b border-black",
   th: "p-3 text-left align-middle",
   thCenter: "p-3 text-center align-middle",
-  bodyRow: "border-t border-black",
+  /** Фіксована висота data-рядка (не змінюється від обсягу тексту). */
+  bodyRow: `border-t border-black ${DATA_TABLE_ROW_HEIGHT}`,
+  /**
+   * Рядок без фіксованої висоти: порожній стан, секційні заголовки, форми в таблиці.
+   * Використовуйте замість bodyRow, щоб не розтягувати службові рядки.
+   */
+  bodyRowFluid: "border-t border-black h-auto",
   rowHover: "transition-colors hover:bg-[#f2ecbe] focus-visible:bg-[#f2ecbe]",
-  cell: "p-3 align-middle [vertical-align:middle]",
-  emptyCell: "p-6 text-center align-middle [vertical-align:middle] text-base text-muted-foreground",
+  cell: `box-border overflow-x-hidden overflow-y-auto p-3 align-middle [vertical-align:middle] ${DATA_TABLE_ROW_HEIGHT} ${DATA_TABLE_ROW_MAX_HEIGHT}`,
+  /** Комірка без фіксованої висоти (секційні заголовки / форми). */
+  cellFluid: "box-border h-auto max-h-none p-3 align-middle [vertical-align:middle]",
+  /** Рядок-заглушка без фіксованої висоти. */
+  emptyCell:
+    "h-auto max-h-none p-6 text-center align-middle [vertical-align:middle] text-base text-muted-foreground",
 } as const;
 
 /**
