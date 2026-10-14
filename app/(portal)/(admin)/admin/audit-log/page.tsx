@@ -281,7 +281,7 @@ export default async function AdminAuditLogPage({
           </thead>
           <tbody>
             {entries.length === 0 ? (
-              <tr className={dataTable.bodyRow}>
+              <tr className={dataTable.bodyRowFluid}>
                 <td colSpan={5} className={dataTable.emptyCell}>
                   Записів за обраними фільтрами немає.
                 </td>
@@ -316,16 +316,18 @@ export default async function AdminAuditLogPage({
                     />
                   </td>
                   <td className={cn(dataTable.cell, "max-w-md break-words")}>
-                    <div className="font-medium">{description.headline}</div>
-                    {description.details.length > 0 ? (
-                      <ul className="mt-1.5 list-disc space-y-1 pl-4 text-sm text-muted-foreground">
-                        {description.details.map((line, index) => (
-                          <li key={`${entry.id}-change-${index}`} className="break-words">
-                            {line}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : null}
+                    <div className="line-clamp-6">
+                      <div className="font-medium">{description.headline}</div>
+                      {description.details.length > 0 ? (
+                        <ul className="mt-1.5 list-disc space-y-1 pl-4 text-sm text-muted-foreground">
+                          {description.details.map((line, index) => (
+                            <li key={`${entry.id}-change-${index}`} className="break-words">
+                              {line}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
                 );

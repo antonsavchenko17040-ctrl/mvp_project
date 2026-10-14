@@ -200,7 +200,7 @@ export function DepartmentUsersTable({
           <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
             <tbody>
               {!hasRows ? (
-                <tr className={dataTable.bodyRow}>
+                <tr className={dataTable.bodyRowFluid}>
                   <td className={dataTable.emptyCell} colSpan={colSpan}>
                     {query
                       ? "Користувачів із таким іменем не знайдено."
@@ -216,8 +216,8 @@ export function DepartmentUsersTable({
 
                 return (
                   <Fragment key={department.id}>
-                    <tr className={dataTable.bodyRow}>
-                      <td colSpan={colSpan} className={cn(dataTable.cell, "bg-[#f5f7fa] py-3")}>
+                    <tr className={dataTable.bodyRowFluid}>
+                      <td colSpan={colSpan} className={cn(dataTable.cellFluid, "bg-[#f5f7fa] py-3")}>
                         <DepartmentSectionHeader
                           departmentId={department.id}
                           name={department.name}
@@ -231,10 +231,10 @@ export function DepartmentUsersTable({
                     </tr>
 
                     {members.length === 0 ? (
-                      <tr className={dataTable.bodyRow}>
+                      <tr className={dataTable.bodyRowFluid}>
                         <td
                           colSpan={colSpan}
-                          className={cn(dataTable.cell, "text-sm text-muted-foreground")}
+                          className={cn(dataTable.cellFluid, "text-sm text-muted-foreground")}
                         >
                           Немає призначених співробітників
                         </td>
@@ -260,8 +260,8 @@ export function DepartmentUsersTable({
                     )}
 
                     {!query ? (
-                      <tr className={dataTable.bodyRow}>
-                        <td colSpan={colSpan} className={dataTable.cell}>
+                      <tr className={dataTable.bodyRowFluid}>
+                        <td colSpan={colSpan} className={dataTable.cellFluid}>
                           <form
                             action={assignDepartmentMemberAction}
                             className="flex max-w-3xl flex-col gap-2 sm:flex-row sm:items-center"
@@ -295,8 +295,8 @@ export function DepartmentUsersTable({
 
               {unassignedUsers.length > 0 ? (
                 <Fragment key="unassigned">
-                  <tr className={dataTable.bodyRow}>
-                    <td colSpan={colSpan} className={cn(dataTable.cell, "bg-[#f5f7fa] py-3")}>
+                  <tr className={dataTable.bodyRowFluid}>
+                    <td colSpan={colSpan} className={cn(dataTable.cellFluid, "bg-[#f5f7fa] py-3")}>
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-base font-semibold">Без підрозділу</p>
                         <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">

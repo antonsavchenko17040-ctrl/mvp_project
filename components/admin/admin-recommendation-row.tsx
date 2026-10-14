@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
 import type { RecommendationStatus } from "@/lib/types";
-import { dataTable, dataTableCols } from "@/lib/ui/data-table";
+import { DATA_TABLE_CELL_TEXT, dataTable, dataTableCols } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
 type AdminRecommendationRowProps = {
@@ -49,9 +49,11 @@ export function AdminRecommendationRow({
         }
       }}
     >
-      <td className={cn(dataTable.cell, dataTableCols.folder)}>{vkElement}</td>
+      <td className={cn(dataTable.cell, dataTableCols.folder)}>
+        <p className={DATA_TABLE_CELL_TEXT}>{vkElement}</p>
+      </td>
       <td className={cn(dataTable.cell, dataTableCols.text)}>
-        {recommendationText}
+        <p className={DATA_TABLE_CELL_TEXT}>{recommendationText}</p>
         {!isActive ? (
           <span className="mt-1 block text-sm font-medium text-destructive">Деактивована</span>
         ) : null}

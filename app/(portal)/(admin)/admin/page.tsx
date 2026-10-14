@@ -101,7 +101,7 @@ export default async function AdminPage({
               </thead>
               <tbody>
                 {auditFolders.length === 0 ? (
-                  <tr className={dataTable.bodyRow}>
+                  <tr className={dataTable.bodyRowFluid}>
                     <td className={dataTable.emptyCell} colSpan={5}>
                       Папок аудиту ще немає.
                     </td>
