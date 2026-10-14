@@ -19,6 +19,7 @@ import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { UkDateInput } from "@/components/ui/uk-date-input";
 import { Textarea } from "@/components/ui/textarea";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { formatStoredDateValue } from "@/lib/admin/recommendation-supplements";
@@ -209,6 +210,7 @@ export default async function AdminEditRecommendationPage({
               {...supplementProps}
               fieldKey="vkElement"
               label="Елемент ВК"
+              required
               htmlFor="vk_element"
               currentValue={recommendation.vkElement}
             >
@@ -225,6 +227,7 @@ export default async function AdminEditRecommendationPage({
             <AdminSupplementableField
               {...supplementProps}
               fieldKey="observationSignificance"
+              required
               label="Значущість спостереження"
               htmlFor="observation_significance"
               currentValue={recommendation.observationSignificance}
@@ -247,6 +250,7 @@ export default async function AdminEditRecommendationPage({
             <AdminSupplementableField
               {...supplementProps}
               fieldKey="deficiency"
+              required
               label="Недоліки, проблеми та порушення (точки зростання)"
               htmlFor="deficiency"
               currentValue={recommendation.deficiency}
@@ -264,6 +268,7 @@ export default async function AdminEditRecommendationPage({
             <AdminSupplementableField
               {...supplementProps}
               fieldKey="recommendationText"
+              required
               label="Надані аудиторські рекомендації"
               htmlFor="recommendation_text"
               currentValue={recommendation.recommendationText}
@@ -281,6 +286,7 @@ export default async function AdminEditRecommendationPage({
             <AdminSupplementableField
               {...supplementProps}
               fieldKey="executionIndicator"
+              required
               label="Індикатор виконання рекомендацій (захід / документ)"
               htmlFor="execution_indicator"
               currentValue={recommendation.executionIndicator}
@@ -298,6 +304,7 @@ export default async function AdminEditRecommendationPage({
             <AdminSupplementableField
               {...supplementProps}
               fieldKey="expectedResult"
+              required
               label="Очікуваний результат від впровадження рекомендацій"
               htmlFor="expected_result"
               currentValue={recommendation.expectedResult}
@@ -316,6 +323,7 @@ export default async function AdminEditRecommendationPage({
               {...supplementProps}
               fieldKey="sspUnit"
               label="Відповідальний підрозділ / ССП"
+              optional
               htmlFor="ssp_unit"
               currentValue={recommendation.sspUnit}
             >
@@ -337,15 +345,14 @@ export default async function AdminEditRecommendationPage({
                 {...supplementProps}
                 fieldKey="deadline"
                 label="Термін виконання"
+                required
                 htmlFor="deadline"
                 currentValue={formatStoredDateValue(recommendation.deadline)}
               >
-                <Input
+                <UkDateInput
                   id="deadline"
                   name="deadline"
-                  type="date"
                   required
-                  className="h-11 text-base"
                   defaultValue={formatStoredDateValue(recommendation.deadline)}
                 />
               </AdminSupplementableField>
@@ -354,21 +361,20 @@ export default async function AdminEditRecommendationPage({
                 {...supplementProps}
                 fieldKey="informingDeadline"
                 label="Строк інформування"
+                required
                 htmlFor="informing_deadline"
                 currentValue={formatStoredDateValue(recommendation.informingDeadline) || "—"}
               >
-                <Input
+                <UkDateInput
                   id="informing_deadline"
                   name="informing_deadline"
-                  type="date"
                   required
-                  className="h-11 text-base"
                   defaultValue={formatStoredDateValue(recommendation.informingDeadline)}
                 />
               </AdminSupplementableField>
             </div>
 
-            <RecommendationFieldBlock label="Стан рекомендації" htmlFor="status">
+            <RecommendationFieldBlock label="Стан рекомендації" htmlFor="status" required>
               <select
                 id="status"
                 name="status"
@@ -384,7 +390,7 @@ export default async function AdminEditRecommendationPage({
               </select>
             </RecommendationFieldBlock>
 
-            <RecommendationFieldBlock label="Відповідальний ССП (необов’язково)" htmlFor="assignee_user_id">
+            <RecommendationFieldBlock label="Відповідальний ССП" htmlFor="assignee_user_id" optional>
               <select
                 id="assignee_user_id"
                 name="assignee_user_id"
@@ -404,6 +410,7 @@ export default async function AdminEditRecommendationPage({
               {...supplementProps}
               fieldKey="progressReport"
               label="Стан впровадження рекомендацій"
+              optional
               htmlFor="progress_report"
               currentValue={recommendation.progressReport ?? ""}
             >
@@ -432,14 +439,13 @@ export default async function AdminEditRecommendationPage({
               {...supplementProps}
               fieldKey="actualImplementationDate"
               label="Фактична дата впровадження"
+              optional
               htmlFor="actual_implementation_date"
               currentValue={formatStoredDateValue(recommendation.actualImplementationDate) || "—"}
             >
-              <Input
+              <UkDateInput
                 id="actual_implementation_date"
                 name="actual_implementation_date"
-                type="date"
-                className="h-11 text-base"
                 defaultValue={formatStoredDateValue(recommendation.actualImplementationDate)}
               />
             </AdminSupplementableField>
@@ -447,7 +453,8 @@ export default async function AdminEditRecommendationPage({
             <AdminSupplementableField
               {...supplementProps}
               fieldKey="expectedAchievement"
-              label="Досягнення очікуваного"
+              label="Досягнення очікуваного результату"
+              optional
               htmlFor="expected_achievement"
               currentValue={recommendation.expectedAchievement ?? ""}
             >
@@ -463,6 +470,7 @@ export default async function AdminEditRecommendationPage({
               {...supplementProps}
               fieldKey="supportingDocuments"
               label="Підтверджуючі документи"
+              optional
               htmlFor="supporting_documents"
               currentValue={recommendation.supportingDocuments ?? ""}
             >
@@ -477,6 +485,7 @@ export default async function AdminEditRecommendationPage({
             <AdminSupplementableField
               {...supplementProps}
               fieldKey="measuresDescription"
+              optional
               label="Заходи з впровадження рекомендацій"
               htmlFor="measures_description"
               currentValue={recommendation.measuresDescription ?? ""}
@@ -492,6 +501,7 @@ export default async function AdminEditRecommendationPage({
             <AdminSupplementableField
               {...supplementProps}
               fieldKey="sspNotes"
+              optional
               label="Примітки"
               htmlFor="ssp_notes"
               currentValue={recommendation.sspNotes ?? ""}

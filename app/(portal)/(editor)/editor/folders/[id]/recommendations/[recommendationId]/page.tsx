@@ -360,7 +360,7 @@ export default async function EditorRecommendationDetailPage({
             />
           </RecommendationFieldBlock>
 
-          <RecommendationFieldBlock label="Досягнення очікуваного" htmlFor="expected_achievement">
+          <RecommendationFieldBlock label="Досягнення очікуваного результату" htmlFor="expected_achievement">
             <EditorAppendFieldDisplay
               id="expected_achievement"
               fieldKey="expectedAchievement"

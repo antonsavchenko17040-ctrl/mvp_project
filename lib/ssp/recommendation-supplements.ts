@@ -15,7 +15,7 @@ export const SSP_SUPPLEMENT_FIELD_LABELS: Record<SspSupplementFieldKey, string> 
   progressReport: "Стан впровадження рекомендацій",
   measuresDescription: "Заходи з впровадження рекомендацій",
   actualImplementationDate: "Фактична дата впровадження",
-  expectedAchievement: "Досягнення очікуваного",
+  expectedAchievement: "Досягнення очікуваного результату",
   supportingDocuments: "Підтверджуючі документи",
   sspNotes: "Примітки",
 };

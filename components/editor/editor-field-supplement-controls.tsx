@@ -6,6 +6,7 @@ import { RecommendationFieldBlock } from "@/components/editor/recommendation-fie
 import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { UkDateInput } from "@/components/ui/uk-date-input";
 import { Textarea } from "@/components/ui/textarea";
 import { supplementRecommendationField } from "@/app/(portal)/(editor)/editor/actions";
 import {
@@ -70,7 +71,7 @@ export function EditorFieldSupplementControls({
       </p>
 
       {fieldKey === "observationSignificance" ? (
-        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>
+        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId} required>
           <select id={contentId} name="content" className={inputClass} required>
             <option value="">— Оберіть —</option>
             <option value="низька">низька</option>
@@ -80,7 +81,7 @@ export function EditorFieldSupplementControls({
           </select>
         </RecommendationFieldBlock>
       ) : fieldKey === "sspUnit" ? (
-        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>
+        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId} required>
           <SspUnitMultiSelect
             id={contentId}
             name="content"
@@ -95,18 +96,18 @@ export function EditorFieldSupplementControls({
           ) : null}
         </RecommendationFieldBlock>
       ) : fieldKey === "deadline" || fieldKey === "informingDeadline" ? (
-        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>
-          <Input id={contentId} name="content" type="date" required className={inputClass} />
+        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId} required>
+          <UkDateInput id={contentId} name="content" required className="max-w-md" />
           {currentValueHint ? (
             <p className="mt-1 text-xs text-muted-foreground">Поточне: {currentValueHint}</p>
           ) : null}
         </RecommendationFieldBlock>
       ) : isAppend ? (
-        <RecommendationFieldBlock label="Доповнення" htmlFor={contentId}>
+        <RecommendationFieldBlock label="Доповнення" htmlFor={contentId} required>
           <Textarea id={contentId} name="content" required className={textareaClass} />
         </RecommendationFieldBlock>
       ) : (
-        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId}>
+        <RecommendationFieldBlock label="Нове значення" htmlFor={contentId} required>
           <Input id={contentId} name="content" required className={inputClass} />
           {currentValueHint ? (
             <p className="mt-1 text-xs text-muted-foreground">Поточне: {currentValueHint}</p>
@@ -115,17 +116,16 @@ export function EditorFieldSupplementControls({
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <RecommendationFieldBlock label="Причина внесення змін" htmlFor={reasonId}>
+        <RecommendationFieldBlock label="Причина внесення змін" htmlFor={reasonId} required>
           <Textarea id={reasonId} name="change_reason" required className={textareaClass} />
         </RecommendationFieldBlock>
-        <RecommendationFieldBlock label="Дата внесення змін" htmlFor={dateId}>
-          <Input
+        <RecommendationFieldBlock label="Дата внесення змін" htmlFor={dateId} required>
+          <UkDateInput
             id={dateId}
             name="change_date"
-            type="date"
             required
             defaultValue={defaultChangeDate}
-            className={inputClass}
+            className="max-w-md"
           />
         </RecommendationFieldBlock>
       </div>

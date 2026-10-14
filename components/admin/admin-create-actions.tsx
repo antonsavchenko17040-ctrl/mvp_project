@@ -70,7 +70,7 @@ export function AdminCreateActions({ roleOptions, departments }: AdminCreateActi
             }}
           >
             <div className="space-y-1.5">
-              <Label htmlFor="full_name">Повне ПІБ</Label>
+              <Label htmlFor="full_name">Повне ПІБ <span className="text-destructive" title="Обов’язкове поле">*</span></Label>
               <Input
                 id="full_name"
                 name="full_name"
@@ -80,7 +80,7 @@ export function AdminCreateActions({ roleOptions, departments }: AdminCreateActi
               />
             </div>
             <div className="space-y-2">
-              <Label>Ролі (оберіть одну або кілька)</Label>
+              <Label>Ролі (оберіть одну або кілька) <span className="text-destructive" title="Обов’язкове поле">*</span></Label>
               <div className="flex flex-wrap gap-x-4 gap-y-2 rounded-md border bg-background px-3 py-2">
                 {roleOptions.map((roleOption) => (
                   <label key={roleOption.value} className="flex cursor-pointer items-center gap-2 text-sm">
@@ -96,7 +96,7 @@ export function AdminCreateActions({ roleOptions, departments }: AdminCreateActi
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="create_user_department">ССП</Label>
+              <Label htmlFor="create_user_department">ССП <span className="text-destructive" title="Обов’язкове поле">*</span></Label>
               <select
                 id="create_user_department"
                 name="department_id"
@@ -115,7 +115,7 @@ export function AdminCreateActions({ roleOptions, departments }: AdminCreateActi
               </select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email">Логін</Label>
+              <Label htmlFor="email">Логін <span className="text-destructive" title="Обов’язкове поле">*</span></Label>
               <Input
                 id="email"
                 name="email"
@@ -126,7 +126,7 @@ export function AdminCreateActions({ roleOptions, departments }: AdminCreateActi
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password_hint">Пароль</Label>
+              <Label htmlFor="password_hint">Пароль <span className="ml-1 text-sm font-normal text-muted-foreground">(необов’язково / авто)</span></Label>
               <Input id="password_hint" value="Генерується автоматично" disabled className="h-10" />
             </div>
             <Button type="submit" className={cn("h-10 w-full sm:w-auto", yellowButtonClass)}>
@@ -151,7 +151,10 @@ export function AdminCreateActions({ roleOptions, departments }: AdminCreateActi
               setDepartmentOpen(false);
             }}
           >
-            <Input name="name" placeholder="Назва..." required className="h-10" />
+            <div className="space-y-1.5">
+              <Label htmlFor="department_name">Назва підрозділу <span className="text-destructive" title="Обов’язкове поле">*</span></Label>
+              <Input id="department_name" name="name" placeholder="Назва..." required className="h-10" />
+            </div>
             <Button
               type="submit"
               className="h-10 min-w-32 w-full bg-[#c9ccf3] text-white hover:bg-[#b5b9ea] sm:w-auto"

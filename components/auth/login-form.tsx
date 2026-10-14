@@ -28,7 +28,9 @@ export function LoginForm({
         </p>
       ) : null}
       <div className="space-y-2">
-        <Label htmlFor={compact ? "email-modal" : "email"}>Логін / e-mail</Label>
+        <Label htmlFor={compact ? "email-modal" : "email"}>
+          Логін / e-mail <span className="text-destructive" title="Обов’язкове поле">*</span>
+        </Label>
         <Input
           id={compact ? "email-modal" : "email"}
           name="email"
@@ -39,7 +41,9 @@ export function LoginForm({
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor={compact ? "password-modal" : "password"}>Пароль</Label>
+        <Label htmlFor={compact ? "password-modal" : "password"}>
+          Пароль <span className="text-destructive" title="Обов’язкове поле">*</span>
+        </Label>
         <Input
           id={compact ? "password-modal" : "password"}
           name="password"

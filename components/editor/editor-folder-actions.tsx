@@ -74,7 +74,7 @@ export function EditorFolderActions({ currentYear, error = null, errorRow = "" }
           </DialogHeader>
           <form action={createAuditFolder} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="editor-create-title">Назва папки</Label>
+              <Label htmlFor="editor-create-title">Назва папки <span className="text-destructive" title="Обов’язкове поле">*</span></Label>
               <Input
                 id="editor-create-title"
                 name="title"
@@ -84,7 +84,7 @@ export function EditorFolderActions({ currentYear, error = null, errorRow = "" }
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="editor-create-year">Рік</Label>
+              <Label htmlFor="editor-create-year">Рік <span className="text-destructive" title="Обов’язкове поле">*</span></Label>
               <select
                 id="editor-create-year"
                 name="year"
@@ -118,7 +118,7 @@ export function EditorFolderActions({ currentYear, error = null, errorRow = "" }
           </DialogHeader>
           <form action={importAuditFolderFromXlsx} className="space-y-4" encType="multipart/form-data">
             <div className="space-y-1.5">
-              <Label htmlFor="editor-import-file">Файл таблиці (.xlsx)</Label>
+              <Label htmlFor="editor-import-file">Файл таблиці (.xlsx) <span className="text-destructive" title="Обов’язкове поле">*</span></Label>
               <ImportFileInput
                 id="editor-import-file"
                 name="file"
@@ -127,7 +127,7 @@ export function EditorFolderActions({ currentYear, error = null, errorRow = "" }
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="editor-import-year">Рік</Label>
+              <Label htmlFor="editor-import-year">Рік <span className="text-destructive" title="Обов’язкове поле">*</span></Label>
               <select
                 id="editor-import-year"
                 name="year"

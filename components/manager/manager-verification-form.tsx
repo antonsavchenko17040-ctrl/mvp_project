@@ -35,7 +35,11 @@ export function ManagerVerificationForm({
       <form action={sendToRevision} className="flex w-full flex-col items-start gap-4">
         <input type="hidden" name="recommendation_id" value={recommendationId} />
         <input type="hidden" name="current_status" value={currentStatus} />
-        <RecommendationFieldBlock label="Коментар керівника" htmlFor={`comment-${recommendationId}`}>
+        <RecommendationFieldBlock
+          label="Коментар керівника"
+          htmlFor={`comment-${recommendationId}`}
+          optional
+        >
           <Textarea
             id={`comment-${recommendationId}`}
             name="manager_comment"

@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-const createErrorKeys = new Set(["invalid_folder"]);
+const createErrorKeys = new Set(["invalid_folder", "invalid_year"]);
 const importErrorKeys = new Set([
   "import_no_file",
   "import_invalid_format",
@@ -27,21 +27,26 @@ const importErrorKeys = new Set([
   "import_no_rows",
   "import_empty_workbook",
   "import_invalid_deadline",
-  "import_editor_only",
 ]);
 
 const yellowButtonClass =
   "rounded-3xl border border-black/10 bg-[#e8d773] px-4 text-sm font-semibold text-black hover:bg-[#dcca64] sm:text-base";
 
+const yearSelectClassName = cn(
+  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none",
+  "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm",
+);
+
 type AdminAuditFolderActionsProps = {
   error?: string | null;
 };
 
-/** Кнопки створення/імпорту папки аудиту з модальними формами (поля без змін). */
+/** Кнопки створення/імпорту папки аудиту з модальними формами. */
 export function AdminAuditFolderActions({ error = null }: AdminAuditFolderActionsProps) {
   const [createOpen, setCreateOpen] = useState(() => Boolean(error && createErrorKeys.has(error)));
   const [importOpen, setImportOpen] = useState(() => Boolean(error && importErrorKeys.has(error)));
   const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 1999 }, (_, index) => currentYear - index);
 
   return (
     <>
@@ -73,22 +78,43 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
           </DialogHeader>
           <form action={adminCreateAuditFolder} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="title">Назва</Label>
+              <Label htmlFor="title">
+                Назва
+                <span className="ml-1 font-semibold text-destructive" title="Обов’язкове поле">
+                  *
+                </span>
+              </Label>
               <Input id="title" name="title" required className="h-10" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="year">Рік</Label>
-              <Input
+              <Label htmlFor="year">
+                Рік
+                <span className="ml-1 font-semibold text-destructive" title="Обов’язкове поле">
+                  *
+                </span>
+              </Label>
+              <select
                 id="year"
                 name="year"
-                type="number"
-                defaultValue={currentYear}
                 required
-                className="h-10"
-              />
+                defaultValue={currentYear}
+                className={yearSelectClassName}
+              >
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
             {error === "invalid_folder" ? (
-              <p className="text-sm text-red-600">Вкажіть коректну назву та рік папки.</p>
+              <p className="text-sm text-red-600">Вкажіть коректну назву папки.</p>
+            ) : null}
+            {error === "invalid_year" ? (
+              <p className="text-sm text-red-600">
+                Рік папки аудиту не може бути більшим за поточний ({currentYear}). Майбутній рік
+                зберегти не можна.
+              </p>
             ) : null}
             <Button type="submit" className={cn("h-10 w-full sm:w-auto", yellowButtonClass)}>
               Створити папку
@@ -111,7 +137,12 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
             encType="multipart/form-data"
           >
             <div className="space-y-1.5">
-              <Label htmlFor="admin-import-file">Файл таблиці (.xlsx)</Label>
+              <Label htmlFor="admin-import-file">
+                Файл таблиці (.xlsx)
+                <span className="ml-1 font-semibold text-destructive" title="Обов’язкове поле">
+                  *
+                </span>
+              </Label>
               <ImportFileInput
                 id="admin-import-file"
                 name="file"
@@ -120,7 +151,12 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="admin-import-year">Рік</Label>
+              <Label htmlFor="admin-import-year">
+                Рік
+                <span className="ml-1 font-semibold text-destructive" title="Обов’язкове поле">
+                  *
+                </span>
+              </Label>
               <Input
                 id="admin-import-year"
                 name="year"
@@ -130,6 +166,10 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
                 className="h-10"
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Можна завантажувати повні та неповні звіти. Неповний звіт не вважається завершеним
+              автоматично.
+            </p>
             {error === "import_no_file" ? (
               <p className="text-sm text-red-600">Оберіть файл XLSX для імпорту.</p>
             ) : null}
@@ -150,9 +190,6 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
             ) : null}
             {error === "import_invalid_deadline" ? (
               <p className="text-sm text-red-600">Некоректний термін виконання у файлі.</p>
-            ) : null}
-            {error === "import_editor_only" ? (
-              <p className="text-sm text-red-600">Неповністю заповнені звіти завантажує редактор.</p>
             ) : null}
             <Button type="submit" className={cn("h-10 w-full sm:w-auto", yellowButtonClass)}>
               Завантажити звіт
