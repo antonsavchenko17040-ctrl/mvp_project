@@ -33,7 +33,7 @@ const yellowButtonClass =
   "rounded-3xl border border-black/10 bg-[#e8d773] px-4 text-sm font-semibold text-black hover:bg-[#dcca64] sm:text-base";
 
 const yearSelectClassName = cn(
-  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none",
+  "flex h-9 w-full min-w-0 max-w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-xs outline-none",
   "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-sm",
 );
 
@@ -125,7 +125,7 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
 
       <Dialog open={importOpen} onOpenChange={setImportOpen}>
         <DialogContent
-          className="gap-5 p-5 sm:max-w-md sm:p-6"
+          className="min-w-0 gap-5 overflow-x-hidden p-5 sm:max-w-md sm:p-6"
           overlayClassName="bg-black/45 backdrop-blur-[1px]"
         >
           <DialogHeader>
@@ -133,10 +133,10 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
           </DialogHeader>
           <form
             action={adminImportAuditFolderFromXlsx}
-            className="space-y-4"
+            className="min-w-0 max-w-full space-y-4"
             encType="multipart/form-data"
           >
-            <div className="space-y-1.5">
+            <div className="min-w-0 max-w-full space-y-1.5">
               <Label htmlFor="admin-import-file">
                 Файл таблиці (.xlsx)
                 <span className="ml-1 font-semibold text-destructive" title="Обов’язкове поле">
@@ -150,7 +150,7 @@ export function AdminAuditFolderActions({ error = null }: AdminAuditFolderAction
                 required
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="min-w-0 max-w-full space-y-1.5">
               <Label htmlFor="admin-import-year">
                 Рік
                 <span className="ml-1 font-semibold text-destructive" title="Обов’язкове поле">
