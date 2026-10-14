@@ -89,8 +89,12 @@ export function DashboardFolderRecommendationsTable({
               className={dataTableCols.num}
               align="center"
             />
-            <th className={cn(dataTable.th, dataTableCols.text)}>Рекомендація</th>
-            <th className={cn(dataTable.th, dataTableCols.text)}>Заходи</th>
+            <th className={cn(dataTable.th, dataTableCols.text)}>
+              <span className={dataTable.thLabel}>Рекомендація</span>
+            </th>
+            <th className={cn(dataTable.th, dataTableCols.text)}>
+              <span className={dataTable.thLabel}>Заходи</span>
+            </th>
             <TableSortableTh
               label="Підрозділ"
               column="sspUnit"

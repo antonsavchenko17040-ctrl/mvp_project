@@ -93,37 +93,57 @@ export function RoleWorkspaceColumnFilterTh<TKey extends string>({
   const baseTh = align === "center" ? dataTable.thCenter : dataTable.th;
   const ariaSort = active ? (sort.dir === "asc" ? "ascending" : "descending") : "none";
   const sortTitle = willReset ? "Скинути сортування" : `Сортувати за: ${label}`;
+  const selectedLabel =
+    options.find((item) => item.key === selectedValue)?.label ?? label;
 
   return (
     <th className={cn(baseTh, className)} aria-sort={ariaSort}>
       <div
         className={cn(
-          "inline-flex max-w-full items-center gap-1",
-          align === "center" && "w-full justify-center",
+          align === "center" ? dataTable.thInnerCenter : dataTable.thInner,
+          "w-full",
         )}
       >
-        <select
-          value={selectedValue}
-          onChange={(e) => onFilterChange(e.target.value)}
-          aria-label={label}
-          className={cn(
-            "min-w-0 max-w-full flex-1 cursor-pointer appearance-auto border-0 bg-transparent p-0",
-            "text-left text-xs font-semibold leading-tight text-inherit outline-none",
-            "focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-ring/50",
-            active ? "text-foreground" : "text-foreground/80",
-            isPending && "opacity-80",
-          )}
-        >
-          {options.map((item) => (
-            <option key={item.key} value={item.key}>
-              {item.label}
-            </option>
-          ))}
-        </select>
+        <label className="relative min-w-0 flex-1 cursor-pointer">
+          <span
+            className={cn(
+              dataTable.thLabel,
+              "pointer-events-none block pr-3.5",
+              align === "center" && "text-center",
+              active ? "text-foreground" : "text-foreground/80",
+              isPending && "opacity-80",
+            )}
+            aria-hidden
+          >
+            {selectedLabel}
+          </span>
+          <select
+            value={selectedValue}
+            onChange={(e) => onFilterChange(e.target.value)}
+            aria-label={label}
+            title={selectedLabel}
+            className={cn(
+              "absolute inset-0 z-10 h-full w-full cursor-pointer appearance-none border-0 bg-transparent p-0",
+              "opacity-0 outline-none",
+            )}
+          >
+            {options.map((item) => (
+              <option key={item.key} value={item.key}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+          <span
+            className="pointer-events-none absolute top-0.5 right-0 text-[10px] leading-none text-foreground/70"
+            aria-hidden
+          >
+            ▾
+          </span>
+        </label>
         <Link
           href={sortHref}
           className={cn(
-            "inline-flex shrink-0 items-center rounded-sm text-inherit transition-colors hover:text-foreground",
+            "inline-flex shrink-0 items-start rounded-sm text-inherit transition-colors hover:text-foreground",
             active ? "text-foreground" : "text-foreground/80",
           )}
           title={sortTitle}
@@ -137,7 +157,7 @@ export function RoleWorkspaceColumnFilterTh<TKey extends string>({
 }
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
-  const className = "size-3.5 shrink-0 opacity-70";
+  const className = "mt-0.5 size-3.5 shrink-0 opacity-70";
   if (!active) return <ArrowUpDown className={className} aria-hidden />;
   if (dir === "asc") return <ArrowUp className={className} aria-hidden />;
   return <ArrowDown className={className} aria-hidden />;

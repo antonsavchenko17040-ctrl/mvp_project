@@ -92,11 +92,21 @@ export default async function AdminPage({
             <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
               <thead className={dataTable.thead}>
                 <tr className={dataTable.headRow}>
-                  <th className={dataTable.th}>Назва</th>
-                  <th className={cn(dataTable.th, "w-20 min-w-20 whitespace-nowrap")}>Рік</th>
-                  <th className={dataTable.th}>Автор</th>
-                  <th className={dataTable.th}>Рекомендацій</th>
-                  <th className={dataTable.th}>Дії</th>
+                  <th className={dataTable.th}>
+                    <span className={dataTable.thLabel}>Назва</span>
+                  </th>
+                  <th className={cn(dataTable.th, "w-20 min-w-20")}>
+                    <span className={dataTable.thLabel}>Рік</span>
+                  </th>
+                  <th className={dataTable.th}>
+                    <span className={dataTable.thLabel}>Автор</span>
+                  </th>
+                  <th className={dataTable.th}>
+                    <span className={dataTable.thLabel}>Рекомендацій</span>
+                  </th>
+                  <th className={dataTable.th}>
+                    <span className={dataTable.thLabel}>Дії</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
