@@ -68,8 +68,14 @@ export function managerStatusFilterWhere(
 export function analystStatusFilterWhere(
   filter: RoleWorkspaceStatusFilterKey,
 ): { status: RecommendationStatus | { in: RecommendationStatus[] } } {
-  if (filter === "all") {
-    return { status: { in: ["on_review", "revision"] } };
+  // Аналітик бачить лише чергу власної верифікації. Після повернення на
+  // «На доопрацюванні» (revision) рекомендація зникає з його робочого простору
+  // і з’являється знову, коли знову перейде в on_review.
+  if (filter === "all" || filter === "on_review") {
+    return { status: "on_review" };
+  }
+  if (filter === "revision") {
+    return { status: { in: [] } };
   }
   return { status: filter as RecommendationStatus };
 }

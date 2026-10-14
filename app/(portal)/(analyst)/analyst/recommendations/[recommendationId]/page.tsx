@@ -84,7 +84,7 @@ export default async function AnalystRecommendationDetailPage({
   const recommendation = await db.recommendation.findFirst({
     where: {
       id: recommendationId,
-      status: { in: ["on_review", "revision"] },
+      status: "on_review",
     },
     include: {
       auditFolder: { select: { title: true, year: true } },
@@ -107,7 +107,6 @@ export default async function AnalystRecommendationDetailPage({
   const supplements = recommendation.fieldSupplements;
   const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}`;
   const analystText = recommendation.analystComment?.trim() ?? "";
-  const canVerify = recommendation.status === "on_review";
 
   return (
     <section className="space-y-5">
@@ -290,26 +289,13 @@ export default async function AnalystRecommendationDetailPage({
             currentValue={recommendation.sspNotes ?? ""}
           />
 
-          {!canVerify && analystText ? (
-            <RecommendationFieldBlock label="Коментар аналітика" htmlFor={`comment-${recommendation.id}`}>
-              <ReadBox id={`comment-${recommendation.id}`} text={analystText} />
-            </RecommendationFieldBlock>
-          ) : null}
-
-          {canVerify ? (
-            <AnalystVerificationForm
-              recommendationId={recommendation.id}
-              currentStatus={recommendation.status}
-              initialComment={analystText}
-              sendToRevision={sendToRevision}
-              verifyRecommendation={verifyRecommendation}
-            />
-          ) : (
-            <div className="rounded-md border border-border bg-muted/25 p-4 text-base text-muted-foreground">
-              Рекомендація на доопрацюванні у відповідального ССП. Після повторної відправки вона спочатку потрапить
-              до керівника, а потім знову з’явиться тут для верифікації аналітиком.
-            </div>
-          )}
+          <AnalystVerificationForm
+            recommendationId={recommendation.id}
+            currentStatus={recommendation.status}
+            initialComment={analystText}
+            sendToRevision={sendToRevision}
+            verifyRecommendation={verifyRecommendation}
+          />
         </CardContent>
       </Card>
     </section>
