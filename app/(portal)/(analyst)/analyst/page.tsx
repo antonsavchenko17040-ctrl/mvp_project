@@ -281,29 +281,31 @@ export default async function AnalystPage({
                       key={item.id}
                       href={`/analyst/recommendations/${item.id}`}
                       highlighted={highlightId === item.id}
+                      density="compact"
                     >
-                      <EditorRecommendationTableCell className={dataTableCols.num} align="center">
+                      <EditorRecommendationTableCell density="compact" className={dataTableCols.num} align="center">
                         {item.sequenceNumber}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className={dataTableCols.folder}>
+                      <EditorRecommendationTableCell density="compact" className={dataTableCols.folder}>
                         {item.auditFolder.title}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className={dataTableCols.text}>
+                      <EditorRecommendationTableCell density="compact" className={dataTableCols.text}>
                         {item.deficiency}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className={dataTableCols.text}>
+                      <EditorRecommendationTableCell density="compact" className={dataTableCols.text}>
                         {item.recommendationText}
                       </EditorRecommendationTableCell>
                       <EditorRecommendationTableCell
+                        density="compact"
                         className={cn(dataTableCols.deadline, deadlineUrgencyCellClass(item.urgency))}
                         align="center"
                       >
                         {formatRecommendationDate(item.deadline)}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className={dataTableCols.significance} align="center">
+                      <EditorRecommendationTableCell density="compact" className={dataTableCols.significance} align="center">
                         {item.observationSignificance}
                       </EditorRecommendationTableCell>
-                      <EditorRecommendationTableCell className={dataTableCols.status} align="center">
+                      <EditorRecommendationTableCell density="compact" className={dataTableCols.status} align="center">
                         <div className="flex justify-center">
                           <RecommendationStatusBadge
                             status={item.status}

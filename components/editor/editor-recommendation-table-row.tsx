@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
 
-import { dataTable } from "@/lib/ui/data-table";
+import { dataTable, dataTableBodyRowClass, type DataTableDensity } from "@/lib/ui/data-table";
 import { cn } from "@/lib/utils";
 
 export function EditorRecommendationTableRow({
@@ -11,12 +11,15 @@ export function EditorRecommendationTableRow({
   children,
   className,
   highlighted = false,
+  density = "default",
 }: {
   href: string;
   children: ReactNode;
   className?: string;
   /** Підсвітка рядка зі сповіщення (query `highlight`). */
   highlighted?: boolean;
+  /** `compact` — 3 рядки (Відповідальний / Керівник / Аналітик). */
+  density?: DataTableDensity;
 }) {
   const router = useRouter();
   const rowRef = useRef<HTMLTableRowElement>(null);
@@ -32,9 +35,10 @@ export function EditorRecommendationTableRow({
     <tr
       ref={rowRef}
       data-highlighted={highlighted ? "true" : undefined}
+      data-density={density}
       className={cn(
         "group",
-        dataTable.bodyRow,
+        dataTableBodyRowClass(density),
         dataTable.rowHover,
         "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         className,

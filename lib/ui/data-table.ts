@@ -1,15 +1,42 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Фіксована висота рядка data-таблиць порталу.
- * Орієнтир: до 6 рядків `text-sm` / `leading-snug` + вертикальний `p-3`
- * (як рядок з кількома повними назвами ССП).
+ * Фіксована висота рядка data-таблиць порталу (Редактор / Адмін / публічні).
+ * Орієнтир: до 6 рядків `text-sm` / `leading-snug` + вертикальний `p-3`.
  */
 export const DATA_TABLE_ROW_HEIGHT = "h-[8.75rem]";
 export const DATA_TABLE_ROW_MAX_HEIGHT = "max-h-[8.75rem]";
 /** Обмеження тексту всередині комірки: не більше 6 рядків, без розтягування рядка. */
 export const DATA_TABLE_CELL_TEXT =
   "m-0 break-words text-sm leading-snug text-foreground line-clamp-6";
+
+/**
+ * Компактна фіксована висота для Відповідальний / Керівник / Аналітик.
+ * Орієнтир: до 3 рядків `text-sm` / `leading-snug` + вертикальний `p-3`.
+ */
+export const ROLE_WORKSPACE_ROW_HEIGHT = "h-[5.125rem]";
+export const ROLE_WORKSPACE_ROW_MAX_HEIGHT = "max-h-[5.125rem]";
+export const ROLE_WORKSPACE_CELL_TEXT =
+  "m-0 break-words text-sm leading-snug text-foreground line-clamp-3";
+
+export type DataTableDensity = "default" | "compact";
+
+export function dataTableBodyRowClass(density: DataTableDensity = "default") {
+  return density === "compact"
+    ? `border-t border-black ${ROLE_WORKSPACE_ROW_HEIGHT}`
+    : `border-t border-black ${DATA_TABLE_ROW_HEIGHT}`;
+}
+
+export function dataTableCellClass(density: DataTableDensity = "default") {
+  if (density === "compact") {
+    return `box-border overflow-x-hidden overflow-y-auto p-3 align-middle [vertical-align:middle] ${ROLE_WORKSPACE_ROW_HEIGHT} ${ROLE_WORKSPACE_ROW_MAX_HEIGHT}`;
+  }
+  return `box-border overflow-x-hidden overflow-y-auto p-3 align-middle [vertical-align:middle] ${DATA_TABLE_ROW_HEIGHT} ${DATA_TABLE_ROW_MAX_HEIGHT}`;
+}
+
+export function dataTableCellTextClass(density: DataTableDensity = "default") {
+  return density === "compact" ? ROLE_WORKSPACE_CELL_TEXT : DATA_TABLE_CELL_TEXT;
+}
 
 /** Єдиний дизайн data-таблиць (еталон — робоча область редактора). */
 export const dataTable = {
@@ -33,6 +60,13 @@ export const dataTable = {
   /** Рядок-заглушка без фіксованої висоти. */
   emptyCell:
     "h-auto max-h-none p-6 text-center align-middle [vertical-align:middle] text-base text-muted-foreground",
+} as const;
+
+/** Стилі компактного рядка для Відповідальний / Керівник / Аналітик. */
+export const roleWorkspaceDataTable = {
+  bodyRow: `border-t border-black ${ROLE_WORKSPACE_ROW_HEIGHT}`,
+  cell: `box-border overflow-x-hidden overflow-y-auto p-3 align-middle [vertical-align:middle] ${ROLE_WORKSPACE_ROW_HEIGHT} ${ROLE_WORKSPACE_ROW_MAX_HEIGHT}`,
+  cellText: ROLE_WORKSPACE_CELL_TEXT,
 } as const;
 
 /**
