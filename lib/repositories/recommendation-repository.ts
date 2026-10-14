@@ -12,7 +12,7 @@ export async function getRecommendationsForRole(userId: string, role: string) {
     where.assigneeUserId = userId;
   }
   if (role === "analyst") {
-    where.status = { in: ["on_review", "revision"] };
+    where.status = { in: ["on_review"] };
   }
 
   return (await db.recommendation.findMany({
@@ -24,6 +24,7 @@ export async function getRecommendationsForRole(userId: string, role: string) {
 export type ReportScope = "mine" | "all" | "review";
 
 const reviewStatuses: RecommendationStatus[] = ["on_review", "revision"];
+const analystReviewStatuses: RecommendationStatus[] = ["on_review"];
 
 export async function getRecommendationsForScope(params: {
   userId: string;
@@ -41,12 +42,12 @@ export async function getRecommendationsForScope(params: {
     if (role === "ssp") {
       where.assigneeUserId = userId;
     } else if (role === "analyst") {
-      where.status = { in: reviewStatuses };
+      where.status = { in: analystReviewStatuses };
     }
   }
 
   if (scope === "review") {
-    where.status = { in: reviewStatuses };
+    where.status = { in: role === "analyst" ? analystReviewStatuses : reviewStatuses };
   }
 
   return (await db.recommendation.findMany({
