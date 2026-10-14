@@ -150,7 +150,10 @@ export function EditorFolderActions({ currentYear, error = null, errorRow = "" }
               <p className="text-sm text-red-600">Підтримується лише формат .xlsx.</p>
             ) : null}
             {error === "import_invalid_year" ? (
-              <p className="text-sm text-red-600">Вкажіть коректний рік звіту.</p>
+              <p className="text-sm text-red-600">
+                Рік імпортованої папки не може бути більшим за поточний ({currentYear}). Майбутній рік
+                зберегти не можна.
+              </p>
             ) : null}
             {error === "import_parse_failed" ? (
               <p className="text-sm text-red-600">Не вдалося прочитати файл. Перевірте формат таблиці.</p>

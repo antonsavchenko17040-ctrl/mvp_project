@@ -772,7 +772,8 @@ export async function importAuditFolderFromXlsx(formData: FormData) {
     redirect("/editor?error=import_no_file");
   }
 
-  if (!yearRaw || !Number.isFinite(year) || year < 2000 || year > 2100) {
+  const currentYear = new Date().getFullYear();
+  if (!yearRaw || !Number.isFinite(year) || year < 2000 || year > currentYear) {
     redirect("/editor?error=import_invalid_year");
   }
 

@@ -540,7 +540,8 @@ export async function adminImportAuditFolderFromXlsx(formData: FormData) {
     redirect("/admin?error=import_no_file");
   }
 
-  if (!Number.isFinite(year) || year < 2000 || year > 2100) {
+  const currentYear = new Date().getFullYear();
+  if (!Number.isFinite(year) || year < 2000 || year > currentYear) {
     redirect("/admin?error=import_invalid_year");
   }
 
