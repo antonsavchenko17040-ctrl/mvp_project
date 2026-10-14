@@ -23,26 +23,26 @@ export function ImportFileInput({
   const [fileName, setFileName] = useState("");
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative w-full min-w-0 max-w-full overflow-hidden", className)}>
       <input
         id={id}
         name={name}
         type="file"
         accept={accept}
         required={required}
-        className="absolute inset-0 z-10 cursor-pointer opacity-0"
+        className="absolute inset-0 z-10 w-full max-w-full cursor-pointer opacity-0"
         onChange={(event) => {
           setFileName(event.target.files?.[0]?.name ?? "");
         }}
       />
       <div
         className={cn(
-          "flex h-8 w-full items-center rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm",
+          "flex h-8 w-full min-w-0 max-w-full items-center rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm",
           fileName ? "text-foreground" : "text-muted-foreground",
         )}
         aria-hidden
       >
-        <span className="truncate">{fileName || "Вибрати файл"}</span>
+        <span className="block min-w-0 truncate">{fileName || "Вибрати файл"}</span>
       </div>
     </div>
   );
