@@ -38,14 +38,26 @@ export function dataTableCellTextClass(density: DataTableDensity = "default") {
   return density === "compact" ? ROLE_WORKSPACE_CELL_TEXT : DATA_TABLE_CELL_TEXT;
 }
 
+/**
+ * Єдиний стиль назви колонки в шапці:
+ * однаковий шрифт/розмір/товщина, повний текст, перенос до 3 рядків.
+ */
+export const DATA_TABLE_TH_LABEL =
+  "min-w-0 max-w-full whitespace-normal break-words text-xs font-semibold leading-snug text-foreground line-clamp-3";
+
 /** Єдиний дизайн data-таблиць (еталон — робоча область редактора). */
 export const dataTable = {
   wrap: "overflow-x-auto rounded-3xl border border-black",
   table: "w-full border-collapse text-sm",
-  thead: "bg-[#f5f7fa] text-xs font-semibold leading-tight text-foreground",
+  thead: "bg-[#f5f7fa] text-foreground",
   headRow: "border-b border-black",
-  th: "p-3 text-left align-middle",
-  thCenter: "p-3 text-center align-middle",
+  /** Шапка: висота під текст, без обрізання назв, єдиний типографічний стиль. */
+  th: "h-auto max-h-none p-3 text-left align-middle text-xs font-semibold leading-snug text-foreground whitespace-normal break-words",
+  thCenter:
+    "h-auto max-h-none p-3 text-center align-middle text-xs font-semibold leading-snug text-foreground whitespace-normal break-words",
+  thLabel: DATA_TABLE_TH_LABEL,
+  thInner: "inline-flex max-w-full items-start gap-1",
+  thInnerCenter: "inline-flex max-w-full items-start justify-center gap-1",
   /** Фіксована висота data-рядка (не змінюється від обсягу тексту). */
   bodyRow: `border-t border-black ${DATA_TABLE_ROW_HEIGHT}`,
   /**

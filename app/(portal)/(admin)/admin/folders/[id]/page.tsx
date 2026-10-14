@@ -112,14 +112,26 @@ export default async function AdminAuditFolderCriticalOpsPage({
               <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
                 <thead className={dataTable.thead}>
                   <tr className={dataTable.headRow}>
-                    <th className={cn(dataTable.th, dataTableCols.folder)}>Елемент ВК</th>
-                    <th className={cn(dataTable.th, dataTableCols.text)}>Рекомендація</th>
-                    <th className={cn(dataTable.thCenter, dataTableCols.significance, "whitespace-nowrap")}>
-                      Значущість спостереження
+                    <th className={cn(dataTable.th, dataTableCols.folder)}>
+                      <span className={dataTable.thLabel}>Елемент ВК</span>
                     </th>
-                    <th className={cn(dataTable.thCenter, dataTableCols.status, "whitespace-nowrap")}>Стан</th>
-                    <th className={cn(dataTable.th, dataTableCols.text, "whitespace-nowrap")}>Стан виконання</th>
-                    <th className={cn(dataTable.th, dataTableCols.actions)}>Дії</th>
+                    <th className={cn(dataTable.th, dataTableCols.text)}>
+                      <span className={dataTable.thLabel}>Рекомендація</span>
+                    </th>
+                    <th className={cn(dataTable.thCenter, dataTableCols.significance)}>
+                      <span className={cn(dataTable.thLabel, "text-center")}>
+                        Значущість спостереження
+                      </span>
+                    </th>
+                    <th className={cn(dataTable.thCenter, dataTableCols.status)}>
+                      <span className={cn(dataTable.thLabel, "text-center")}>Стан</span>
+                    </th>
+                    <th className={cn(dataTable.th, dataTableCols.text)}>
+                      <span className={dataTable.thLabel}>Стан виконання</span>
+                    </th>
+                    <th className={cn(dataTable.th, dataTableCols.actions)}>
+                      <span className={dataTable.thLabel}>Дії</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>

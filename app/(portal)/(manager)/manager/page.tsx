@@ -199,9 +199,13 @@ export default async function ManagerPage({
                     className={dataTableCols.folder}
                   />
                   <th className={cn(dataTable.th, dataTableCols.text)}>
-                    Недоліки, проблеми та порушення (точки зростання)
+                    <span className={dataTable.thLabel}>
+                      Недоліки, проблеми та порушення (точки зростання)
+                    </span>
                   </th>
-                  <th className={cn(dataTable.th, dataTableCols.text)}>Надані аудиторські рекомендації</th>
+                  <th className={cn(dataTable.th, dataTableCols.text)}>
+                    <span className={dataTable.thLabel}>Надані аудиторські рекомендації</span>
+                  </th>
                   <Suspense
                     fallback={
                       <TableSortableTh

@@ -272,11 +272,21 @@ export default async function AdminAuditLogPage({
         <table className={dataTableClassName(dataTableCols.recommendationTableMin)}>
           <thead className={dataTable.thead}>
             <tr className={dataTable.headRow}>
-              <th className={dataTable.th}>AgentID</th>
-              <th className={dataTable.th}>Timestamp</th>
-              <th className={dataTable.th}>Дія</th>
-              <th className={dataTable.th}>Сутність</th>
-              <th className={dataTable.th}>Опис</th>
+              <th className={dataTable.th}>
+                <span className={dataTable.thLabel}>AgentID</span>
+              </th>
+              <th className={dataTable.th}>
+                <span className={dataTable.thLabel}>Timestamp</span>
+              </th>
+              <th className={dataTable.th}>
+                <span className={dataTable.thLabel}>Дія</span>
+              </th>
+              <th className={dataTable.th}>
+                <span className={dataTable.thLabel}>Сутність</span>
+              </th>
+              <th className={dataTable.th}>
+                <span className={dataTable.thLabel}>Опис</span>
+              </th>
             </tr>
           </thead>
           <tbody>

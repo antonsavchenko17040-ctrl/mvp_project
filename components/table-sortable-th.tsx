@@ -53,8 +53,8 @@ export function TableSortableTh<TKey extends string>({
       <Link
         href={href}
         className={cn(
-          "inline-flex max-w-full items-start gap-1 rounded-sm text-inherit transition-colors hover:text-foreground",
-          align === "center" && "justify-center",
+          align === "center" ? dataTable.thInnerCenter : dataTable.thInner,
+          "w-full rounded-sm text-inherit transition-colors hover:text-foreground",
           active ? "text-foreground" : "text-foreground/80",
         )}
         title={
@@ -63,7 +63,9 @@ export function TableSortableTh<TKey extends string>({
             : `Сортувати за: ${label.replace(/\n/g, " ")}`
         }
       >
-        <span className="min-w-0 text-left leading-tight whitespace-pre-line">{label}</span>
+        <span className={cn(dataTable.thLabel, align === "center" && "text-center")}>
+          {label}
+        </span>
         <SortIcon active={active} dir={sort.dir} />
       </Link>
     </th>
@@ -71,7 +73,7 @@ export function TableSortableTh<TKey extends string>({
 }
 
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
-  const className = "size-3.5 shrink-0 opacity-70";
+  const className = "mt-0.5 size-3.5 shrink-0 opacity-70";
   if (!active) return <ArrowUpDown className={className} aria-hidden />;
   if (dir === "asc") return <ArrowUp className={className} aria-hidden />;
   return <ArrowDown className={className} aria-hidden />;
