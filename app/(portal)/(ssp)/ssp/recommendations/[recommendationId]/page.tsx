@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-field-display";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
-import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
-import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
-import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
+import { RecommendationDesignPage } from "@/components/recommendation-design/recommendation-design-page";
 import { SspRecommendationEditForm } from "@/components/ssp/ssp-recommendation-edit-form";
 import { SspRecommendationReadonlyFields } from "@/components/ssp/ssp-recommendation-readonly-fields";
 import { buttonVariants } from "@/components/ui/button";
@@ -17,6 +14,7 @@ import { db } from "@/lib/db";
 import type { SupplementFieldKey } from "@/lib/editor/recommendation-supplements";
 import {
   isRecommendationVisibleToSspMember,
+  sspRecommendationAccessOr,
   sspRecommendationByIdWhere,
 } from "@/lib/ssp/recommendation-access";
 import {
@@ -24,6 +22,8 @@ import {
   formatSspStoredDate,
 } from "@/lib/ssp/recommendation-supplements";
 import { sspWorkspaceStatusLabel } from "@/lib/ssp/ssp-status-label";
+import { listFolderRecommendationNav } from "@/lib/recommendation-design/siblings";
+import { daysUntil, designContentFromRecommendation } from "@/lib/recommendation-design/view-model";
 
 import { saveSspDraft, submitForReview } from "../../actions";
 
@@ -122,7 +122,7 @@ export default async function SspRecommendationDetailPage({
   const recommendation = await db.recommendation.findFirst({
     where: await sspRecommendationByIdWhere(recommendationId, profile.id),
     include: {
-      auditFolder: { select: { title: true, archivedAt: true } },
+      auditFolder: { select: { id: true, title: true, year: true, archivedAt: true } },
       fieldSupplements: {
         orderBy: { changeDate: "asc" },
         select: {
@@ -146,7 +146,6 @@ export default async function SspRecommendationDetailPage({
 
   const deadlineLabel = formatDate(recommendation.deadline);
 
-  const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}`;
   const analystText = recommendation.analystComment?.trim() ?? "";
   const managerText = recommendation.managerComment?.trim() ?? "";
   const folderArchived = Boolean(recommendation.auditFolder.archivedAt);
@@ -163,50 +162,65 @@ export default async function SspRecommendationDetailPage({
   const supplements = recommendation.fieldSupplements;
   const today = formatSspStoredDate(new Date());
 
+  const design = designContentFromRecommendation(recommendation, supplements);
+  const siblings = await listFolderRecommendationNav({
+    folderId: recommendation.auditFolder.id,
+    currentId: recommendation.id,
+    href: (itemId) => `/ssp/recommendations/${itemId}`,
+    where: { OR: await sspRecommendationAccessOr(profile.id) },
+    label: (status) =>
+      sspWorkspaceStatusLabel({
+        status: status as typeof recommendation.status,
+        analystComment: null,
+        managerComment: null,
+      }),
+  });
   const errorKey = query.error ?? "";
   const errorText = errorKey && errorMessages[errorKey] ? errorMessages[errorKey] : null;
   const successText = query.ok === "supplemented" ? "Доповнення збережено." : null;
 
   return (
-    <section className="space-y-5">
-      <div className="flex w-full justify-start">
-        <Link
-          href="/ssp"
-          className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 pr-3 text-foreground transition-colors hover:bg-muted sm:gap-2.5 sm:px-2.5 sm:pr-4"
-        >
-          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40">
-            <ArrowLeft className="size-5" strokeWidth={2} aria-hidden />
-          </span>
-          <span className="min-w-0 text-left text-sm font-medium sm:text-base">
-            <span className="block">Назад до списку рекомендацій</span>
-            <span className="mt-0.5 block text-xs font-normal text-muted-foreground sm:text-sm">
-              Папка звіту: «{recommendation.auditFolder.title}»
-            </span>
-          </span>
-        </Link>
-      </div>
-
-      <RecommendationDetailHeader
-        title="Рекомендація"
-        updatedAtLabel={metaLine}
-        meta={
-          <RecommendationDetailHeaderMeta
-            sequenceNumber={recommendation.sequenceNumber}
-            reportTitle={recommendation.auditFolder.title}
-          >
-            <RecommendationStatusBadge
-              status={recommendation.status}
-              label={sspWorkspaceStatusLabel({
-                status: recommendation.status,
-                analystComment: recommendation.analystComment,
-                managerComment: recommendation.managerComment,
-              })}
-              className="h-auto min-h-7 shrink-0 px-3 py-1 text-sm font-semibold sm:min-h-8 sm:text-base"
-            />
-          </RecommendationDetailHeaderMeta>
-        }
-      />
-
+    <RecommendationDesignPage
+      backHref="/ssp"
+      backLabel="До списку"
+      folderTitle={recommendation.auditFolder.title}
+      folderYear={recommendation.auditFolder.year}
+      sequenceNumber={recommendation.sequenceNumber}
+      auditTitle={recommendation.auditFolder.title}
+      status={recommendation.status}
+      statusLabelText={sspWorkspaceStatusLabel({
+        status: recommendation.status,
+        analystComment: recommendation.analystComment,
+        managerComment: recommendation.managerComment,
+      })}
+      significance={recommendation.observationSignificance}
+      sspUnit={recommendation.sspUnit}
+      vkElement={recommendation.vkElement}
+      deadline={formatDate(recommendation.deadline)}
+      informingDeadline={formatDate(recommendation.informingDeadline)}
+      daysLeft={daysUntil(recommendation.deadline)}
+      deadlineWas={design.deadlineHistory.entries.at(-1)?.from ?? null}
+      deadlineChanges={design.deadlineHistory.count}
+      informingChanges={design.informingHistory.count}
+      deadlineHistory={design.deadlineHistory}
+      informingHistory={design.informingHistory}
+      fields={design.fields}
+      showResults
+      progress={recommendation.progressReport ?? ""}
+      actualDate={formatDate(recommendation.actualImplementationDate)}
+      measures={recommendation.measuresDescription ?? ""}
+      expectedAchievement={recommendation.expectedAchievement ?? ""}
+      documents={recommendation.supportingDocuments ?? ""}
+      notes={recommendation.sspNotes ?? ""}
+      siblings={siblings}
+      changeBanner={design.changeBanner}
+      alerts={
+        <>
+          {errorText ? <p className="rounded-xl border border-[#aa0600] bg-[#ffdfdf] px-4 py-3 text-[#aa0600]">{errorText}</p> : null}
+          {successText ? <p className="rounded-xl border border-[#1e6b35] bg-[#dcf3e2] px-4 py-3">{successText}</p> : null}
+        </>
+      }
+      work={
       <Card className="border border-black/20 shadow-sm">
         <CardContent className="space-y-6 p-5 sm:p-6">
           {errorText ? (
@@ -384,6 +398,7 @@ export default async function SspRecommendationDetailPage({
           )}
         </CardContent>
       </Card>
-    </section>
+      }
+    />
   );
 }
