@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Wrench } from "lucide-react";
+import { ArrowLeft, Wrench } from "lucide-react";
 
 import {
   adminDeactivateRecommendation,
@@ -12,7 +12,9 @@ import {
 } from "@/app/(portal)/(admin)/admin/actions";
 import { AdminSupplementableField } from "@/components/admin/admin-supplementable-field";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
-import { RecommendationDesignPage } from "@/components/recommendation-design/recommendation-design-page";
+import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
+import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
+import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
 import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,8 +26,6 @@ import { formatStoredDateValue } from "@/lib/admin/recommendation-supplements";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { uk } from "@/lib/i18n/uk";
-import { listFolderRecommendationNav } from "@/lib/recommendation-design/siblings";
-import { daysUntil, designContentFromRecommendation } from "@/lib/recommendation-design/view-model";
 import { SSP_PROGRESS_REPORT_OPTIONS } from "@/lib/recommendation-execution-status";
 import { parseSspUnits } from "@/lib/ssp-units";
 import type { RecommendationStatus } from "@/lib/types";
@@ -134,6 +134,9 @@ export default async function AdminEditRecommendationPage({
       ? (recommendation.managerComment ?? "")
       : (recommendation.analystComment ?? "");
   const backHref = `/admin/folders/${recommendation.auditFolder.id}`;
+  const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}${
+    !recommendation.isActive ? " · Деактивована" : ""
+  }`;
 
   const supplementProps = {
     recommendationId: recommendation.id,
@@ -143,65 +146,50 @@ export default async function AdminEditRecommendationPage({
     departments: activeDepartments,
   };
 
-  const formatDay = (value: Date | null | undefined) =>
-    value
-      ? value.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" })
-      : "—";
-  const design = designContentFromRecommendation(recommendation, supplements);
-  const siblings = await listFolderRecommendationNav({
-    folderId: recommendation.auditFolder.id,
-    currentId: recommendation.id,
-    href: (itemId) => `/admin/recommendations/${itemId}`,
-    label: (status) => uk.status[status as RecommendationStatus] ?? status,
-  });
-
   return (
-    <RecommendationDesignPage
-      backHref={backHref}
-      backLabel="До папки"
-      folderTitle={recommendation.auditFolder.title}
-      folderYear={recommendation.auditFolder.year}
-      sequenceNumber={recommendation.sequenceNumber}
-      auditTitle={recommendation.auditFolder.title}
-      status={recommendation.status}
-      statusLabelText={uk.status[recommendation.status]}
-      significance={recommendation.observationSignificance}
-      sspUnit={recommendation.sspUnit}
-      vkElement={recommendation.vkElement}
-      deadline={formatDay(recommendation.deadline)}
-      informingDeadline={formatDay(recommendation.informingDeadline)}
-      daysLeft={daysUntil(recommendation.deadline)}
-      deadlineWas={design.deadlineHistory.entries.at(-1)?.from ?? null}
-      deadlineChanges={design.deadlineHistory.count}
-      informingChanges={design.informingHistory.count}
-      deadlineHistory={design.deadlineHistory}
-      informingHistory={design.informingHistory}
-      fields={design.fields}
-      showResults
-      progress={recommendation.progressReport ?? ""}
-      actualDate={formatDay(recommendation.actualImplementationDate)}
-      measures={recommendation.measuresDescription ?? ""}
-      expectedAchievement={recommendation.expectedAchievement ?? ""}
-      documents={recommendation.supportingDocuments ?? ""}
-      notes={recommendation.sspNotes ?? ""}
-      siblings={siblings}
-      changeBanner={design.changeBanner}
-      actions={
-        <span className="inline-flex h-11 items-center gap-2 rounded-full border border-black px-4 text-base font-semibold">
-          <Wrench className="size-4" aria-hidden />
+    <section className="space-y-5">
+      <div className="flex w-full justify-start">
+        <Link
+          href={backHref}
+          className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 pr-3 text-foreground transition-colors hover:bg-muted sm:gap-2.5 sm:px-2.5 sm:pr-4"
+        >
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40">
+            <ArrowLeft className="size-5" strokeWidth={2} aria-hidden />
+          </span>
+          <span className="min-w-0 text-left text-sm font-medium sm:text-base">
+            <span className="block">Назад до критичних операцій</span>
+            <span className="mt-0.5 block text-xs font-normal text-muted-foreground sm:text-sm">
+              Папка звіту: «{recommendation.auditFolder.title}» ({recommendation.auditFolder.year})
+              {recommendation.auditFolder.archivedAt ? (
+                <span className="ml-2 inline-flex rounded-full border border-slate-400/70 bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                  Завершено
+                </span>
+              ) : null}
+            </span>
+          </span>
+        </Link>
+      </div>
+
+      <div className="space-y-1">
+        <RecommendationDetailHeader
+          title="Рекомендація"
+          updatedAtLabel={metaLine}
+          meta={
+            <RecommendationDetailHeaderMeta sequenceNumber={recommendation.sequenceNumber}>
+              <RecommendationStatusBadge
+                status={recommendation.status}
+                label={uk.status[recommendation.status]}
+                className="h-auto min-h-7 shrink-0 px-3 py-1 text-sm font-semibold sm:min-h-8 sm:text-base"
+              />
+            </RecommendationDetailHeaderMeta>
+          }
+        />
+        <p className="inline-flex items-center gap-1.5 pl-14 text-base font-semibold text-[#2f5e9a] sm:pl-16">
+          <Wrench className="size-4 shrink-0" strokeWidth={2.25} aria-hidden />
           Режим редагування
-        </span>
-      }
-      alerts={
-        <>
-          {errorText ? <p className="rounded-xl border border-[#aa0600] bg-[#ffdfdf] px-4 py-3 text-[#aa0600]">{errorText}</p> : null}
-          {okText ? <p className="rounded-xl border border-[#1e6b35] bg-[#dcf3e2] px-4 py-3">{okText}</p> : null}
-          {!recommendation.isActive ? (
-            <p className="rounded-xl border border-[#9a9a9a] bg-[#f0f0f0] px-4 py-3">Рекомендацію деактивовано.</p>
-          ) : null}
-        </>
-      }
-      work={
+        </p>
+      </div>
+
       <Card className="border border-black/20 shadow-sm">
         <CardContent className="space-y-6 p-5 sm:p-6">
           {errorText ? (
@@ -626,7 +614,6 @@ export default async function AdminEditRecommendationPage({
           </div>
         </CardContent>
       </Card>
-      }
-    />
+    </section>
   );
 }
