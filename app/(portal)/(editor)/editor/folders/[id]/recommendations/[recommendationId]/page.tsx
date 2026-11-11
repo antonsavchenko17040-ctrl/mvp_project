@@ -1,21 +1,19 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-field-display";
 import { EditorSupplementableField } from "@/components/editor/editor-supplementable-field";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
-import { RecommendationDesignPage } from "@/components/recommendation-design/recommendation-design-page";
+import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
+import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
+import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
-import { listFolderRecommendationNav } from "@/lib/recommendation-design/siblings";
-import {
-  daysUntil,
-  designContentFromRecommendation,
-} from "@/lib/recommendation-design/view-model";
-import type { RecommendationStatus } from "@/lib/types";
 
 function ReadBox({ id, text }: { id: string; text: string }) {
   return (
@@ -26,6 +24,17 @@ function ReadBox({ id, text }: { id: string; text: string }) {
       tabIndex={-1}
       className="min-h-[120px] cursor-default resize-none whitespace-pre-wrap border-input bg-muted/20 text-base leading-normal text-foreground"
     />
+  );
+}
+
+function ReadLine({ id, value }: { id: string; value: string }) {
+  return (
+    <div
+      id={id}
+      className="flex min-h-11 items-center rounded-md border border-input bg-muted/20 px-3 text-base text-foreground"
+    >
+      {value || "—"}
+    </div>
   );
 }
 
@@ -57,7 +66,7 @@ export default async function EditorRecommendationDetailPage({
 
   const folder = await db.auditFolder.findFirst({
     where: { id: folderId, createdById: profile.id },
-    select: { id: true, title: true, year: true, archivedAt: true },
+    select: { id: true, title: true, archivedAt: true },
   });
   if (!folder) notFound();
 
@@ -102,19 +111,12 @@ export default async function EditorRecommendationDetailPage({
   const formatDay = (value: Date) =>
     value.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" });
 
+  const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}`;
   const redirectPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}`;
   const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
   const supplements = recommendation.fieldSupplements;
   const today = toDateInputValue(new Date());
 
-  const design = designContentFromRecommendation(recommendation, supplements);
-  const siblings = await listFolderRecommendationNav({
-    folderId: folder.id,
-    currentId: recommendation.id,
-    href: (itemId) => `/editor/folders/${folder.id}/recommendations/${itemId}`,
-    where: { status: { not: "ssp_draft" } },
-    label: (status) => editorWorkspaceStatusLabel(status as RecommendationStatus),
-  });
   const errorKey = query.error ?? "";
   const errorText = errorKey && errorMessages[errorKey] ? errorMessages[errorKey] : null;
   const successText = query.ok === "supplemented" ? "Доповнення збережено." : null;
@@ -130,56 +132,34 @@ export default async function EditorRecommendationDetailPage({
   };
 
   return (
-    <RecommendationDesignPage
-      backHref={`/editor/folders/${folder.id}`}
-      backLabel="До папки"
-      folderTitle={folder.title}
-      folderYear={folder.year}
-      sequenceNumber={recommendation.sequenceNumber}
-      status={recommendation.status}
-      statusLabelText={editorWorkspaceStatusLabel(recommendation.status)}
-      significance={recommendation.observationSignificance}
-      sspUnit={recommendation.sspUnit}
-      vkElement={recommendation.vkElement}
-      deadline={formatDay(recommendation.deadline)}
-      informingDeadline={recommendation.informingDeadline ? formatDay(recommendation.informingDeadline) : "—"}
-      daysLeft={daysUntil(recommendation.deadline)}
-      deadlineWas={design.deadlineHistory.entries.at(-1)?.from ?? null}
-      deadlineChanges={design.deadlineHistory.count}
-      informingChanges={design.informingHistory.count}
-      deadlineHistory={design.deadlineHistory}
-      informingHistory={design.informingHistory}
-      fields={design.fields}
-      showResults
-      progress={recommendation.progressReport ?? ""}
-      actualDate={recommendation.actualImplementationDate ? formatDay(recommendation.actualImplementationDate) : "—"}
-      measures={recommendation.measuresDescription ?? ""}
-      expectedAchievement={recommendation.expectedAchievement ?? ""}
-      documents={recommendation.supportingDocuments ?? ""}
-      notes={recommendation.sspNotes ?? ""}
-      siblings={siblings}
-      changeBanner={design.changeBanner}
-      actions={
-        folderArchived ? null : (
-          <a
-            href="#editor-supplement"
-            className="inline-flex h-11 items-center rounded-full border border-black bg-white px-5 text-base font-semibold text-black"
-          >
-            Доповнити
-          </a>
-        )
-      }
-      alerts={
-        <>
-          {folderArchived ? (
-            <p className="rounded-xl border border-[#9a9a9a] bg-[#f0f0f0] px-4 py-3">Папка архівована — зміни рекомендації недоступні.</p>
-          ) : null}
-          {errorText ? <p className="rounded-xl border border-[#aa0600] bg-[#ffdfdf] px-4 py-3 text-[#aa0600]">{errorText}</p> : null}
-          {successText ? <p className="rounded-xl border border-[#1e6b35] bg-[#dcf3e2] px-4 py-3">{successText}</p> : null}
-        </>
-      }
-      work={
-      <Card id="editor-supplement" className="border border-black/20 shadow-sm">
+    <section className="space-y-5">
+      <div className="flex w-full justify-start">
+        <Link
+          href={`/editor/folders/${folder.id}`}
+          className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 pr-3 text-foreground transition-colors hover:bg-muted sm:gap-2.5 sm:px-2.5 sm:pr-4"
+        >
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40">
+            <ArrowLeft className="size-5" strokeWidth={2} aria-hidden />
+          </span>
+          <span className="text-left text-sm font-medium sm:text-base">Назад до папки «{folder.title}»</span>
+        </Link>
+      </div>
+
+      <RecommendationDetailHeader
+        title="Рекомендація"
+        updatedAtLabel={metaLine}
+        meta={
+          <RecommendationDetailHeaderMeta sequenceNumber={recommendation.sequenceNumber}>
+            <RecommendationStatusBadge
+              status={recommendation.status}
+              label={editorWorkspaceStatusLabel(recommendation.status)}
+              className="shrink-0 border border-black/10 px-3 py-1.5 text-base font-semibold sm:text-lg"
+            />
+          </RecommendationDetailHeaderMeta>
+        }
+      />
+
+      <Card className="border border-black/20 shadow-sm">
         <CardContent className="space-y-6 p-5 sm:p-6">
           {folderArchived ? (
             <p className="rounded-md border border-slate-300 bg-slate-50 p-3 text-base text-slate-800">
@@ -420,7 +400,6 @@ export default async function EditorRecommendationDetailPage({
           ) : null}
         </CardContent>
       </Card>
-      }
-    />
+    </section>
   );
 }
