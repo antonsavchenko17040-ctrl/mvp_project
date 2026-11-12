@@ -48,16 +48,19 @@ export function EditorRecommendationPageHeading({
   sequenceNumber,
   title,
   actionHref,
+  extra,
 }: {
   sequenceNumber?: number;
   title?: string;
   actionHref?: string | null;
+  extra?: React.ReactNode;
 }) {
   const heading = title ?? `Рекомендація №${sequenceNumber}`;
 
   return (
     <div className="flex flex-wrap items-start justify-between gap-6">
       <h1 className="text-[2rem] leading-tight font-semibold">{heading}</h1>
+      {extra}
       {actionHref ? (
         <Link
           href={actionHref}
