@@ -12,6 +12,8 @@ import {
   Folders,
   History,
   LayoutDashboard,
+  PanelLeftClose,
+  PanelLeftOpen,
   Shield,
   UserCheck,
   UserCog,
@@ -75,31 +77,37 @@ const isActivePath = (pathname: string, href: string) => {
   return pathname === href || pathname.startsWith(`${href}/`);
 };
 
+const NAV_COLLAPSED_KEY = "editor-nav-collapsed";
+
 const Item = ({
   href,
   label,
   icon: Icon,
   pathname,
   compact = false,
+  collapsed = false,
 }: {
   href: string;
   label: string;
   icon: ComponentType<{ className?: string }>;
   pathname: string;
   compact?: boolean;
+  collapsed?: boolean;
 }) => {
   const active = isActivePath(pathname, href);
   return (
     <Link
       href={href}
+      title={collapsed ? label : undefined}
       className={cn(
-        "flex items-center gap-2.5 border-b border-black/20 px-6 py-2.5 text-base font-medium transition-colors",
-        compact && "pl-12 text-sm font-normal",
+        "flex items-center border-b border-black/20 py-2.5 text-base font-medium transition-colors",
+        collapsed ? "justify-center px-2" : "gap-2.5 px-6",
+        !collapsed && compact && "pl-12 text-sm font-normal",
         active ? "bg-[#eee6a5] text-foreground" : "text-foreground hover:bg-[#f2ecbe]",
       )}
     >
-      <Icon className={cn("size-[1.125rem] shrink-0", compact && "size-4")} />
-      <span className="truncate">{label}</span>
+      <Icon className={cn("size-[1.125rem] shrink-0", !collapsed && compact && "size-4")} />
+      {collapsed ? null : <span className="truncate">{label}</span>}
     </Link>
   );
 };
@@ -114,6 +122,21 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
   }, [userRoles]);
   const [adminOpen, setAdminOpen] = useState(true);
   const [reportsOpen, setReportsOpen] = useState(true);
+  const canCollapse = userRoles.includes("editor");
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (!canCollapse) return;
+    setCollapsed(window.localStorage.getItem(NAV_COLLAPSED_KEY) === "1");
+  }, [canCollapse]);
+
+  const toggleCollapsed = () => {
+    setCollapsed((value) => {
+      const next = !value;
+      window.localStorage.setItem(NAV_COLLAPSED_KEY, next ? "1" : "0");
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (pathname.startsWith("/admin")) setAdminOpen(true);
@@ -124,10 +147,16 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
   }, [pathname]);
 
   return (
-    <aside className="flex h-full w-[300px] shrink-0 flex-col bg-white text-sidebar-foreground">
-      <div className="flex h-16 shrink-0 items-center border-b border-black/20 px-3">
+    <aside
+      className={cn(
+        "flex h-full shrink-0 flex-col bg-white text-sidebar-foreground transition-[width] duration-200",
+        canCollapse && collapsed ? "w-16" : "w-[300px]",
+      )}
+    >
+      <div className={cn("flex h-16 shrink-0 items-center border-b border-black/20", collapsed ? "justify-center px-2" : "px-3")}>
         <Link
           href={PORTAL_DASHBOARD_HOME}
+          title={collapsed ? uk.appName : undefined}
           className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold leading-none hover:opacity-90"
         >
           <Image
@@ -137,28 +166,57 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
             height={28}
             className="h-7 w-auto shrink-0"
           />
-          <span className="min-w-0 whitespace-nowrap">{uk.appName}</span>
+          {collapsed ? null : <span className="min-w-0 whitespace-nowrap">{uk.appName}</span>}
         </Link>
       </div>
 
       <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain border-r border-black/20">
+        {canCollapse ? (
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-expanded={!collapsed}
+            title={collapsed ? "Розгорнути меню" : "Згорнути меню"}
+            className={cn(
+              "flex h-11 items-center border-b border-[#595959] text-sm font-medium text-[#595959]",
+              collapsed ? "justify-center px-2" : "gap-2.5 px-4",
+            )}
+          >
+            {collapsed ? <PanelLeftOpen className="size-5 shrink-0" /> : <PanelLeftClose className="size-5 shrink-0" />}
+            {collapsed ? null : <span>Згорнути меню</span>}
+          </button>
+        ) : null}
         <div>
-          <Item href="/dashboard" label={uk.nav.dashboard} icon={LayoutDashboard} pathname={pathname} />
+          <Item
+            href="/dashboard"
+            label={uk.nav.dashboard}
+            icon={LayoutDashboard}
+            pathname={pathname}
+            collapsed={canCollapse && collapsed}
+          />
           <div>
             <button
               type="button"
               onClick={() => setReportsOpen((value) => !value)}
-              className="flex w-full items-center gap-2.5 border-b border-black/20 px-6 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]"
+              title={canCollapse && collapsed ? uk.nav.reports : undefined}
+              className={cn(
+                "flex w-full items-center border-b border-black/20 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]",
+                canCollapse && collapsed ? "justify-center px-2" : "gap-2.5 px-6",
+              )}
             >
               <ClipboardList className="size-[1.125rem] shrink-0" />
-              <span className="min-w-0 flex-1 truncate text-left">{uk.nav.reports}</span>
-              <ChevronDown
-                className={cn("size-[1.125rem] shrink-0 transition-transform", reportsOpen && "rotate-180")}
-              />
+              {canCollapse && collapsed ? null : (
+                <span className="min-w-0 flex-1 truncate text-left">{uk.nav.reports}</span>
+              )}
+              {canCollapse && collapsed ? null : (
+                <ChevronDown
+                  className={cn("size-[1.125rem] shrink-0 transition-transform", reportsOpen && "rotate-180")}
+                />
+              )}
             </button>
             {reportsOpen
               ? reportsNavItems.map((item) => (
-                  <Item key={item.href} {...item} pathname={pathname} compact />
+                  <Item key={item.href} {...item} pathname={pathname} compact collapsed={canCollapse && collapsed} />
                 ))
               : null}
           </div>
@@ -170,23 +228,31 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
               <button
                 type="button"
                 onClick={() => setAdminOpen((value) => !value)}
-                className="flex w-full items-center gap-2.5 border-b border-black/20 px-6 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]"
+                title={canCollapse && collapsed ? "Адміністратор" : undefined}
+                className={cn(
+                  "flex w-full items-center border-b border-black/20 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]",
+                  canCollapse && collapsed ? "justify-center px-2" : "gap-2.5 px-6",
+                )}
               >
                 <Shield className="size-[1.125rem] shrink-0" />
-                <span className="min-w-0 flex-1 truncate text-left">Адміністратор</span>
-                <ChevronDown
-                  className={cn("size-[1.125rem] shrink-0 transition-transform", adminOpen && "rotate-180")}
-                />
+                {canCollapse && collapsed ? null : (
+                  <span className="min-w-0 flex-1 truncate text-left">Адміністратор</span>
+                )}
+                {canCollapse && collapsed ? null : (
+                  <ChevronDown
+                    className={cn("size-[1.125rem] shrink-0 transition-transform", adminOpen && "rotate-180")}
+                  />
+                )}
               </button>
               {adminOpen
                 ? adminNavItems.map((item) => (
-                    <Item key={item.href} {...item} pathname={pathname} compact />
+                    <Item key={item.href} {...item} pathname={pathname} compact collapsed={canCollapse && collapsed} />
                   ))
                 : null}
             </div>
           ) : null}
           {roleItems.map((item) => (
-            <Item key={item.href} {...item} pathname={pathname} />
+            <Item key={item.href} {...item} pathname={pathname} collapsed={canCollapse && collapsed} />
           ))}
         </div>
       </nav>
