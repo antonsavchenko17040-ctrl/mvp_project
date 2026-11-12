@@ -122,6 +122,32 @@ function VersionBlock({ title, editions }: { title: string; editions: FieldEditi
   );
 }
 
+function ChangesButton({ count, open, onClick }: { count: number; open: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      className="inline-flex h-[22px] items-center gap-1 rounded-[10px] bg-[#0069aa] px-2 text-sm font-semibold text-white"
+      aria-expanded={open}
+      aria-controls="dates-history"
+      onClick={onClick}
+    >
+      {ukCount(count, "зміна", "зміни", "змін")}
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        className={open ? "rotate-180" : undefined}
+        aria-hidden
+      >
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </button>
+  );
+}
+
 function DateColumn({ title, initial, changes }: { title: string; initial: string; changes: DateChange[] }) {
   return (
     <div className="flex min-w-0 flex-col">
@@ -153,7 +179,8 @@ function DateColumn({ title, initial, changes }: { title: string; initial: strin
 
 export function EditorRecommendationHtmlView(props: ViewProps) {
   const hasDateHistory = props.deadlineChanges.length > 0 || props.informingChanges.length > 0;
-  const [historyOpen, setHistoryOpen] = useState(hasDateHistory);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const toggleHistory = () => setHistoryOpen((open) => !open);
   const level = significanceLevel(props.significance);
   const execution = executionLabel(props.progressReport);
   const executionClass = executionTileClass(resolveExecutionStatusLabel(props.progressReport));
@@ -235,14 +262,7 @@ export function EditorRecommendationHtmlView(props: ViewProps) {
                 </span>
               ) : null}
               {props.deadlineChanges.length ? (
-                <button
-                  type="button"
-                  className="inline-flex h-[22px] items-center gap-1 rounded-[10px] bg-[#0069aa] px-2 text-sm font-semibold text-white"
-                  aria-expanded={historyOpen}
-                  onClick={() => setHistoryOpen((open) => !open)}
-                >
-                  {ukCount(props.deadlineChanges.length, "зміна", "зміни", "змін")}
-                </button>
+                <ChangesButton count={props.deadlineChanges.length} open={historyOpen} onClick={toggleHistory} />
               ) : null}
             </p>
             {props.deadlineWas ? <p className="text-sm text-[#595959]">було: {props.deadlineWas}</p> : null}
@@ -254,14 +274,7 @@ export function EditorRecommendationHtmlView(props: ViewProps) {
             <p className="flex flex-wrap items-center gap-2 font-semibold">
               {props.informingDeadline || "—"}
               {props.informingChanges.length ? (
-                <button
-                  type="button"
-                  className="inline-flex h-[22px] items-center gap-1 rounded-[10px] bg-[#0069aa] px-2 text-sm font-semibold text-white"
-                  aria-expanded={historyOpen}
-                  onClick={() => setHistoryOpen((open) => !open)}
-                >
-                  {ukCount(props.informingChanges.length, "зміна", "зміни", "змін")}
-                </button>
+                <ChangesButton count={props.informingChanges.length} open={historyOpen} onClick={toggleHistory} />
               ) : null}
             </p>
             {props.informingWas ? <p className="text-sm text-[#595959]">було: {props.informingWas}</p> : null}
@@ -276,7 +289,7 @@ export function EditorRecommendationHtmlView(props: ViewProps) {
       </div>
 
       {hasDateHistory && historyOpen ? (
-        <div className="flex flex-col gap-3 rounded-xl border border-[#0069aa] px-5 py-[18px]">
+        <div id="dates-history" className="flex flex-col gap-3 rounded-xl border border-[#0069aa] px-5 py-[18px]">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">Історія зміни строків</h2>
             <button type="button" className="inline-flex size-8 items-center justify-center" aria-label="Згорнути історію строків" onClick={() => setHistoryOpen(false)}>
