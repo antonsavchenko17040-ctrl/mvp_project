@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import {
   EditorRecommendationChangeBanner,
+  EditorRecommendationFrame,
   EditorRecommendationPageHeading,
 } from "@/components/editor/editor-recommendation-page-heading";
 
@@ -190,9 +191,10 @@ export function EditorRecommendationHtmlView(props: ViewProps) {
   const executionClass = executionTileClass(resolveExecutionStatusLabel(props.progressReport));
 
   return (
-    <section className="@container flex flex-col gap-[22px]">
-      <EditorRecommendationPageHeading sequenceNumber={props.sequenceNumber} actionHref={props.supplementHref} />
-
+    <EditorRecommendationFrame
+      header={<EditorRecommendationPageHeading sequenceNumber={props.sequenceNumber} actionHref={props.supplementHref} />}
+    >
+    <section className="flex flex-col gap-[22px]">
       {props.notice ? (
         <p className="rounded-xl border border-[#1e6b35] bg-[#dcf3e2] px-4 py-3 text-[#1e6b35]">{props.notice}</p>
       ) : null}
@@ -345,5 +347,6 @@ export function EditorRecommendationHtmlView(props: ViewProps) {
           </div>
         ) : null}
     </section>
+    </EditorRecommendationFrame>
   );
 }

@@ -6,6 +6,7 @@ import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-fiel
 import { EditorRecommendationHtmlView } from "@/components/editor/editor-recommendation-html-view";
 import {
   EditorRecommendationChangeBanner,
+  EditorRecommendationFrame,
   EditorRecommendationPageHeading,
 } from "@/components/editor/editor-recommendation-page-heading";
 import { EditorSupplementableField } from "@/components/editor/editor-supplementable-field";
@@ -224,6 +225,14 @@ export default async function EditorRecommendationDetailPage({
 
   return (
     <EditorFieldBarProvider>
+    <EditorRecommendationFrame
+      header={
+        <EditorRecommendationPageHeading
+          sequenceNumber={recommendation.sequenceNumber}
+          actionHref={folderArchived ? null : `${viewPath}?supplement=1`}
+        />
+      }
+    >
     <section className="space-y-5">
       <div className="flex w-full justify-start">
         <Link
@@ -237,10 +246,6 @@ export default async function EditorRecommendationDetailPage({
         </Link>
       </div>
 
-      <EditorRecommendationPageHeading
-        sequenceNumber={recommendation.sequenceNumber}
-        actionHref={folderArchived ? null : `${viewPath}?supplement=1`}
-      />
       {banner ? <EditorRecommendationChangeBanner banner={banner} /> : null}
 
       <div className="space-y-6">
@@ -483,6 +488,7 @@ export default async function EditorRecommendationDetailPage({
           ) : null}
       </div>
     </section>
+    </EditorRecommendationFrame>
     </EditorFieldBarProvider>
   );
 }

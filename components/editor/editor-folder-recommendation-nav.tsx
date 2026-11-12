@@ -65,7 +65,7 @@ export function EditorFolderRecommendationNav({
   const activeId = pathname.match(/\/recommendations\/([^/]+)/)?.[1] ?? "";
 
   return (
-    <div className="-m-5 flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden bg-white xl:-m-7 2xl:-mx-10 2xl:-my-9 min-[960px]:flex-row">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-white min-[960px]:flex-row">
       <aside
         aria-label="Рекомендації папки"
         className="flex max-h-[50%] min-h-0 w-full shrink-0 flex-col overflow-hidden border-b border-black min-[960px]:h-full min-[960px]:max-h-none min-[960px]:w-[360px] min-[960px]:border-b-0 min-[960px]:border-r min-[1200px]:w-[408px]"
@@ -131,7 +131,7 @@ export function EditorFolderRecommendationNav({
             Сортування: <strong className="font-semibold text-black">за номером</strong>
           </p>
         </div>
-        <div className="flex min-h-0 flex-1 gap-2 overflow-auto p-3.5 [-ms-overflow-style:none] [scrollbar-width:none] min-[960px]:flex-col min-[960px]:overflow-y-auto min-[960px]:overflow-x-hidden [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-h-0 flex-1 gap-2 overflow-auto overscroll-none p-3.5 [-ms-overflow-style:none] [scrollbar-width:none] min-[960px]:flex-col min-[960px]:overflow-y-auto min-[960px]:overflow-x-hidden [&::-webkit-scrollbar]:hidden">
           {visible.map((item) => {
             const current = item.id === activeId;
             const draft = item.status === "draft";
@@ -174,7 +174,7 @@ export function EditorFolderRecommendationNav({
           })}
         </div>
       </aside>
-      <div className="scrollbar-none min-h-0 min-w-0 flex-1 overflow-y-auto p-5 xl:p-7 2xl:px-10 2xl:py-9">{children}</div>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{children}</div>
     </div>
   );
 }
