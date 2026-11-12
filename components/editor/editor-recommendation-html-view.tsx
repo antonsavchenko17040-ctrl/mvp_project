@@ -315,6 +315,7 @@ export function EditorRecommendationHtmlView(props: ViewProps) {
         <VersionBlock key={key} title={VERSIONED_FIELD_TITLES[key]} editions={props.editions[key]} />
       ))}
 
+      {props.status === "published" ? (
       <section className="flex flex-col gap-[22px] border-t border-black pt-6">
         <h2 className="text-2xl font-semibold">Результати виконання</h2>
         <div className="grid grid-cols-1 gap-3 @[392px]:grid-cols-2">
@@ -357,6 +358,8 @@ export function EditorRecommendationHtmlView(props: ViewProps) {
           <h3 className="mb-3 border-l-[5px] border-[#0069aa] pl-3 text-lg font-semibold">Примітки</h3>
           <p className={props.notes.trim() ? "leading-relaxed" : "text-[#595959]"}>{props.notes.trim() || "—"}</p>
         </div>
+      </section>
+      ) : null}
         {props.managerComment.trim() ? (
           <div>
             <h3 className="mb-3 border-l-[5px] border-[#0069aa] pl-3 text-lg font-semibold">Коментар керівника</h3>
@@ -369,7 +372,6 @@ export function EditorRecommendationHtmlView(props: ViewProps) {
             <p className="leading-relaxed whitespace-pre-wrap">{props.analystComment}</p>
           </div>
         ) : null}
-      </section>
     </section>
   );
 }
