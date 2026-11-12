@@ -160,8 +160,8 @@ export default async function EditorRecommendationDetailPage({
         vkElement={recommendation.vkElement}
         deadline={formatDay(recommendation.deadline)}
         informingDeadline={recommendation.informingDeadline ? formatDay(recommendation.informingDeadline) : ""}
-        deadlineWas={deadlineChanges.at(-1)?.from ?? ""}
-        informingWas={informingChanges.at(-1)?.from ?? ""}
+        deadlineWas={deadlineChanges[0]?.from ?? ""}
+        informingWas={informingChanges[0]?.from ?? ""}
         deadlineChanges={deadlineChanges}
         informingChanges={informingChanges}
         deadlineInitial={initialDateValue(viewSupplements, "deadline")}
