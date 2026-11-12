@@ -1,5 +1,23 @@
 import Link from "next/link";
 
+/** Шапка лишається на місці, прокручується лише тіло сторінки. */
+export function EditorRecommendationFrame({
+  header,
+  children,
+}: {
+  header: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex h-full min-h-0 flex-1 flex-col">
+      <div className="shrink-0 bg-white px-5 pt-5 pb-4 xl:px-7 2xl:px-10">{header}</div>
+      <div className="@container scrollbar-none min-h-0 flex-1 overflow-y-auto overscroll-none px-5 pt-1 pb-5 xl:px-7 2xl:px-10">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function EditorRecommendationChangeBanner({
   banner,
 }: {
