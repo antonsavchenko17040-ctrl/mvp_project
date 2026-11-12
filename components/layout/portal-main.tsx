@@ -8,7 +8,10 @@ import { cn } from "@/lib/utils";
 export function PortalMain({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const recommendationPage = pathname.includes("/recommendations/");
-  const editorCanvas = /\/editor\/folders\/[^/]+\/(?:recommendations\/|new$)/.test(pathname);
+  const editorCanvas =
+    /\/editor\/folders\/[^/]+\/(?:recommendations\/|new$)/.test(pathname) ||
+    /\/(?:admin|analyst|manager|ssp)\/recommendations\//.test(pathname) ||
+    /\/admin\/folders\/[^/]+\/new$/.test(pathname);
 
   return (
     <main

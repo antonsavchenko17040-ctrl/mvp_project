@@ -11,13 +11,15 @@ import {
   hardDeleteRecommendation,
 } from "@/app/(portal)/(admin)/admin/actions";
 import { AdminSupplementableField } from "@/components/admin/admin-supplementable-field";
-import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
-import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
-import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
+import {
+  EditorRecommendationFrame,
+  EditorRecommendationPageHeading,
+} from "@/components/editor/editor-recommendation-page-heading";
+import { EditorFieldBarProvider, RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
+import { PageFade } from "@/components/layout/page-fade";
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
 import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { UkDateInput } from "@/components/ui/uk-date-input";
 import { Textarea } from "@/components/ui/textarea";
@@ -134,9 +136,6 @@ export default async function AdminEditRecommendationPage({
       ? (recommendation.managerComment ?? "")
       : (recommendation.analystComment ?? "");
   const backHref = `/admin/folders/${recommendation.auditFolder.id}`;
-  const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}${
-    !recommendation.isActive ? " · Деактивована" : ""
-  }`;
 
   const supplementProps = {
     recommendationId: recommendation.id,
@@ -147,6 +146,33 @@ export default async function AdminEditRecommendationPage({
   };
 
   return (
+    <PageFade className="flex h-full min-h-0 flex-1 flex-col bg-white">
+    <EditorFieldBarProvider>
+    <EditorRecommendationFrame
+      header={
+        <div className="space-y-2">
+          <EditorRecommendationPageHeading
+            sequenceNumber={recommendation.sequenceNumber}
+            extra={
+              <span className="flex flex-wrap items-center gap-2">
+                {!recommendation.isActive ? (
+                  <span className="text-sm font-medium text-muted-foreground">Деактивована</span>
+                ) : null}
+                <RecommendationStatusBadge
+                  status={recommendation.status}
+                  label={uk.status[recommendation.status]}
+                  className="h-auto min-h-7 shrink-0 px-3 py-1 text-sm font-semibold sm:min-h-8 sm:text-base"
+                />
+              </span>
+            }
+          />
+          <p className="inline-flex items-center gap-1.5 text-base font-semibold text-[#2f5e9a]">
+            <Wrench className="size-4 shrink-0" strokeWidth={2.25} aria-hidden />
+            Режим редагування
+          </p>
+        </div>
+      }
+    >
     <section className="space-y-5">
       <div className="flex w-full justify-start">
         <Link
@@ -170,28 +196,7 @@ export default async function AdminEditRecommendationPage({
         </Link>
       </div>
 
-      <div className="space-y-1">
-        <RecommendationDetailHeader
-          title="Рекомендація"
-          updatedAtLabel={metaLine}
-          meta={
-            <RecommendationDetailHeaderMeta sequenceNumber={recommendation.sequenceNumber}>
-              <RecommendationStatusBadge
-                status={recommendation.status}
-                label={uk.status[recommendation.status]}
-                className="h-auto min-h-7 shrink-0 px-3 py-1 text-sm font-semibold sm:min-h-8 sm:text-base"
-              />
-            </RecommendationDetailHeaderMeta>
-          }
-        />
-        <p className="inline-flex items-center gap-1.5 pl-14 text-base font-semibold text-[#2f5e9a] sm:pl-16">
-          <Wrench className="size-4 shrink-0" strokeWidth={2.25} aria-hidden />
-          Режим редагування
-        </p>
-      </div>
-
-      <Card className="border border-black/20 shadow-sm">
-        <CardContent className="space-y-6 p-5 sm:p-6">
+      <div className="space-y-6">
           {errorText ? (
             <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
               {errorText}
@@ -612,8 +617,10 @@ export default async function AdminEditRecommendationPage({
               Зберегти зміни
             </Button>
           </div>
-        </CardContent>
-      </Card>
+      </div>
     </section>
+    </EditorRecommendationFrame>
+    </EditorFieldBarProvider>
+    </PageFade>
   );
 }

@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-field-display";
-import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
-import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
-import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
+import {
+  EditorRecommendationFrame,
+  EditorRecommendationPageHeading,
+} from "@/components/editor/editor-recommendation-page-heading";
+import { EditorFieldBarProvider, RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
+import { PageFade } from "@/components/layout/page-fade";
 import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
 import { ManagerVerificationForm } from "@/components/manager/manager-verification-form";
-import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -108,7 +110,6 @@ export default async function ManagerRecommendationDetailPage({
   if (!recommendation) notFound();
 
   const supplements = recommendation.fieldSupplements;
-  const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}`;
   const managerText = recommendation.managerComment?.trim() ?? "";
   const canVerify = recommendation.status === "manager_review";
   const isWithSsp =
@@ -119,6 +120,22 @@ export default async function ManagerRecommendationDetailPage({
     recommendation.status === "published";
 
   return (
+    <PageFade className="flex h-full min-h-0 flex-1 flex-col bg-white">
+    <EditorFieldBarProvider>
+    <EditorRecommendationFrame
+      header={
+        <EditorRecommendationPageHeading
+          sequenceNumber={recommendation.sequenceNumber}
+          extra={
+            <RecommendationStatusBadge
+              status={recommendation.status}
+              label={verificationWorkspaceStatusLabel(recommendation.status)}
+              className="h-auto min-h-7 shrink-0 px-3 py-1 text-sm font-semibold sm:min-h-8 sm:text-base"
+            />
+          }
+        />
+      }
+    >
     <section className="space-y-5">
       <div className="flex w-full justify-start">
         <Link
@@ -137,25 +154,7 @@ export default async function ManagerRecommendationDetailPage({
         </Link>
       </div>
 
-      <RecommendationDetailHeader
-        title="Рекомендація"
-        updatedAtLabel={metaLine}
-        meta={
-          <RecommendationDetailHeaderMeta
-            sequenceNumber={recommendation.sequenceNumber}
-            reportTitle={recommendation.auditFolder.title}
-          >
-            <RecommendationStatusBadge
-              status={recommendation.status}
-              label={verificationWorkspaceStatusLabel(recommendation.status)}
-              className="h-auto min-h-7 shrink-0 px-3 py-1 text-sm font-semibold sm:min-h-8 sm:text-base"
-            />
-          </RecommendationDetailHeaderMeta>
-        }
-      />
-
-      <Card className="border border-black/20 shadow-sm">
-        <CardContent className="space-y-6 p-5 sm:p-6">
+      <div className="space-y-6">
           {error === "manager_comment_required" ? (
             <p className="rounded-md border border-destructive/40 bg-destructive/10 px-4 py-3 text-base text-destructive">
               Для повернення на доопрацювання обов’язковий коментар керівника (не менше 5 символів).
@@ -322,8 +321,10 @@ export default async function ManagerRecommendationDetailPage({
                   : "Перегляд рекомендації. Верифікація керівником доступна після надсилання на перевірку."}
             </div>
           ) : null}
-        </CardContent>
-      </Card>
+      </div>
     </section>
+    </EditorRecommendationFrame>
+    </EditorFieldBarProvider>
+    </PageFade>
   );
 }

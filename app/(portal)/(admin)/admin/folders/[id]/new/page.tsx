@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { adminCreateRecommendation } from "@/app/(portal)/(admin)/admin/actions";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { UkDateInput } from "@/components/ui/uk-date-input";
 import { Textarea } from "@/components/ui/textarea";
-import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
+import {
+  EditorRecommendationFrame,
+  EditorRecommendationPageHeading,
+} from "@/components/editor/editor-recommendation-page-heading";
+import { EditorFieldBarProvider, RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
+import { PageFade } from "@/components/layout/page-fade";
 import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { requireRole } from "@/lib/auth/session";
@@ -36,6 +40,9 @@ export default async function AdminNewRecommendationPage({
   const basePath = `/admin/folders/${folder.id}/new`;
 
   return (
+    <PageFade className="flex h-full min-h-0 flex-1 flex-col bg-white">
+    <EditorFieldBarProvider>
+    <EditorRecommendationFrame header={<EditorRecommendationPageHeading title="Нова рекомендація" />}>
     <section className="space-y-5">
       <div className="flex w-full justify-start">
         <Link
@@ -49,27 +56,16 @@ export default async function AdminNewRecommendationPage({
         </Link>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg bg-[#3a6fb8] text-white shadow-sm">
-          <Plus className="size-6" strokeWidth={2} aria-hidden />
-        </span>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Створення нової рекомендації
-          </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-base text-muted-foreground">
-            <span>Папка: «{folder.title}»</span>
-            {folder.archivedAt ? (
-              <span className="rounded-full border border-slate-400/70 bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                Завершено
-              </span>
-            ) : null}
-          </p>
-        </div>
-      </div>
+      <p className="flex flex-wrap items-center gap-2 text-base text-muted-foreground">
+        <span>Папка: «{folder.title}»</span>
+        {folder.archivedAt ? (
+          <span className="rounded-full border border-slate-400/70 bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
+            Завершено
+          </span>
+        ) : null}
+      </p>
 
-      <Card className="border border-black/20 shadow-sm">
-        <CardContent className="space-y-6 p-5 sm:p-6">
+      <div className="space-y-6">
           {query.error === "folder_not_found" ? (
             <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
               Папку не знайдено.
@@ -185,8 +181,10 @@ export default async function AdminNewRecommendationPage({
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+      </div>
     </section>
+    </EditorRecommendationFrame>
+    </EditorFieldBarProvider>
+    </PageFade>
   );
 }
