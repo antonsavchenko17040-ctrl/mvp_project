@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
+import { PageFade } from "@/components/layout/page-fade";
 import { cn } from "@/lib/utils";
 
 export function PortalMain({ children }: { children: React.ReactNode }) {
@@ -25,7 +26,11 @@ export function PortalMain({ children }: { children: React.ReactNode }) {
           editorRecommendation && "flex h-full min-h-0 flex-1 flex-col",
         )}
       >
-        {children}
+        {editorRecommendation ? (
+          children
+        ) : (
+          <PageFade className="w-full min-w-0">{children}</PageFade>
+        )}
       </div>
     </main>
   );

@@ -1,3 +1,4 @@
+import { PageFade } from "@/components/layout/page-fade";
 import { PublicHeaderHost } from "@/components/public/public-header-host";
 import { PublicNav } from "@/components/public/public-nav";
 
@@ -9,7 +10,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <aside className="w-[240px] shrink-0 border-r border-black/20 bg-white">
           <PublicNav />
         </aside>
-        <main className="min-w-0 flex-1 p-5 xl:p-7 2xl:px-10 2xl:py-9">{children}</main>
+        <main className="min-w-0 flex-1 p-5 xl:p-7 2xl:px-10 2xl:py-9">
+          <PageFade className="w-full min-w-0">{children}</PageFade>
+        </main>
       </div>
     </div>
   );
