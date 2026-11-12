@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 
+import { PageFade } from "@/components/layout/page-fade";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
 import { EDITOR_FOLDER_STATUS_FILTERS } from "@/lib/editor/editor-folder-status-filters";
 import type { RecommendationStatus } from "@/lib/types";
@@ -79,7 +80,7 @@ export function EditorFolderRecommendationNav({
           </Link>
           <p className="text-base font-semibold leading-snug">{folderTitle}</p>
         </div>
-        <div className="flex flex-col gap-2.5 border-b border-black px-3.5 py-3">
+        <div className="flex flex-col gap-2.5 border-b border-[#c8c8c8] px-3.5 py-3">
           <div className="flex items-center justify-between gap-2">
             <span>Рекомендацій у папці</span>
             <span className="inline-flex h-[30px] min-w-7 items-center justify-center rounded-md bg-[#d9d9d9] px-1.5 font-semibold">
@@ -174,7 +175,7 @@ export function EditorFolderRecommendationNav({
           })}
         </div>
       </aside>
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{children}</div>
+      <PageFade className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{children}</PageFade>
     </div>
   );
 }
