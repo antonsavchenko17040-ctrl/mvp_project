@@ -141,7 +141,7 @@ export function EditorFolderRecommendationNav({
                 key={item.id}
                 href={`/editor/folders/${folderId}/recommendations/${item.id}`}
                 aria-current={current ? "page" : undefined}
-                className={`flex min-w-[300px] flex-col gap-1.5 rounded-xl p-3 text-black no-underline min-[960px]:min-w-0 ${
+                className={`flex min-w-[300px] flex-col gap-1.5 rounded-xl p-3 text-black no-underline transition-colors hover:bg-[#f2ecbe] min-[960px]:min-w-0 ${
                   current
                     ? "border-2 border-[#0069aa] bg-[#eef6fc] px-[11px] py-[11px]"
                     : draft
@@ -150,22 +150,22 @@ export function EditorFolderRecommendationNav({
                 }`}
               >
                 <span className="flex items-center justify-between gap-2">
-                  <span className="font-bold">№{item.sequenceNumber}</span>
+                  <span className="shrink-0 font-bold whitespace-nowrap">№{item.sequenceNumber}</span>
                   <span
-                    className={`inline-flex h-6 items-center rounded-[10px] border px-2 text-sm font-semibold ${badgeTone[item.status] ?? badgeTone.draft}`}
+                    className={`inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-[10px] border px-2 text-sm font-semibold ${badgeTone[item.status] ?? badgeTone.draft}`}
                   >
                     {editorWorkspaceStatusLabel(item.status)}
                   </span>
                 </span>
                 <span className="line-clamp-3 leading-snug">{item.title || "—"}</span>
-                <span className="flex items-center gap-2 text-sm text-[#595959]">
+                <span className="flex min-w-0 items-center gap-2 overflow-hidden text-sm whitespace-nowrap text-[#595959]">
                   {draft && !unit ? (
-                    <span>Підрозділ не призначено</span>
+                    <span className="truncate">Підрозділ не призначено</span>
                   ) : (
                     <>
-                      <span>{item.significance.trim() || "—"}</span>
+                      <span className="shrink-0">{item.significance.trim() || "—"}</span>
                       <span aria-hidden>·</span>
-                      <span className="truncate">{unit || "—"}</span>
+                      <span className="min-w-0 truncate">{unit || "—"}</span>
                     </>
                   )}
                 </span>
