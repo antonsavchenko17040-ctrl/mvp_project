@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { DeadlineNotificationsBellHost } from "@/components/layout/deadline-notifications-bell-host";
+import { PortalMain } from "@/components/layout/portal-main";
 import { Sidebar } from "@/components/layout/sidebar";
 import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { formatRolesList } from "@/lib/auth/roles";
@@ -79,9 +80,7 @@ export default async function PortalLayout({ children }: { children: React.React
       </header>
       <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
         <Sidebar userRoles={roles} />
-        <main className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-auto p-5 xl:p-7 2xl:px-10 2xl:py-9 [scrollbar-gutter:stable]">
-          <div className="mx-auto w-full min-w-0 max-w-full">{children}</div>
-        </main>
+        <PortalMain>{children}</PortalMain>
       </div>
     </div>
   );
