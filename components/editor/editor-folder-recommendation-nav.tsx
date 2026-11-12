@@ -174,7 +174,7 @@ export function EditorFolderRecommendationNav({
           })}
         </div>
       </aside>
-      <div className="min-h-0 min-w-0 flex-1 overflow-y-auto p-5 xl:p-7 2xl:px-10 2xl:py-9">{children}</div>
+      <div className="scrollbar-none min-h-0 min-w-0 flex-1 overflow-y-auto p-5 xl:p-7 2xl:px-10 2xl:py-9">{children}</div>
     </div>
   );
 }
