@@ -4,12 +4,12 @@ import { ArrowLeft } from "lucide-react";
 
 import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-field-display";
 import { EditorRecommendationHtmlView } from "@/components/editor/editor-recommendation-html-view";
+import {
+  EditorRecommendationChangeBanner,
+  EditorRecommendationPageHeading,
+} from "@/components/editor/editor-recommendation-page-heading";
 import { EditorSupplementableField } from "@/components/editor/editor-supplementable-field";
-import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
-import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
-import { RecommendationDetailHeaderMeta } from "@/components/recommendation-detail-header-meta";
-import { RecommendationStatusBadge } from "@/components/recommendation-status-badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { EditorFieldBarProvider, RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
 import { Textarea } from "@/components/ui/textarea";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { requireRole } from "@/lib/auth/session";
@@ -20,8 +20,6 @@ import {
   buildFieldEditions,
   initialDateValue,
 } from "@/lib/editor/editor-recommendation-view-model";
-import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
-
 function ReadBox({ id, text }: { id: string; text: string }) {
   return (
     <Textarea
@@ -119,7 +117,6 @@ export default async function EditorRecommendationDetailPage({
   const formatDay = (value: Date) =>
     value.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-  const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}`;
   const viewPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}`;
   const supplementMode = query.supplement === "1";
   const redirectPath = supplementMode ? `${viewPath}?supplement=1` : viewPath;
@@ -212,7 +209,21 @@ export default async function EditorRecommendationDetailPage({
     allowSupplements: !folderArchived,
   };
 
+  const banner = buildChangeBanner(
+    supplements.map((item) => ({
+      id: item.id,
+      fieldKey: item.fieldKey,
+      content: item.content,
+      previousContent: item.previousContent,
+      changeReason: item.changeReason,
+      changeDate: item.changeDate,
+      createdAt: item.createdAt,
+      authorName: item.createdBy.fullName ?? "",
+    })),
+  );
+
   return (
+    <EditorFieldBarProvider>
     <section className="space-y-5">
       <div className="flex w-full justify-start">
         <Link
@@ -226,22 +237,13 @@ export default async function EditorRecommendationDetailPage({
         </Link>
       </div>
 
-      <RecommendationDetailHeader
-        title="Рекомендація"
-        updatedAtLabel={metaLine}
-        meta={
-          <RecommendationDetailHeaderMeta sequenceNumber={recommendation.sequenceNumber}>
-            <RecommendationStatusBadge
-              status={recommendation.status}
-              label={editorWorkspaceStatusLabel(recommendation.status)}
-              className="shrink-0 border border-black/10 px-3 py-1.5 text-base font-semibold sm:text-lg"
-            />
-          </RecommendationDetailHeaderMeta>
-        }
+      <EditorRecommendationPageHeading
+        sequenceNumber={recommendation.sequenceNumber}
+        actionHref={folderArchived ? null : `${viewPath}?supplement=1`}
       />
+      {banner ? <EditorRecommendationChangeBanner banner={banner} /> : null}
 
-      <Card className="border border-black/20 shadow-sm">
-        <CardContent className="space-y-6 p-5 sm:p-6">
+      <div className="space-y-6">
           {folderArchived ? (
             <p className="rounded-md border border-slate-300 bg-slate-50 p-3 text-base text-slate-800">
               Папка архівована — зміни рекомендації недоступні.
@@ -479,8 +481,8 @@ export default async function EditorRecommendationDetailPage({
               <ReadBox id="analyst_comment" text={recommendation.analystComment} />
             </RecommendationFieldBlock>
           ) : null}
-        </CardContent>
-      </Card>
+      </div>
     </section>
+    </EditorFieldBarProvider>
   );
 }

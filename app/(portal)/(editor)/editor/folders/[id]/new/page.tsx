@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EditorNewRecommendationDateFields } from "@/components/editor/editor-new-recommendation-date-fields";
-import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
+import { EditorRecommendationPageHeading } from "@/components/editor/editor-recommendation-page-heading";
+import { EditorFieldBarProvider, RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
 import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { requireRole } from "@/lib/auth/session";
@@ -51,6 +51,7 @@ export default async function NewRecommendationPage({
   const basePath = `/editor/folders/${folder.id}/new`;
 
   return (
+    <EditorFieldBarProvider>
     <section className="space-y-5">
       <div className="flex w-full justify-start">
         <Link
@@ -64,15 +65,9 @@ export default async function NewRecommendationPage({
         </Link>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg bg-[#3a6fb8] text-white shadow-sm">
-          <Plus className="size-6" strokeWidth={2} aria-hidden />
-        </span>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Створення нової рекомендації</h1>
-      </div>
+      <EditorRecommendationPageHeading title="Нова рекомендація" />
 
-      <Card className="border border-black/20 shadow-sm">
-        <CardContent className="space-y-6 p-5 sm:p-6">
+      <div className="space-y-6">
           {query.error && createErrorMessages[query.error] ? (
             <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-base text-destructive">
               {createErrorMessages[query.error]}
@@ -179,8 +174,8 @@ export default async function NewRecommendationPage({
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+      </div>
     </section>
+    </EditorFieldBarProvider>
   );
 }
