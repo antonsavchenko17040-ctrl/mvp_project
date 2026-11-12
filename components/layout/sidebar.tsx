@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState, type ComponentType } from "react";
@@ -27,7 +26,6 @@ import {
   isPortalReportsActiveListActive,
   isPortalReportsCompletedListActive,
   isPortalReportsLibraryActive,
-  PORTAL_DASHBOARD_HOME,
   PORTAL_REPORTS_ACTIVE_HOME,
   PORTAL_REPORTS_COMPLETED_HOME,
 } from "@/lib/reports-section";
@@ -153,23 +151,6 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
         canCollapse && collapsed ? "w-16" : "w-[300px]",
       )}
     >
-      <div className={cn("flex h-16 shrink-0 items-center border-b border-black/20", collapsed ? "justify-center px-2" : "px-3")}>
-        <Link
-          href={PORTAL_DASHBOARD_HOME}
-          title={collapsed ? uk.appName : undefined}
-          className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold leading-none hover:opacity-90"
-        >
-          <Image
-            src="/logo-nazk-source.png"
-            alt="Логотип порталу"
-            width={22}
-            height={28}
-            className="h-7 w-auto shrink-0"
-          />
-          {collapsed ? null : <span className="min-w-0 whitespace-nowrap">{uk.appName}</span>}
-        </Link>
-      </div>
-
       <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain border-r border-black/20">
         {canCollapse ? (
           <button

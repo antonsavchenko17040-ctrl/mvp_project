@@ -1,3 +1,5 @@
+import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { DeadlineNotificationsBellHost } from "@/components/layout/deadline-notifications-bell-host";
@@ -6,6 +8,8 @@ import { DismissibleDetails } from "@/components/ui/dismissible-details";
 import { formatRolesList } from "@/lib/auth/roles";
 import { clearSession, getCurrentProfile, requireAuth } from "@/lib/auth/session";
 import { getDeadlineRemindersForProfile } from "@/lib/deadline-reminders";
+import { uk } from "@/lib/i18n/uk";
+import { PORTAL_DASHBOARD_HOME } from "@/lib/reports-section";
 
 async function signOut() {
   "use server";
@@ -31,10 +35,22 @@ export default async function PortalLayout({ children }: { children: React.React
     : [];
 
   return (
-    <div className="workspace-ui flex h-dvh w-full max-w-[100vw] overflow-hidden bg-[#f5f5f5]">
-      <Sidebar userRoles={roles} />
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-end gap-2 border-b border-black/20 bg-white px-5 xl:px-7">
+    <div className="workspace-ui flex h-dvh w-full max-w-[100vw] flex-col overflow-hidden bg-[#f5f5f5]">
+      <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b border-black bg-white px-6 lg:px-10">
+        <Link
+          href={PORTAL_DASHBOARD_HOME}
+          className="flex min-w-0 items-center gap-3 text-lg font-medium leading-none hover:opacity-90"
+        >
+          <Image
+            src="/logo-nazk-source.png"
+            alt="Логотип порталу"
+            width={22}
+            height={28}
+            className="h-8 w-auto shrink-0"
+          />
+          <span className="truncate">{uk.appName}</span>
+        </Link>
+        <div className="flex shrink-0 items-center gap-2">
           <DeadlineNotificationsBellHost items={deadlineReminders} />
           <DismissibleDetails className="group relative">
             <summary className="flex cursor-pointer list-none items-center gap-2.5 rounded-md px-2 py-1 hover:bg-muted">
@@ -59,7 +75,10 @@ export default async function PortalLayout({ children }: { children: React.React
               </form>
             </div>
           </DismissibleDetails>
-        </header>
+        </div>
+      </header>
+      <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+        <Sidebar userRoles={roles} />
         <main className="min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-auto p-5 xl:p-7 2xl:px-10 2xl:py-9 [scrollbar-gutter:stable]">
           <div className="mx-auto w-full min-w-0 max-w-full">{children}</div>
         </main>
