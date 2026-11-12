@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { EditorAppendFieldDisplay } from "@/components/editor/editor-append-field-display";
+import { EditorRecommendationHtmlView } from "@/components/editor/editor-recommendation-html-view";
 import { EditorSupplementableField } from "@/components/editor/editor-supplementable-field";
 import { RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
 import { RecommendationDetailHeader } from "@/components/recommendation-detail-header";
@@ -13,6 +14,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { getDepartments } from "@/lib/admin/departments-store";
 import { requireRole } from "@/lib/auth/session";
 import { db } from "@/lib/db";
+import {
+  buildChangeBanner,
+  buildDateChanges,
+  buildFieldEditions,
+  initialDateValue,
+} from "@/lib/editor/editor-recommendation-view-model";
 import { editorWorkspaceStatusLabel } from "@/lib/editor/editor-workspace-status-label";
 
 function ReadBox({ id, text }: { id: string; text: string }) {
@@ -58,7 +65,7 @@ export default async function EditorRecommendationDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string; recommendationId: string }>;
-  searchParams: Promise<{ error?: string; ok?: string }>;
+  searchParams: Promise<{ error?: string; ok?: string; supplement?: string }>;
 }) {
   const profile = await requireRole(["editor"]);
   const { id: folderId, recommendationId } = await params;
@@ -86,6 +93,7 @@ export default async function EditorRecommendationDetailPage({
           changeReason: true,
           changeDate: true,
           createdAt: true,
+          createdBy: { select: { fullName: true } },
         },
       },
     },
@@ -112,7 +120,9 @@ export default async function EditorRecommendationDetailPage({
     value.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" });
 
   const metaLine = `Оновлено: ${recommendation.updatedAt.toLocaleString("uk-UA")}`;
-  const redirectPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}`;
+  const viewPath = `/editor/folders/${folder.id}/recommendations/${recommendation.id}`;
+  const supplementMode = query.supplement === "1";
+  const redirectPath = supplementMode ? `${viewPath}?supplement=1` : viewPath;
   const activeDepartments = (await getDepartments()).filter((d) => d.isActive);
   const supplements = recommendation.fieldSupplements;
   const today = toDateInputValue(new Date());
@@ -120,6 +130,77 @@ export default async function EditorRecommendationDetailPage({
   const errorKey = query.error ?? "";
   const errorText = errorKey && errorMessages[errorKey] ? errorMessages[errorKey] : null;
   const successText = query.ok === "supplemented" ? "Доповнення збережено." : null;
+
+  if (!supplementMode) {
+    const viewSupplements = supplements.map((item) => ({
+      id: item.id,
+      fieldKey: item.fieldKey,
+      content: item.content,
+      previousContent: item.previousContent,
+      changeReason: item.changeReason,
+      changeDate: item.changeDate,
+      createdAt: item.createdAt,
+      authorName: item.createdBy.fullName ?? "",
+    }));
+    const deadlineChanges = buildDateChanges(viewSupplements, "deadline");
+    const informingChanges = buildDateChanges(viewSupplements, "informingDeadline");
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const deadlineStart = new Date(recommendation.deadline);
+    deadlineStart.setHours(0, 0, 0, 0);
+    const daysUntilDeadline = Math.round((deadlineStart.getTime() - todayStart.getTime()) / 86_400_000);
+
+    return (
+      <EditorRecommendationHtmlView
+        supplementHref={folderArchived ? null : `${viewPath}?supplement=1`}
+        sequenceNumber={recommendation.sequenceNumber}
+        status={recommendation.status}
+        significance={recommendation.observationSignificance}
+        sspUnit={recommendation.sspUnit}
+        vkElement={recommendation.vkElement}
+        deadline={formatDay(recommendation.deadline)}
+        informingDeadline={recommendation.informingDeadline ? formatDay(recommendation.informingDeadline) : ""}
+        deadlineWas={deadlineChanges.at(-1)?.from ?? ""}
+        informingWas={informingChanges.at(-1)?.from ?? ""}
+        deadlineChanges={deadlineChanges}
+        informingChanges={informingChanges}
+        deadlineInitial={initialDateValue(viewSupplements, "deadline")}
+        informingInitial={initialDateValue(viewSupplements, "informingDeadline")}
+        daysUntilDeadline={daysUntilDeadline}
+        banner={buildChangeBanner(viewSupplements)}
+        editions={{
+          deficiency: buildFieldEditions("deficiency", recommendation.deficiency, viewSupplements, recommendation.createdAt),
+          recommendationText: buildFieldEditions(
+            "recommendationText",
+            recommendation.recommendationText,
+            viewSupplements,
+            recommendation.createdAt,
+          ),
+          executionIndicator: buildFieldEditions(
+            "executionIndicator",
+            recommendation.executionIndicator,
+            viewSupplements,
+            recommendation.createdAt,
+          ),
+          expectedResult: buildFieldEditions(
+            "expectedResult",
+            recommendation.expectedResult,
+            viewSupplements,
+            recommendation.createdAt,
+          ),
+        }}
+        progressReport={recommendation.progressReport ?? ""}
+        actualDate={recommendation.actualImplementationDate ? formatDay(recommendation.actualImplementationDate) : ""}
+        measures={recommendation.measuresDescription ?? ""}
+        achievement={recommendation.expectedAchievement ?? ""}
+        documents={recommendation.supportingDocuments ?? ""}
+        notes={recommendation.sspNotes ?? ""}
+        managerComment={recommendation.managerComment ?? ""}
+        analystComment={recommendation.analystComment ?? ""}
+        notice={successText ?? errorText}
+      />
+    );
+  }
 
   const fieldProps = {
     recommendationId: recommendation.id,
