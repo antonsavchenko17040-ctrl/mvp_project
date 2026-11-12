@@ -131,7 +131,7 @@ export function EditorFolderRecommendationNav({
             Сортування: <strong className="font-semibold text-black">за номером</strong>
           </p>
         </div>
-        <div className="flex min-h-0 flex-1 gap-2 overflow-auto p-3.5 min-[960px]:flex-col min-[960px]:overflow-y-auto min-[960px]:overflow-x-hidden">
+        <div className="flex min-h-0 flex-1 gap-2 overflow-auto p-3.5 [-ms-overflow-style:none] [scrollbar-width:none] min-[960px]:flex-col min-[960px]:overflow-y-auto min-[960px]:overflow-x-hidden [&::-webkit-scrollbar]:hidden">
           {visible.map((item) => {
             const current = item.id === activeId;
             const draft = item.status === "draft";
