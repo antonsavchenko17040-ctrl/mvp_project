@@ -141,21 +141,21 @@ export function editionOptionLabel(edition: FieldEdition): string {
 export function buildDateChanges(supplements: ViewSupplement[], fieldKey: "deadline" | "informingDeadline"): DateChange[] {
   const items = supplements
     .filter((item) => item.fieldKey === fieldKey)
-    .sort((a, b) => a.changeDate.getTime() - b.changeDate.getTime() || a.createdAt.getTime() - b.createdAt.getTime());
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime() || b.changeDate.getTime() - a.changeDate.getTime());
   return items.map((item, index) => ({
     from: formatSupplementDay(compact(item.previousContent) || "—"),
     to: formatSupplementDay(compact(item.content) || "—"),
     when: formatSupplementDay(item.changeDate),
     author: item.authorName.trim() || "—",
     reason: compact(item.changeReason) || "—",
-    current: index === items.length - 1,
+    current: index === 0,
   }));
 }
 
 export function initialDateValue(supplements: ViewSupplement[], fieldKey: "deadline" | "informingDeadline"): string {
   const items = supplements
     .filter((item) => item.fieldKey === fieldKey)
-    .sort((a, b) => a.changeDate.getTime() - b.changeDate.getTime());
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   const initial = compact(items[0]?.previousContent);
   return initial ? formatSupplementDay(initial) : "";
 }

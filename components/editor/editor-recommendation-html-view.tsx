@@ -154,9 +154,8 @@ function DateColumn({ title, initial, changes }: { title: string; initial: strin
       <h3 className="mb-1 text-base font-semibold">
         {title} · {ukCount(changes.length, "зміна", "зміни", "змін")}
       </h3>
-      {initial ? <p className="text-sm text-[#595959]">Початковий: {initial}</p> : null}
       <ol className="mt-1 list-none p-0">
-        {[...changes].reverse().map((change) => (
+        {changes.map((change) => (
           <li key={`${change.when}-${change.to}`} className="flex flex-col gap-1 border-b border-[#e6e6e6] py-3">
             <span className="flex flex-wrap items-center gap-2 font-semibold">
               {change.from} → {change.to}
@@ -173,6 +172,7 @@ function DateColumn({ title, initial, changes }: { title: string; initial: strin
           </li>
         ))}
       </ol>
+      {initial ? <p className="pt-2 text-sm text-[#595959]">Початковий: {initial}</p> : null}
     </div>
   );
 }
