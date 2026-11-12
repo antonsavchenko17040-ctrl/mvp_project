@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EditorNewRecommendationDateFields } from "@/components/editor/editor-new-recommendation-date-fields";
-import { EditorRecommendationPageHeading } from "@/components/editor/editor-recommendation-page-heading";
+import {
+  EditorRecommendationFrame,
+  EditorRecommendationPageHeading,
+} from "@/components/editor/editor-recommendation-page-heading";
+import { PageFade } from "@/components/layout/page-fade";
 import { EditorFieldBarProvider, RecommendationFieldBlock } from "@/components/editor/recommendation-field-block";
 import { SspUnitMultiSelect } from "@/components/ssp-unit-multi-select";
 import { getDepartments } from "@/lib/admin/departments-store";
@@ -51,7 +55,9 @@ export default async function NewRecommendationPage({
   const basePath = `/editor/folders/${folder.id}/new`;
 
   return (
+    <PageFade className="flex h-full min-h-0 flex-1 flex-col bg-white">
     <EditorFieldBarProvider>
+    <EditorRecommendationFrame header={<EditorRecommendationPageHeading title="Нова рекомендація" />}>
     <section className="space-y-5">
       <div className="flex w-full justify-start">
         <Link
@@ -64,8 +70,6 @@ export default async function NewRecommendationPage({
           <span className="text-left text-sm font-medium sm:text-base">Назад до папки «{folder.title}»</span>
         </Link>
       </div>
-
-      <EditorRecommendationPageHeading title="Нова рекомендація" />
 
       <div className="space-y-6">
           {query.error && createErrorMessages[query.error] ? (
@@ -176,6 +180,8 @@ export default async function NewRecommendationPage({
           </form>
       </div>
     </section>
+    </EditorRecommendationFrame>
     </EditorFieldBarProvider>
+    </PageFade>
   );
 }
