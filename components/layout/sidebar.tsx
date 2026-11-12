@@ -98,7 +98,7 @@ const Item = ({
       href={href}
       title={collapsed ? label : undefined}
       className={cn(
-        "flex items-center border-b border-black/20 py-2.5 text-base font-medium transition-colors",
+        "flex items-center border-b border-black py-2.5 text-base font-medium transition-colors",
         collapsed ? "justify-center px-2" : "gap-2.5 px-6",
         !collapsed && compact && "pl-12 text-sm font-normal",
         active ? "bg-[#eee6a5] text-foreground" : "text-foreground hover:bg-[#f2ecbe]",
@@ -151,7 +151,7 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
         canCollapse && collapsed ? "w-16" : "w-[300px]",
       )}
     >
-      <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain border-r border-black/20">
+      <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain border-r border-black">
         {canCollapse ? (
           <button
             type="button"
@@ -159,7 +159,7 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
             aria-expanded={!collapsed}
             title={collapsed ? "Розгорнути меню" : "Згорнути меню"}
             className={cn(
-              "flex h-11 items-center border-b border-[#595959] text-sm font-medium text-[#595959]",
+              "flex h-11 items-center border-b border-black text-sm font-medium text-[#595959]",
               collapsed ? "justify-center px-2" : "gap-2.5 px-4",
             )}
           >
@@ -181,7 +181,7 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
               onClick={() => setReportsOpen((value) => !value)}
               title={canCollapse && collapsed ? uk.nav.reports : undefined}
               className={cn(
-                "flex w-full items-center border-b border-black/20 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]",
+                "flex w-full items-center border-b border-black py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]",
                 canCollapse && collapsed ? "justify-center px-2" : "gap-2.5 px-6",
               )}
             >
@@ -211,7 +211,7 @@ export function Sidebar({ userRoles }: { userRoles: UserRole[] }) {
                 onClick={() => setAdminOpen((value) => !value)}
                 title={canCollapse && collapsed ? "Адміністратор" : undefined}
                 className={cn(
-                  "flex w-full items-center border-b border-black/20 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]",
+                  "flex w-full items-center border-b border-black py-2.5 text-base font-medium text-foreground transition-colors hover:bg-[#f2ecbe]",
                   canCollapse && collapsed ? "justify-center px-2" : "gap-2.5 px-6",
                 )}
               >

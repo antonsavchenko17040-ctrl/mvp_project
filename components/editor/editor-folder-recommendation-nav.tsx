@@ -68,7 +68,7 @@ export function EditorFolderRecommendationNav({
     <div className="-m-5 flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden bg-white xl:-m-7 2xl:-mx-10 2xl:-my-9 min-[960px]:flex-row">
       <aside
         aria-label="Рекомендації папки"
-        className="flex max-h-[50%] min-h-0 w-full shrink-0 flex-col overflow-hidden border-b border-black min-[960px]:h-full min-[960px]:max-h-none min-[960px]:w-[300px] min-[960px]:border-b-0 min-[960px]:border-r min-[1200px]:w-[340px]"
+        className="flex max-h-[50%] min-h-0 w-full shrink-0 flex-col overflow-hidden border-b border-black min-[960px]:h-full min-[960px]:max-h-none min-[960px]:w-[360px] min-[960px]:border-b-0 min-[960px]:border-r min-[1200px]:w-[408px]"
       >
         <div className="flex flex-col gap-1.5 bg-[#0069aa] px-4 py-3.5 text-white">
           <Link href="/editor" className="inline-flex items-center gap-1 text-sm text-[#dbeffc] no-underline hover:text-white">
@@ -79,7 +79,7 @@ export function EditorFolderRecommendationNav({
           </Link>
           <p className="text-base font-semibold leading-snug">{folderTitle}</p>
         </div>
-        <div className="flex flex-col gap-2.5 border-b border-[#d9d9d9] px-3.5 py-3">
+        <div className="flex flex-col gap-2.5 border-b border-black px-3.5 py-3">
           <div className="flex items-center justify-between gap-2">
             <span>Рекомендацій у папці</span>
             <span className="inline-flex h-[30px] min-w-7 items-center justify-center rounded-md bg-[#d9d9d9] px-1.5 font-semibold">
